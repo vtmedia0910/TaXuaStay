@@ -45,31 +45,21 @@ export async function savePropertyAction(formData: FormData) {
   const supabase = await createServerSupabaseClient();
   if (!supabase) redirect("/admin/properties?error=config");
 
-  const { id, amenity_ids, ...values } = parsed.data;
-  const payload = {
-    ...values,
-    archived_at: values.publish_status === "archived" ? new Date().toISOString() : null,
-    is_active: values.publish_status === "archived" ? false : values.is_active,
-  };
-  const mutation = id
-    ? supabase.from("properties").update(payload).eq("id", id)
-    : supabase.from("properties").insert(payload);
-  const { data, error } = await mutation
-    .select("id,slug")
+  const { id, amenity_ids, ...propertyValues } = parsed.data;
+  const { data, error } = await supabase
+    .rpc("save_property_with_amenities", {
+      target_property_id: id ?? null,
+      property_values: propertyValues,
+      selected_amenity_ids: amenity_ids,
+    })
     .maybeSingle()
-    .overrideTypes<{ id: string; slug: string }, { merge: false }>();
+    .overrideTypes<{ property_id: string; property_slug: string }, { merge: false }>();
 
   if (error || !data) redirect("/admin/properties?error=property-save");
 
-  const { error: assignmentError } = await supabase.rpc("set_property_amenities", {
-    target_property_id: data.id,
-    selected_amenity_ids: amenity_ids,
-  });
-  if (assignmentError) redirect(`/admin/properties/${data.id}/edit?error=amenities-save`);
-
   revalidatePath("/admin/properties");
-  revalidatePath(`/homestay/${data.slug}`);
-  redirect(`/admin/properties/${data.id}/edit?saved=1`);
+  revalidatePath(`/homestay/${data.property_slug}`);
+  redirect(`/admin/properties/${data.property_id}/edit?saved=1`);
 }
 
 export async function archivePropertyAction(formData: FormData) {

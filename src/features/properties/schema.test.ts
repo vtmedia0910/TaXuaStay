@@ -19,9 +19,9 @@ const validProperty = {
   check_in_time: "14:00",
   check_out_time: "12:00",
   road_access_grade: "unknown",
-  car_access: "on",
-  motorbike_access: "on",
-  parking: "on",
+  car_access: "yes",
+  motorbike_access: "unknown",
+  parking: "no",
   restaurant: null,
   breakfast: null,
   bbq: null,
@@ -52,5 +52,12 @@ describe("property schema", () => {
   it("rejects unsupported publish statuses and inactive published records", () => {
     expect(propertySchema.safeParse({ ...validProperty, publish_status: "live" }).success).toBe(false);
     expect(propertySchema.safeParse({ ...validProperty, is_active: null }).success).toBe(false);
+  });
+
+  it("preserves unknown, yes, and no as distinct access states", () => {
+    expect(propertySchema.parse(validProperty).car_access).toBe("yes");
+    expect(propertySchema.parse(validProperty).motorbike_access).toBe("unknown");
+    expect(propertySchema.parse(validProperty).parking).toBe("no");
+    expect(propertySchema.safeParse({ ...validProperty, car_access: "on" }).success).toBe(false);
   });
 });

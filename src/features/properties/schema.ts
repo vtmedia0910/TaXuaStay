@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  ACCESS_CERTAINTIES,
   PROPERTY_TYPES,
   PUBLISH_STATUSES,
   ROAD_ACCESS_GRADES,
@@ -32,9 +33,9 @@ export const propertySchema = z
     check_in_time: timeSchema,
     check_out_time: timeSchema,
     road_access_grade: z.enum(ROAD_ACCESS_GRADES),
-    car_access: formCheckbox,
-    motorbike_access: formCheckbox,
-    parking: formCheckbox,
+    car_access: z.enum(ACCESS_CERTAINTIES),
+    motorbike_access: z.enum(ACCESS_CERTAINTIES),
+    parking: z.enum(ACCESS_CERTAINTIES),
     restaurant: formCheckbox,
     breakfast: formCheckbox,
     bbq: formCheckbox,

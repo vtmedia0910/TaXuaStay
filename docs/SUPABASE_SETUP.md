@@ -4,7 +4,7 @@ Use only the dedicated Tà Xùa Stay Supabase project. Never link this repositor
 
 ## Current remote status
 
-This workspace has no Supabase CLI binary/link, `supabase/config.toml`, Supabase environment variables, or database credentials. Neither migration can be verified or applied remotely from this task. The owner must inspect the Stay project migration history before applying anything.
+This workspace has no Supabase CLI binary/link, `supabase/config.toml`, Supabase environment variables, or database credentials. The remote application state of the Stay migrations cannot be verified or changed from this workspace. The owner must inspect the Stay project migration history before applying anything.
 
 ## Migration order
 
@@ -13,9 +13,12 @@ Apply only missing Stay migrations in filename order:
 ```text
 supabase/migrations/202608290001_stay_foundation.sql
 supabase/migrations/202608290002_properties_rooms_amenities_media.sql
+supabase/migrations/202608290003_harden_phase2_accommodation.sql
 ```
 
-If `202608290001` is already present remotely, do not reapply or edit it. Apply only `202608290002`. Once `202608290002` is applied, keep it immutable and use additive corrective migrations for future changes.
+Never reapply or edit a migration already present remotely. Migration `202608290003` is an additive corrective migration because the application state of `202608290002` could not be confirmed safely.
+
+After `202608290003`, review every property whose access values became `unknown`. The migration deliberately converts legacy `true` to `yes` and legacy `false` to `unknown`; an old false value is not sufficient evidence for a customer-facing `no`.
 
 After applying Phase 2, verify with separate anonymous, staff, and admin sessions:
 
@@ -24,6 +27,8 @@ After applying Phase 2, verify with separate anonymous, staff, and admin session
 3. Draft/inactive records and unreviewed media return no rows anonymously.
 4. Staff/admin can manage Phase 2 content through the Admin application.
 5. Public queries cannot request `updated_by`, `captured_by_user_id`, or `verified_by_user_id`.
+6. Anonymous cannot select physical `room_types.quantity`.
+7. A failed property/room amenity assignment rolls back the corresponding content insert/update.
 
 ## Environment configuration
 

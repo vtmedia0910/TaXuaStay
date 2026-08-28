@@ -9,10 +9,12 @@ export const PROPERTY_TYPES = [
 
 export const PUBLISH_STATUSES = ["draft", "published", "archived"] as const;
 export const ROAD_ACCESS_GRADES = ["unknown", "a", "b", "c", "d"] as const;
+export const ACCESS_CERTAINTIES = ["unknown", "yes", "no"] as const;
 
 export type PropertyType = (typeof PROPERTY_TYPES)[number];
 export type PublishStatus = (typeof PUBLISH_STATUSES)[number];
 export type RoadAccessGrade = (typeof ROAD_ACCESS_GRADES)[number];
+export type AccessCertainty = (typeof ACCESS_CERTAINTIES)[number];
 
 export interface PropertyDto {
   id: string;
@@ -32,9 +34,9 @@ export interface PropertyDto {
   check_in_time: string;
   check_out_time: string;
   road_access_grade: RoadAccessGrade;
-  car_access: boolean;
-  motorbike_access: boolean;
-  parking: boolean;
+  car_access: AccessCertainty;
+  motorbike_access: AccessCertainty;
+  parking: AccessCertainty;
   restaurant: boolean;
   breakfast: boolean;
   bbq: boolean;

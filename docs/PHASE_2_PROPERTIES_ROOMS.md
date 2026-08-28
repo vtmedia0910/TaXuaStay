@@ -8,6 +8,8 @@ Phase 2 establishes the accommodation content domain only. The Master Plan remai
 
 `room_types` represents a real category of rooms belonging to one property. It is the future room-first search and transaction entity. Its `quantity` is the physical count of units of that type; it does not mean availability for any date.
 
+`quantity` is retained for Admin and future inventory logic, but Phase 2 public DTOs and pages intentionally omit it. A physical unit count must not be presented as currently available rooms.
+
 Phase 2 does not contain prices, rate rules, inventory dates, availability confidence, customers, or bookings.
 
 ## Publishing lifecycle
@@ -29,6 +31,20 @@ room_amenities
 ```
 
 The joins prevent duplicate assignments. Core operational facts such as parking, breakfast, Wi-Fi, or access remain explicit property/room fields where they affect customer decisions; long-tail facilities use the catalog.
+
+Property and room saves call transaction-scoped PostgreSQL RPCs that update the content record and replace amenity assignments atomically. If validation, RLS, a constraint, or an amenity FK fails, the complete save is rolled back; the UI never reports a partially saved content record.
+
+## Access certainty
+
+Customer-critical access facts use three explicit states:
+
+```text
+unknown → Chưa xác nhận
+yes     → Có
+no      → Không
+```
+
+The corrective migration maps legacy `true` values to `yes`. It maps legacy `false` values to `unknown`, not `no`, because the original boolean did not distinguish an unconfirmed fact from a confirmed negative. Owners must review those migrated `unknown` values before publishing a definitive claim.
 
 ## Evidence-aware media
 

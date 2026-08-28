@@ -9,11 +9,13 @@ import { Textarea } from "@/components/ui/textarea";
 import type { AmenityDto } from "@/features/amenities/types";
 import { savePropertyAction } from "@/features/properties/actions";
 import {
+  ACCESS_CERTAINTIES,
   PROPERTY_TYPES,
   PUBLISH_STATUSES,
   ROAD_ACCESS_GRADES,
   type PropertyDto,
 } from "@/features/properties/types";
+import { formatAccessCertainty } from "@/features/properties/access";
 
 type PropertyFormValue = PropertyDto & { amenity_ids: string[] };
 
@@ -104,10 +106,24 @@ export function PropertyForm({
             </Select>
           </Field>
         </div>
+        <div className="grid gap-5 sm:grid-cols-3">
+          <Field label="Ô tô tiếp cận" htmlFor="car_access">
+            <Select id="car_access" name="car_access" defaultValue={property?.car_access ?? "unknown"}>
+              {ACCESS_CERTAINTIES.map((value) => <option key={value} value={value}>{formatAccessCertainty(value)}</option>)}
+            </Select>
+          </Field>
+          <Field label="Xe máy tiếp cận" htmlFor="motorbike_access">
+            <Select id="motorbike_access" name="motorbike_access" defaultValue={property?.motorbike_access ?? "unknown"}>
+              {ACCESS_CERTAINTIES.map((value) => <option key={value} value={value}>{formatAccessCertainty(value)}</option>)}
+            </Select>
+          </Field>
+          <Field label="Chỗ đỗ xe" htmlFor="parking">
+            <Select id="parking" name="parking" defaultValue={property?.parking ?? "unknown"}>
+              {ACCESS_CERTAINTIES.map((value) => <option key={value} value={value}>{formatAccessCertainty(value)}</option>)}
+            </Select>
+          </Field>
+        </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <CheckboxField name="car_access" label="Ô tô tiếp cận" defaultChecked={property?.car_access} />
-          <CheckboxField name="motorbike_access" label="Xe máy tiếp cận" defaultChecked={property?.motorbike_access} />
-          <CheckboxField name="parking" label="Có chỗ đỗ xe" defaultChecked={property?.parking} />
           <CheckboxField name="wifi" label="Wi-Fi" defaultChecked={property?.wifi} />
           <CheckboxField name="restaurant" label="Nhà hàng" defaultChecked={property?.restaurant} />
           <CheckboxField name="breakfast" label="Bữa sáng" defaultChecked={property?.breakfast} />

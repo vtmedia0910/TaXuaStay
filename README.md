@@ -18,6 +18,7 @@ Apply the migrations in order only to the dedicated Stay project:
 ```text
 supabase/migrations/202608290001_stay_foundation.sql
 supabase/migrations/202608290002_properties_rooms_amenities_media.sql
+supabase/migrations/202608290003_harden_phase2_accommodation.sql
 ```
 
 The public page remains usable with safe local defaults when Supabase environment variables are absent or settings cannot be read.

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { getPublicPropertyAmenities } from "@/features/amenities/data";
 import { getPublicPropertyMedia } from "@/features/media/data";
+import { formatAccessCertainty } from "@/features/properties/access";
 import { getPublicPropertyBySlug } from "@/features/properties/data";
 import { getPublicRoomsByProperty } from "@/features/rooms/data";
 
@@ -39,7 +40,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
 
   const facilities = [
     property.wifi && "Wi-Fi",
-    property.parking && "Chỗ đỗ xe",
+    property.parking === "yes" && "Chỗ đỗ xe",
     property.breakfast && "Bữa sáng",
     property.restaurant && "Nhà hàng",
     property.bbq && "BBQ",
@@ -82,7 +83,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
                     <BedDouble className="text-copper" aria-hidden="true" />
                     <h3 className="mt-4 font-display text-2xl font-bold text-pine">{room.name}</h3>
                     <p className="mt-2 text-sm leading-6 text-muted">{room.short_description ?? "Thông tin phòng đang được hoàn thiện."}</p>
-                    <p className="mt-4 text-sm font-bold text-ink">Tối đa {room.max_guests} khách · {room.quantity} phòng vật lý</p>
+                    <p className="mt-4 text-sm font-bold text-ink">Tối đa {room.max_guests} khách</p>
                     <Link href={`/homestay/${property.slug}/phong/${room.slug}`} className="mt-5 inline-flex min-h-11 items-center font-bold text-copper-strong hover:text-pine">Xem phòng →</Link>
                   </Card>
                 ))}
@@ -96,9 +97,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
             <h2 className="font-display text-2xl font-bold text-pine">Thông tin nhanh</h2>
             <dl className="mt-5 grid gap-4 text-sm">
               <div className="flex gap-3"><Clock3 className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Nhận / trả phòng</dt><dd className="mt-1 text-muted">{property.check_in_time.slice(0, 5)} / {property.check_out_time.slice(0, 5)}</dd></div></div>
-              <div className="flex gap-3"><Car className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Ô tô tiếp cận</dt><dd className="mt-1 text-muted">{property.car_access ? "Có" : "Chưa xác nhận / không"}</dd></div></div>
-              <div className="flex gap-3"><Bike className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Xe máy tiếp cận</dt><dd className="mt-1 text-muted">{property.motorbike_access ? "Có" : "Chưa xác nhận / không"}</dd></div></div>
-              <div className="flex gap-3"><ParkingCircle className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Chỗ đỗ xe</dt><dd className="mt-1 text-muted">{property.parking ? "Có" : "Chưa xác nhận / không"}</dd></div></div>
+              <div className="flex gap-3"><Car className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Ô tô tiếp cận</dt><dd className="mt-1 text-muted">{formatAccessCertainty(property.car_access)}</dd></div></div>
+              <div className="flex gap-3"><Bike className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Xe máy tiếp cận</dt><dd className="mt-1 text-muted">{formatAccessCertainty(property.motorbike_access)}</dd></div></div>
+              <div className="flex gap-3"><ParkingCircle className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Chỗ đỗ xe</dt><dd className="mt-1 text-muted">{formatAccessCertainty(property.parking)}</dd></div></div>
               <div className="flex gap-3"><Mountain className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Đường vào sơ bộ</dt><dd className="mt-1 text-muted">{property.road_access_grade.toUpperCase()} · chưa phải Road Verified</dd></div></div>
               {property.wifi ? <div className="flex gap-3"><Wifi className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Wi-Fi</dt><dd className="mt-1 text-muted">Có</dd></div></div> : null}
             </dl>

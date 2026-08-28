@@ -35,24 +35,19 @@ export async function saveRoomTypeAction(formData: FormData) {
   const supabase = await createServerSupabaseClient();
   if (!supabase) redirect("/admin/rooms?error=config");
 
-  const { id, amenity_ids, ...values } = parsed.data;
-  const mutation = id
-    ? supabase.from("room_types").update(values).eq("id", id)
-    : supabase.from("room_types").insert(values);
-  const { data, error } = await mutation
-    .select("id")
+  const { id, amenity_ids, ...roomValues } = parsed.data;
+  const { data, error } = await supabase
+    .rpc("save_room_type_with_amenities", {
+      target_room_type_id: id ?? null,
+      room_type_values: roomValues,
+      selected_amenity_ids: amenity_ids,
+    })
     .maybeSingle()
-    .overrideTypes<{ id: string }, { merge: false }>();
+    .overrideTypes<{ room_type_id: string }, { merge: false }>();
   if (error || !data) redirect("/admin/rooms?error=room-save");
-
-  const { error: assignmentError } = await supabase.rpc("set_room_amenities", {
-    target_room_type_id: data.id,
-    selected_amenity_ids: amenity_ids,
-  });
-  if (assignmentError) redirect(`/admin/rooms/${data.id}/edit?error=amenities-save`);
 
   revalidatePath("/admin/rooms");
   revalidatePath("/homestay/[slug]", "page");
   revalidatePath("/homestay/[slug]/phong/[roomSlug]", "page");
-  redirect(`/admin/rooms/${data.id}/edit?saved=1`);
+  redirect(`/admin/rooms/${data.room_type_id}/edit?saved=1`);
 }

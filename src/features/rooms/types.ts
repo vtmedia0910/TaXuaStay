@@ -41,7 +41,7 @@ export interface RoomTypeDto {
 
 export type PublicRoomTypeDto = Omit<
   RoomTypeDto,
-  "is_active" | "publish_status" | "room_verified_at"
+  "is_active" | "publish_status" | "quantity" | "room_verified_at"
 >;
 
 export interface RoomListItem extends RoomTypeDto {

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { PUBLIC_AMENITY_QUERY } from "@/features/amenities/columns";
 import { MEDIA_QUERY } from "@/features/media/columns";
 import { PUBLIC_PROPERTY_QUERY } from "@/features/properties/columns";
-import { PUBLIC_ROOM_QUERY } from "@/features/rooms/columns";
+import { ADMIN_ROOM_QUERY, PUBLIC_ROOM_QUERY } from "@/features/rooms/columns";
 
 describe("Phase 2 public selectors", () => {
   it("use allow-listed fields without internal audit or wildcard columns", () => {
@@ -16,5 +16,7 @@ describe("Phase 2 public selectors", () => {
     }
     expect(PUBLIC_PROPERTY_QUERY).not.toContain("publish_status");
     expect(PUBLIC_ROOM_QUERY).not.toContain("publish_status");
+    expect(PUBLIC_ROOM_QUERY).not.toContain("quantity");
+    expect(ADMIN_ROOM_QUERY).toContain("quantity");
   });
 });
