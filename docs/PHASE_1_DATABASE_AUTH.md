@@ -25,6 +25,10 @@ Apply it only to the dedicated Tà Xùa Stay Supabase project, either with the S
 
 After a remote application, treat this migration as immutable. Future corrections must be additive migrations.
 
+### Audit status on 2026-08-29
+
+The Phase 2 audit found no Phase 1 correctness issue. This workspace has no Supabase CLI link, `supabase/config.toml`, Supabase environment variables, or remote database credentials, so the remote application state of migration `202608290001` cannot be independently confirmed here. It is therefore treated as potentially applied and immutable. No Phase 1 migration line was changed and no corrective migration was required.
+
 ## Configure environment variables
 
 Use values from the dedicated Stay project only. Follow `.env.example` and keep real values in an uncommitted `.env.local` or the deployment secret store.

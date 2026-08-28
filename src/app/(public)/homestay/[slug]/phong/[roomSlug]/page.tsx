@@ -1,0 +1,89 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Bath, BedDouble, Maximize2, Mountain, Users } from "lucide-react";
+import { MediaGallery } from "@/components/media/media-gallery";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { getPublicRoomAmenities } from "@/features/amenities/data";
+import { getPublicRoomMedia } from "@/features/media/data";
+import { getPublicPropertyBySlug } from "@/features/properties/data";
+import { getPublicRoom } from "@/features/rooms/data";
+
+type RoomParams = Promise<{ slug: string; roomSlug: string }>;
+
+export async function generateMetadata({ params }: { params: RoomParams }): Promise<Metadata> {
+  const { slug, roomSlug } = await params;
+  const property = await getPublicPropertyBySlug(slug);
+  if (!property) return { title: "Không tìm thấy phòng" };
+  const room = await getPublicRoom(property.id, roomSlug);
+  if (!room) return { title: "Không tìm thấy phòng" };
+
+  return {
+    title: `${room.name} — ${property.name}`,
+    description: room.short_description ?? `Thông tin phòng ${room.name} tại ${property.name}.`,
+    alternates: { canonical: `/homestay/${property.slug}/phong/${room.slug}` },
+  };
+}
+
+export default async function RoomPage({ params }: { params: RoomParams }) {
+  const { slug, roomSlug } = await params;
+  const property = await getPublicPropertyBySlug(slug);
+  if (!property) notFound();
+  const room = await getPublicRoom(property.id, roomSlug);
+  if (!room) notFound();
+
+  const [amenities, media] = await Promise.all([
+    getPublicRoomAmenities(room.id),
+    getPublicRoomMedia(room.id),
+  ]);
+
+  return (
+    <main className="bg-cream pb-20">
+      <section className="bg-pine px-5 py-12 text-white sm:px-8 sm:py-16">
+        <div className="mx-auto max-w-6xl">
+          <Link href={`/homestay/${property.slug}`} className="text-sm font-bold text-white/70 hover:text-white">← {property.name}</Link>
+          <h1 className="mt-5 max-w-4xl font-display text-4xl font-bold sm:text-6xl">{room.name}</h1>
+          {room.short_description ? <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{room.short_description}</p> : null}
+        </div>
+      </section>
+
+      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[1.25fr_0.75fr]">
+        <div className="grid gap-10">
+          <section>
+            <h2 className="mb-5 font-display text-3xl font-bold text-pine">Media của đúng loại phòng</h2>
+            <MediaGallery assets={media} />
+            {media.some((asset) => asset.media_type === "panorama_360") ? (
+              <p className="mt-3 text-sm leading-6 text-muted">Panorama được hiển thị ở dạng xem ảnh/liên kết cơ bản trong Phase 2; viewer tương tác thuộc phase Verified/360.</p>
+            ) : null}
+          </section>
+          {room.description ? (
+            <section><h2 className="font-display text-3xl font-bold text-pine">Chi tiết phòng</h2><p className="mt-4 whitespace-pre-line leading-8 text-muted">{room.description}</p></section>
+          ) : null}
+        </div>
+
+        <aside className="grid content-start gap-5">
+          <Card className="p-5">
+            <h2 className="font-display text-2xl font-bold text-pine">Thông số thực tế</h2>
+            <dl className="mt-5 grid gap-4 text-sm">
+              <div className="flex gap-3"><Users className="text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Sức chứa</dt><dd className="text-muted">{room.capacity_adults} người lớn · {room.capacity_children} trẻ em · tối đa {room.max_guests}</dd></div></div>
+              <div className="flex gap-3"><BedDouble className="text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Giường</dt><dd className="text-muted">{room.bed_count ? `${room.bed_count} · ${room.bed_type ?? "chưa ghi loại"}` : "Chưa có dữ liệu"}</dd></div></div>
+              <div className="flex gap-3"><Bath className="text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Phòng tắm</dt><dd className="text-muted">{room.bathroom_type}</dd></div></div>
+              {room.size_m2 ? <div className="flex gap-3"><Maximize2 className="text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Diện tích</dt><dd className="text-muted">{room.size_m2} m²</dd></div></div> : null}
+              <div className="flex gap-3"><Mountain className="text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">View cơ bản</dt><dd className="text-muted">{room.view_type} · chưa phải Cloud View Verified</dd></div></div>
+            </dl>
+          </Card>
+          <Card className="p-5">
+            <h2 className="font-display text-2xl font-bold text-pine">Tiện nghi</h2>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {room.has_private_balcony ? <Badge>Ban công riêng</Badge> : null}
+              {amenities.map((amenity) => <Badge key={amenity.id}>{amenity.name}</Badge>)}
+              {!room.has_private_balcony && !amenities.length ? <p className="text-sm text-muted">Chưa có dữ liệu amenity đã xuất bản.</p> : null}
+            </div>
+          </Card>
+          <p className="rounded-3xl border border-line bg-surface p-4 text-sm leading-6 text-muted">Giá và tình trạng phòng chưa được hiển thị trong Phase 2. Hệ thống không suy đoán các dữ liệu này.</p>
+        </aside>
+      </div>
+    </main>
+  );
+}

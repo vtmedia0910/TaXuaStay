@@ -53,15 +53,15 @@ export default async function HomePage() {
             <CheckCircle2 className="mt-1 shrink-0 text-success" aria-hidden="true" />
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">
-                PHASE 1
+                PHASE 2
               </p>
               <h2 className="mt-2 font-display text-3xl font-bold text-pine sm:text-4xl">
-                Nền tảng dữ liệu và phân quyền đã sẵn sàng
+                Miền nội dung lưu trú đã sẵn sàng
               </h2>
               <p className="mt-4 text-base leading-8 text-muted">
-                Trang công khai đọc cấu hình an toàn từ project Supabase dành riêng cho Stay và tự
-                dùng giá trị mặc định khi chưa cấu hình. Dữ liệu homestay, phòng, giá, tình trạng
-                phòng và booking chưa được triển khai trong phase này.
+                Hệ thống đã có property, room type, amenity và media cơ bản với vòng đời xuất bản
+                an toàn. Search, giá, tình trạng phòng, Verified Standard và booking chưa được triển
+                khai trong phase này.
               </p>
             </div>
           </div>

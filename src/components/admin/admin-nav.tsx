@@ -1,17 +1,30 @@
 import Link from "next/link";
-import { CircleGauge, ExternalLink, MountainSnow, Settings } from "lucide-react";
+import {
+  BedDouble,
+  CircleGauge,
+  ExternalLink,
+  House,
+  ImageIcon,
+  MountainSnow,
+  Settings,
+  Sparkles,
+} from "lucide-react";
 import { logoutAction } from "@/features/admin/auth-actions";
 import type { AdminRole } from "@/features/admin/authz";
 
-const sharedLinks = [
+const contentLinks = [
   { label: "Tổng quan", href: "/admin", icon: CircleGauge },
-  { label: "Trang chủ", href: "/", icon: ExternalLink },
+  { label: "Homestays", href: "/admin/properties", icon: House },
+  { label: "Phòng", href: "/admin/rooms", icon: BedDouble },
+  { label: "Amenities", href: "/admin/amenities", icon: Sparkles },
+  { label: "Media", href: "/admin/media", icon: ImageIcon },
 ] as const;
 
 const adminLinks = [{ label: "Cấu hình", href: "/admin/settings", icon: Settings }] as const;
+const publicLink = { label: "Trang chủ", href: "/", icon: ExternalLink } as const;
 
 export function AdminNav({ role }: { role: AdminRole }) {
-  const links = role === "admin" ? [sharedLinks[0], ...adminLinks, sharedLinks[1]] : sharedLinks;
+  const links = role === "admin" ? [...contentLinks, ...adminLinks, publicLink] : [...contentLinks, publicLink];
 
   return (
     <>
@@ -39,15 +52,14 @@ export function AdminNav({ role }: { role: AdminRole }) {
         </form>
       </aside>
       <nav
-        className="fixed inset-x-0 bottom-0 z-50 grid border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
-        style={{ gridTemplateColumns: `repeat(${links.length}, minmax(0, 1fr))` }}
+        className="fixed inset-x-0 bottom-0 z-50 flex overflow-x-auto border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
         aria-label="Admin di động"
       >
         {links.map(({ label, href, icon: Icon }) => (
           <Link
             key={href}
             href={href}
-            className="flex min-h-16 flex-col items-center justify-center gap-1 text-center text-xs font-bold text-pine"
+            className="flex min-h-16 min-w-20 flex-1 flex-col items-center justify-center gap-1 px-2 text-center text-xs font-bold text-pine"
           >
             <Icon size={20} aria-hidden="true" />
             {label}

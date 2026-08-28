@@ -1,8 +1,10 @@
-import { CircleCheckBig, Database, Layers3 } from "lucide-react";
+import { CircleCheckBig, Database, House, Layers3, Sparkles } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { FormFeedback } from "@/components/admin/form-feedback";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { getAdminAmenities } from "@/features/amenities/data";
+import { getAdminProperties } from "@/features/properties/data";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export default async function AdminHomePage({
@@ -12,15 +14,17 @@ export default async function AdminHomePage({
 }) {
   const params = await searchParams;
   const configured = isSupabaseConfigured();
+  const [properties, amenities] = await Promise.all([getAdminProperties(), getAdminAmenities()]);
+  const roomCount = properties.reduce((total, property) => total + property.room_count, 0);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <AdminPageHeader
         title="Tổng quan"
-        description="Nền tảng dữ liệu và phân quyền của PHASE 1. Các miền lưu trú chỉ được thêm ở phase đã duyệt."
+        description="PHASE 2 quản lý property, room type, amenities và media cơ bản; chưa có giá, availability hay booking."
       />
       <FormFeedback error={params.error} />
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="p-5">
           <Database className="text-pine" aria-hidden="true" />
           <h2 className="mt-4 font-display text-xl font-bold text-pine">Supabase Stay</h2>
@@ -34,11 +38,22 @@ export default async function AdminHomePage({
         <Card className="p-5">
           <Layers3 className="text-pine" aria-hidden="true" />
           <h2 className="mt-4 font-display text-xl font-bold text-pine">Phạm vi hiện tại</h2>
-          <Badge className="mt-3 text-success">PHASE 1</Badge>
+          <Badge className="mt-3 text-success">PHASE 2</Badge>
           <p className="mt-3 text-sm leading-6 text-muted">
-            Chỉ có cấu hình website và nền tảng phân quyền. Chưa có Homestay, Rooms, Booking,
-            Availability hay Rates.
+            Content domain đã có; Booking, Availability và Rates chưa được triển khai.
           </p>
+        </Card>
+        <Card className="p-5">
+          <House className="text-pine" aria-hidden="true" />
+          <h2 className="mt-4 font-display text-xl font-bold text-pine">Nội dung lưu trú</h2>
+          <p className="mt-3 text-3xl font-bold text-copper-strong">{properties.length}</p>
+          <p className="mt-1 text-sm text-muted">properties · {roomCount} room types</p>
+        </Card>
+        <Card className="p-5">
+          <Sparkles className="text-pine" aria-hidden="true" />
+          <h2 className="mt-4 font-display text-xl font-bold text-pine">Amenity catalog</h2>
+          <p className="mt-3 text-3xl font-bold text-copper-strong">{amenities.length}</p>
+          <p className="mt-1 text-sm text-muted">mục chuẩn hóa</p>
         </Card>
       </div>
       <div className="mt-6 flex items-start gap-3 rounded-[1.75rem] border border-line bg-pine-soft p-5 text-pine">

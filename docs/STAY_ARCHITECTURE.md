@@ -35,6 +35,24 @@ No service-role key is used by the public settings flow. Anonymous users cannot 
 
 The Phase 1 migration deliberately contains no property, room, rate, availability, customer, booking, fleet, or rental tables. Cross-product referral settings described for a later roadmap phase are also deferred.
 
+## Phase 2 accommodation content domain
+
+Phase 2 adds six normalized tables in one additive migration:
+
+- `properties` for lodging/business entities;
+- `room_types` for the room-level content and future transaction entity;
+- `amenities`, `property_amenities`, and `room_amenities` for a shared normalized catalog;
+- `media_assets` for HTTPS photo, video, and panorama evidence linked to exactly one property or room type.
+
+Anonymous users can read only active/published properties and rooms, active amenities assigned to those records, and media assets explicitly reviewed for public display. Public application queries use field allowlists and exclude internal user/audit identifiers. Authenticated `admin` and `staff` users can manage this content through protected Server Actions, with RLS as the database backstop. Core records use archival/deactivation rather than default hard deletion.
+
+Public Phase 2 routes are:
+
+- `/homestay/[slug]`
+- `/homestay/[slug]/phong/[roomSlug]`
+
+Phase 2 media approval means only that an individual asset was reviewed for public display. It does not represent the future Tà Xùa Stay Verified Standard, Cloud View score, Road Verified status, or complete verification workflow.
+
 ## Planned domains
 
 Later phases may introduce these independent Stay domains, one reviewed phase at a time:
@@ -48,7 +66,7 @@ Later phases may introduce these independent Stay domains, one reviewed phase at
 - weather and cloud forecast
 - imports
 
-These names document direction only; Phase 1 does not implement them.
+These names document direction only. Phase 2 implements only properties, room types, amenities, and basic media; all later domains remain deferred.
 
 ## Future Biker relationship
 
