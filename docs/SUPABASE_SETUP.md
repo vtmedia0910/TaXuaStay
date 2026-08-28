@@ -4,7 +4,17 @@ Use only the dedicated Tà Xùa Stay Supabase project. Never link this repositor
 
 ## Current remote status
 
-This workspace has no Supabase CLI binary/link, `supabase/config.toml`, Supabase environment variables, or database credentials. The remote application state of the Stay migrations cannot be verified or changed from this workspace. The owner must inspect the Stay project migration history before applying anything.
+Verified on 2026-08-29 against the dedicated Supabase project returned by the CLI as `TaXuaStay`, project ref `kkrtajdgkinybpwermls`. The repository is linked through Supabase CLI metadata under the gitignored `supabase/.temp/` directory; no credentials or tracked `supabase/config.toml` were added.
+
+Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the application dependencies were not changed. Remote migration history is reconciled and contains these three migrations in order:
+
+```text
+202608290001
+202608290002
+202608290003
+```
+
+The final remote dry-run reported the database up to date. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
 
 ## Migration order
 
@@ -16,7 +26,7 @@ supabase/migrations/202608290002_properties_rooms_amenities_media.sql
 supabase/migrations/202608290003_harden_phase2_accommodation.sql
 ```
 
-Never reapply or edit a migration already present remotely. Migration `202608290003` is an additive corrective migration because the application state of `202608290002` could not be confirmed safely.
+Never reapply or edit a migration already present remotely. Migration `202608290003` is the additive corrective migration that preserves immutable migration `202608290002`.
 
 After `202608290003`, review every property whose access values became `unknown`. The migration deliberately converts legacy `true` to `yes` and legacy `false` to `unknown`; an old false value is not sufficient evidence for a customer-facing `no`.
 
@@ -33,6 +43,15 @@ After applying Phase 2, verify with separate anonymous, staff, and admin session
 ## Environment configuration
 
 Copy `.env.example` to an uncommitted `.env.local` and fill it with values from the Stay project only. Do not commit that file. The public app uses the anon/publishable key and all authorization remains enforced by RLS.
+
+The application currently requires these public variable names:
+
+```text
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+```
+
+No current application call site uses the service-role client, so do not configure `SUPABASE_SERVICE_ROLE_KEY` locally or in Vercel for Phase 2. At the 2026-08-29 verification, `.env.local` was absent and the production `/admin/login` page rendered the missing-Supabase warning with login disabled. Configure both public variables in the local uncommitted `.env.local` and the Vercel project, then redeploy production.
 
 ## Storage architecture
 
