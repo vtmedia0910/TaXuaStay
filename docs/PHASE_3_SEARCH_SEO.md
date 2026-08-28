@@ -154,6 +154,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 Do not add a service-role key for public search. After changing Vercel environment values, redeploy production so the Next.js build and runtime receive them.
 
+Canonical generation prefers `NEXT_PUBLIC_SITE_URL`. It accepts either an absolute HTTP(S) URL or a production hostname and falls back to Vercel's build/runtime `VERCEL_PROJECT_PRODUCTION_URL` before using the local development URL.
+
 ## Explicit scope stop
 
 Phase 3 adds no migration, fake accommodation data, pricing, inventory, availability, verification score, booking flow, weather, or Biker runtime integration.
