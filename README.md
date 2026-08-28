@@ -2,7 +2,7 @@
 
 **Đúng phòng. Đúng view. Yên tâm lên Tà Xùa.**
 
-This repository contains the independent Tà Xùa Stay application. Phase 2 adds the accommodation content domain: properties, room types, normalized amenities, and evidence-aware media. Search, verification scoring, pricing, availability, and booking have not been created yet.
+This repository contains the independent Tà Xùa Stay application. Phase 3 adds room-first discovery at `/tim-phong`, factual filters, server-driven pagination, seven intent-specific SEO landing pages, metadata/canonicals, robots, sitemap, and factual property structured data. Verification scoring, pricing, availability, and booking have not been created yet.
 
 ## Local development
 
@@ -38,4 +38,5 @@ Project references:
 - `docs/STAY_ARCHITECTURE.md` — current system boundary and implementation state.
 - `docs/PHASE_1_DATABASE_AUTH.md` — migration, authorization, and operating notes for Phase 1.
 - `docs/PHASE_2_PROPERTIES_ROOMS.md` — Phase 2 domain, lifecycle, routes, and limitations.
+- `docs/PHASE_3_SEARCH_SEO.md` — room-first search contracts, supported filters, ranking, pagination, and SEO strategy.
 - `docs/SUPABASE_SETUP.md` — manual migration and future Storage setup.

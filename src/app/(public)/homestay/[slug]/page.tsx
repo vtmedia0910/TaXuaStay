@@ -5,11 +5,14 @@ import { BedDouble, Bike, Car, Clock3, MapPin, Mountain, ParkingCircle, Wifi } f
 import { MediaGallery } from "@/components/media/media-gallery";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { getSiteUrl } from "@/config/site";
 import { getPublicPropertyAmenities } from "@/features/amenities/data";
 import { getPublicPropertyMedia } from "@/features/media/data";
 import { formatAccessCertainty } from "@/features/properties/access";
 import { getPublicPropertyBySlug } from "@/features/properties/data";
 import { getPublicRoomsByProperty } from "@/features/rooms/data";
+import { buildRoomSearchUrl, DEFAULT_ROOM_SEARCH_PARAMS } from "@/features/search/params";
+import { buildPropertyStructuredData, serializeStructuredData } from "@/features/search/structured-data";
 
 export async function generateMetadata({
   params,
@@ -45,9 +48,19 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
     property.restaurant && "Nhà hàng",
     property.bbq && "BBQ",
   ].filter((value): value is string => Boolean(value));
+  const canonicalUrl = new URL(`/homestay/${property.slug}`, getSiteUrl()).toString();
+  const structuredData = buildPropertyStructuredData(property, media, canonicalUrl);
+  const areaSearchUrl = buildRoomSearchUrl({
+    ...DEFAULT_ROOM_SEARCH_PARAMS,
+    area: property.area_name,
+  });
 
   return (
     <main className="bg-cream pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeStructuredData(structuredData) }}
+      />
       <section className="bg-pine px-5 py-12 text-white sm:px-8 sm:py-16">
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-wrap gap-2">
@@ -75,7 +88,10 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
           ) : null}
 
           <section aria-labelledby="rooms-title">
-            <h2 id="rooms-title" className="font-display text-3xl font-bold text-pine">Loại phòng</h2>
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <h2 id="rooms-title" className="font-display text-3xl font-bold text-pine">Loại phòng</h2>
+              <Link href={areaSearchUrl} className="inline-flex min-h-11 items-center text-sm font-bold text-copper-strong hover:text-pine">Tìm phòng cùng khu vực →</Link>
+            </div>
             {rooms.length ? (
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 {rooms.map((room) => (

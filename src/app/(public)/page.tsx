@@ -1,6 +1,9 @@
-import { ArrowDown, CheckCircle2, Mountain } from "lucide-react";
+import Link from "next/link";
+import { BedDouble, Car, Eye, ListFilter, Mountain } from "lucide-react";
+import { SearchEntryForm } from "@/components/search/search-entry-form";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { SEO_LANDING_PAGES, SEO_LANDING_SLUGS } from "@/features/search/seo";
 import { getPublicSiteSettings } from "@/features/settings/data";
 
 export default async function HomePage() {
@@ -13,57 +16,61 @@ export default async function HomePage() {
           {settings.announcement}
         </div>
       ) : null}
-      <section className="stay-backdrop min-h-[calc(100dvh-73px)] px-5 pb-14 pt-32 sm:px-8 sm:pt-40">
-        <div className="mx-auto grid max-w-6xl items-end gap-12 lg:grid-cols-[1.35fr_0.65fr]">
-          <div>
-            <Badge className="bg-white/65 uppercase tracking-[0.14em]">Nền tảng độc lập mới</Badge>
-            <h1 className="mt-6 max-w-4xl font-display text-5xl font-bold leading-[0.98] tracking-[-0.045em] text-pine sm:text-7xl lg:text-8xl">
-              {settings.site_name}
-            </h1>
-            <p className="mt-7 max-w-2xl text-xl font-bold leading-8 text-copper-strong sm:text-2xl">
-              {settings.tagline}
-            </p>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-muted sm:text-lg">
-              {settings.hero_subtitle}
-            </p>
-            <a
-              href="#baseline-status"
-              className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-pine px-6 text-sm font-bold text-white hover:bg-pine-strong"
-            >
-              Xem trạng thái nền tảng
-              <ArrowDown size={17} aria-hidden="true" />
-            </a>
-          </div>
 
-          <Card className="overflow-hidden border-white/55 bg-white/55 p-6 backdrop-blur-sm sm:p-8">
-            <Mountain className="text-copper" size={30} aria-hidden="true" />
-            <p className="mt-12 text-xs font-bold uppercase tracking-[0.18em] text-muted">
-              Tà Xùa · Sơn La
-            </p>
-            <p className="mt-3 font-display text-3xl font-bold leading-tight text-pine">
-              {settings.hero_title}
-            </p>
-          </Card>
+      <section className="stay-backdrop px-5 py-16 sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-6xl">
+          <Badge className="bg-white/65 uppercase tracking-[0.14em]">Room-first discovery</Badge>
+          <h1 className="mt-5 max-w-4xl font-display text-5xl font-bold leading-[0.98] tracking-[-0.045em] text-pine sm:text-7xl">
+            Tìm chỗ ở Tà Xùa từ đúng loại phòng
+          </h1>
+          <p className="mt-6 max-w-3xl text-lg font-bold leading-8 text-copper-strong sm:text-xl">
+            {settings.tagline}
+          </p>
+          <p className="mt-3 max-w-3xl text-base leading-7 text-muted">
+            Lọc theo sức chứa, room facts, khu vực, tiếp cận và tiện ích đã công khai. Ngày đi là ngữ cảnh cho phase availability sau, chưa phải cam kết còn phòng.
+          </p>
+          <div className="mt-8"><SearchEntryForm /></div>
         </div>
       </section>
 
-      <section id="baseline-status" className="bg-surface px-5 py-16 sm:px-8 sm:py-20">
-        <div className="mx-auto max-w-3xl">
-          <div className="flex items-start gap-4">
-            <CheckCircle2 className="mt-1 shrink-0 text-success" aria-hidden="true" />
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">
-                PHASE 2
-              </p>
-              <h2 className="mt-2 font-display text-3xl font-bold text-pine sm:text-4xl">
-                Miền nội dung lưu trú đã sẵn sàng
-              </h2>
-              <p className="mt-4 text-base leading-8 text-muted">
-                Hệ thống đã có property, room type, amenity và media cơ bản với vòng đời xuất bản
-                an toàn. Search, giá, tình trạng phòng, Verified Standard và booking chưa được triển
-                khai trong phase này.
-              </p>
-            </div>
+      <section className="bg-surface px-5 py-16 sm:px-8">
+        <div className="mx-auto max-w-6xl">
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">PHASE 3</p>
+          <h2 className="mt-2 font-display text-3xl font-bold text-pine sm:text-4xl">Thông tin đang dùng để thu hẹp lựa chọn</h2>
+          <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              [BedDouble, "Room type", "Sức chứa, giường, phòng tắm và ban công của đúng loại phòng."],
+              [Eye, "View cơ bản", "Dùng view_type đã ghi nhận; chưa phải Cloud View Verified."],
+              [Car, "Tiếp cận rõ trạng thái", "Có, Không và Chưa xác nhận luôn được tách biệt."],
+              [ListFilter, "URL có thể chia sẻ", "Ngày, khách và bộ lọc được giữ trong đường dẫn tìm kiếm."],
+            ].map(([Icon, title, description]) => (
+              <Card key={String(title)} className="p-5">
+                <Icon className="text-copper" aria-hidden="true" />
+                <h3 className="mt-4 font-display text-xl font-bold text-pine">{String(title)}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted">{String(description)}</p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-cream px-5 py-16 sm:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">Khám phá</p><h2 className="mt-2 font-display text-3xl font-bold text-pine sm:text-4xl">Bắt đầu từ nhu cầu cụ thể</h2></div>
+            <Link href="/tim-phong" className="inline-flex min-h-11 items-center font-bold text-pine hover:text-copper-strong">Xem toàn bộ bộ lọc →</Link>
+          </div>
+          <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {SEO_LANDING_SLUGS.map((slug) => {
+              const page = SEO_LANDING_PAGES[slug];
+              return (
+                <Link key={slug} href={`/${slug}`} className="group rounded-[1.75rem] border border-line bg-surface p-5 shadow-sm hover:border-copper">
+                  <Mountain className="text-copper" aria-hidden="true" />
+                  <h3 className="mt-5 font-display text-2xl font-bold text-pine group-hover:text-copper-strong">{page.h1}</h3>
+                  <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted">{page.intro}</p>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

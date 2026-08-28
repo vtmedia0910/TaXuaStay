@@ -55,6 +55,16 @@ Phase 2 media approval means only that an individual asset was reviewed for publ
 
 The Phase 2 corrective migration models `car_access`, `motorbike_access`, and `parking` as explicit `unknown` / `yes` / `no` facts. Existing affirmative values remain `yes`; legacy false values become `unknown` because the old boolean could not prove a negative. Physical room `quantity` remains an Admin fact and is not granted or selected for anonymous pages. Property/room content and amenity replacement now execute in one PostgreSQL RPC transaction so an assignment failure rolls the content mutation back.
 
+## Phase 3 room-first search and SEO
+
+Phase 3 adds `/tim-phong` as the primary discovery route. Search begins with public room types and joins only public-safe property facts. URL state preserves dates, adults, children, requested rooms, supported property/room/access/facility filters, and the current page. Dates and requested room count are context only: Phase 3 does not query inventory, compare against physical `quantity`, or claim availability.
+
+The search data layer uses the anonymous Supabase client and existing RLS. It performs one paginated room/property query followed by a fixed batch of room/property amenity and approved-media queries for the current page, avoiding per-card N+1 requests. Public search DTOs exclude lifecycle fields, audit IDs, physical quantity, verification placeholders, prices, and future booking data.
+
+Seven intent landing pages reuse deterministic current facts for homestay, basic mountain/valley view, two-guest room needs, group capacity, confirmed car access plus parking, and hotel property type. Cloud/view pages explicitly remain pre-Phase 4 and do not claim Cloud View Verified. Search filter combinations canonicalize to `/tim-phong` and are `noindex,follow`; each landing page has its own canonical.
+
+`robots.ts` allows public discovery and blocks Admin crawling. `sitemap.ts` contains public static routes plus RLS-visible property and room URLs, and falls back to static routes if Supabase is unavailable. Property JSON-LD uses factual `LodgingBusiness`/`Hotel` fields only and omits ratings, reviews, prices, and availability.
+
 ## Planned domains
 
 Later phases may introduce these independent Stay domains, one reviewed phase at a time:
@@ -68,7 +78,7 @@ Later phases may introduce these independent Stay domains, one reviewed phase at
 - weather and cloud forecast
 - imports
 
-These names document direction only. Phase 2 implements only properties, room types, amenities, and basic media; all later domains remain deferred.
+These names document direction only. Phase 3 adds discovery and SEO over the Phase 2 content domain; verification, rates, availability, bookings, weather, imports, and referrals remain deferred.
 
 ## Future Biker relationship
 

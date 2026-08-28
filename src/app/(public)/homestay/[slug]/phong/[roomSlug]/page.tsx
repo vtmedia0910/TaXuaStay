@@ -9,6 +9,7 @@ import { getPublicRoomAmenities } from "@/features/amenities/data";
 import { getPublicRoomMedia } from "@/features/media/data";
 import { getPublicPropertyBySlug } from "@/features/properties/data";
 import { getPublicRoom } from "@/features/rooms/data";
+import { buildRoomSearchUrl, DEFAULT_ROOM_SEARCH_PARAMS } from "@/features/search/params";
 
 type RoomParams = Promise<{ slug: string; roomSlug: string }>;
 
@@ -37,6 +38,12 @@ export default async function RoomPage({ params }: { params: RoomParams }) {
     getPublicRoomAmenities(room.id),
     getPublicRoomMedia(room.id),
   ]);
+  const relatedSearchUrl = buildRoomSearchUrl({
+    ...DEFAULT_ROOM_SEARCH_PARAMS,
+    adults: Math.min(room.capacity_adults, 20),
+    children: Math.min(room.capacity_children, 20),
+    area: property.area_name,
+  });
 
   return (
     <main className="bg-cream pb-20">
@@ -81,7 +88,8 @@ export default async function RoomPage({ params }: { params: RoomParams }) {
               {!room.has_private_balcony && !amenities.length ? <p className="text-sm text-muted">Chưa có dữ liệu amenity đã xuất bản.</p> : null}
             </div>
           </Card>
-          <p className="rounded-3xl border border-line bg-surface p-4 text-sm leading-6 text-muted">Giá và tình trạng phòng chưa được hiển thị trong Phase 2. Hệ thống không suy đoán các dữ liệu này.</p>
+          <p className="rounded-3xl border border-line bg-surface p-4 text-sm leading-6 text-muted">Giá và availability theo ngày chưa tồn tại trong Phase 3. Hệ thống không suy đoán các dữ liệu này.</p>
+          <Link href={relatedSearchUrl} className="inline-flex min-h-12 items-center justify-center rounded-full border border-line bg-surface px-5 text-sm font-bold text-pine hover:bg-mist">Tìm phòng liên quan tại {property.area_name}</Link>
         </aside>
       </div>
     </main>

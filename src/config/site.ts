@@ -2,7 +2,7 @@ export const SITE = {
   name: "TÀ XÙA STAY",
   tagline: "Đúng phòng. Đúng view. Yên tâm lên Tà Xùa.",
   description:
-    "Tìm chỗ ở Tà Xùa với thông tin phòng, view, đường vào, giá và tình trạng phòng rõ ràng hơn.",
+    "Tìm loại phòng tại Tà Xùa theo sức chứa, view cơ bản, đường vào và tiện ích đang được ghi nhận.",
 } as const;
 
 export function getSiteUrl() {
