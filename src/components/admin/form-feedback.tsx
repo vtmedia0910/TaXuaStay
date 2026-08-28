@@ -2,6 +2,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   invalid: "Dữ liệu chưa hợp lệ. Hãy kiểm tra các trường và thử lại.",
   unauthorized: "Phiên đăng nhập hoặc quyền truy cập không còn hợp lệ.",
   config: "Supabase dành riêng cho Stay chưa được cấu hình.",
+  forbidden: "Tài khoản staff không có quyền truy cập chức năng chỉ dành cho admin.",
+  "settings-save": "Không thể cập nhật cấu hình. Hãy kiểm tra RLS và thử lại.",
 };
 
 export function FormFeedback({ saved, error }: { saved?: string; error?: string }) {

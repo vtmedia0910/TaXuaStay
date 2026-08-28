@@ -1,13 +1,18 @@
 import Link from "next/link";
-import { CircleGauge, ExternalLink, MountainSnow } from "lucide-react";
+import { CircleGauge, ExternalLink, MountainSnow, Settings } from "lucide-react";
 import { logoutAction } from "@/features/admin/auth-actions";
+import type { AdminRole } from "@/features/admin/authz";
 
-const links = [
+const sharedLinks = [
   { label: "Tổng quan", href: "/admin", icon: CircleGauge },
   { label: "Trang chủ", href: "/", icon: ExternalLink },
 ] as const;
 
-export function AdminNav() {
+const adminLinks = [{ label: "Cấu hình", href: "/admin/settings", icon: Settings }] as const;
+
+export function AdminNav({ role }: { role: AdminRole }) {
+  const links = role === "admin" ? [sharedLinks[0], ...adminLinks, sharedLinks[1]] : sharedLinks;
+
   return (
     <>
       <aside className="hidden w-64 shrink-0 border-r border-white/10 bg-pine p-4 text-white lg:block">
@@ -34,7 +39,8 @@ export function AdminNav() {
         </form>
       </aside>
       <nav
-        className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-2 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 grid border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
+        style={{ gridTemplateColumns: `repeat(${links.length}, minmax(0, 1fr))` }}
         aria-label="Admin di động"
       >
         {links.map(({ label, href, icon: Icon }) => (

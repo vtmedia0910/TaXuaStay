@@ -27,7 +27,7 @@ export const getCurrentAdminUser = cache(async (): Promise<AdminUserDto | null> 
 export async function requireAdminUser(allowed: readonly AdminRole[] = ["admin", "staff"]) {
   const user = await getCurrentAdminUser();
   if (!user) redirect("/admin/login");
-  if (!isAuthorizedRole(user.role, allowed)) redirect("/admin/login?error=forbidden");
+  if (!isAuthorizedRole(user.role, allowed)) redirect("/admin?error=forbidden");
 
   return user;
 }

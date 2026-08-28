@@ -18,6 +18,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Database discipline
 
+- Before implementing any phase, read `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md` completely. Treat it as the architecture reference; the current user prompt defines the execution scope and may authorize only one phase.
 - Do not replay Biker migrations into Stay.
 - Create clean, Stay-specific migrations only when the requested phase needs them.
 - After a migration has been applied remotely, never edit it; add a new additive migration instead.

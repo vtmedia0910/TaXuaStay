@@ -8,7 +8,7 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
 
   return (
     <div className="min-h-dvh lg:flex">
-      <AdminNav />
+      <AdminNav role={user.role} />
       <div className="min-w-0 flex-1 pb-20 lg:pb-0">
         <header className="border-b border-line bg-surface px-4 py-3 sm:px-6">
           <div className="mx-auto flex min-h-11 max-w-5xl items-center justify-between gap-3">

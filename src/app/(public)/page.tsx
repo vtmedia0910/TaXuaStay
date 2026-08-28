@@ -1,23 +1,30 @@
 import { ArrowDown, CheckCircle2, Mountain } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { SITE } from "@/config/site";
+import { getPublicSiteSettings } from "@/features/settings/data";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const settings = await getPublicSiteSettings();
+
   return (
     <main>
+      {settings.announcement_enabled && settings.announcement ? (
+        <div className="bg-pine px-5 py-3 text-center text-sm font-bold text-white" role="status">
+          {settings.announcement}
+        </div>
+      ) : null}
       <section className="stay-backdrop min-h-[calc(100dvh-73px)] px-5 pb-14 pt-32 sm:px-8 sm:pt-40">
         <div className="mx-auto grid max-w-6xl items-end gap-12 lg:grid-cols-[1.35fr_0.65fr]">
           <div>
             <Badge className="bg-white/65 uppercase tracking-[0.14em]">Nền tảng độc lập mới</Badge>
             <h1 className="mt-6 max-w-4xl font-display text-5xl font-bold leading-[0.98] tracking-[-0.045em] text-pine sm:text-7xl lg:text-8xl">
-              {SITE.name}
+              {settings.site_name}
             </h1>
             <p className="mt-7 max-w-2xl text-xl font-bold leading-8 text-copper-strong sm:text-2xl">
-              {SITE.tagline}
+              {settings.tagline}
             </p>
             <p className="mt-5 max-w-2xl text-base leading-8 text-muted sm:text-lg">
-              {SITE.description}
+              {settings.hero_subtitle}
             </p>
             <a
               href="#baseline-status"
@@ -34,7 +41,7 @@ export default function HomePage() {
               Tà Xùa · Sơn La
             </p>
             <p className="mt-3 font-display text-3xl font-bold leading-tight text-pine">
-              Một nền tảng lưu trú được xây riêng cho sự rõ ràng trước chuyến đi.
+              {settings.hero_title}
             </p>
           </Card>
         </div>
@@ -46,15 +53,15 @@ export default function HomePage() {
             <CheckCircle2 className="mt-1 shrink-0 text-success" aria-hidden="true" />
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">
-                PHASE 0
+                PHASE 1
               </p>
               <h2 className="mt-2 font-display text-3xl font-bold text-pine sm:text-4xl">
-                Nền tảng kỹ thuật đã được tách riêng
+                Nền tảng dữ liệu và phân quyền đã sẵn sàng
               </h2>
               <p className="mt-4 text-base leading-8 text-muted">
-                Ứng dụng hiện chỉ có shell công khai, hạ tầng quản trị và các kết nối cấu hình độc lập.
-                Dữ liệu homestay, phòng, giá, tình trạng phòng và booking chưa được triển khai trong
-                phase này.
+                Trang công khai đọc cấu hình an toàn từ project Supabase dành riêng cho Stay và tự
+                dùng giá trị mặc định khi chưa cấu hình. Dữ liệu homestay, phòng, giá, tình trạng
+                phòng và booking chưa được triển khai trong phase này.
               </p>
             </div>
           </div>

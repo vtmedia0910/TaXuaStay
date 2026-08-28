@@ -1,18 +1,25 @@
 import { CircleCheckBig, Database, Layers3 } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { FormFeedback } from "@/components/admin/form-feedback";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
-export default function AdminHomePage() {
+export default async function AdminHomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const params = await searchParams;
   const configured = isSupabaseConfigured();
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <AdminPageHeader
         title="Tổng quan"
-        description="Baseline quản trị tối thiểu cho PHASE 0. Các miền lưu trú chỉ được thêm ở phase đã duyệt."
+        description="Nền tảng dữ liệu và phân quyền của PHASE 1. Các miền lưu trú chỉ được thêm ở phase đã duyệt."
       />
+      <FormFeedback error={params.error} />
       <div className="grid gap-4 sm:grid-cols-2">
         <Card className="p-5">
           <Database className="text-pine" aria-hidden="true" />
@@ -27,9 +34,9 @@ export default function AdminHomePage() {
         <Card className="p-5">
           <Layers3 className="text-pine" aria-hidden="true" />
           <h2 className="mt-4 font-display text-xl font-bold text-pine">Phạm vi hiện tại</h2>
-          <Badge className="mt-3 text-success">PHASE 0</Badge>
+          <Badge className="mt-3 text-success">PHASE 1</Badge>
           <p className="mt-3 text-sm leading-6 text-muted">
-            Chưa có bảng dữ liệu, migration hoặc màn hình nghiệp vụ Homestay, Rooms, Booking,
+            Chỉ có cấu hình website và nền tảng phân quyền. Chưa có Homestay, Rooms, Booking,
             Availability hay Rates.
           </p>
         </Card>
