@@ -16,9 +16,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Never add a runtime dependency on Biker's application, API, database, Auth, Storage, secrets, or customer data.
 - Never commit `.env` files, credentials, tokens, secrets, customer data, `node_modules`, build output, or caches.
 
-## Database discipline
+## Architecture and database discipline
 
-- Before implementing any phase, read `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md` completely. Treat it as the architecture reference; the current user prompt defines the execution scope and may authorize only one phase.
+- Before implementing any new product phase, read `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md`, `docs/STAY_ARCHITECTURE.md`, and the latest relevant phase documentation completely. The current user prompt defines the execution scope and may authorize only one phase.
+- The V2 Master Plan supersedes the former 11-phase accommodation roadmap. Historical phase documents remain factual implementation records, not the active roadmap.
+- Existing migrations `202608290001` through `202608290008` are the completed legacy foundation and are immutable. New implementation numbering restarts at **V2 Phase 1 — Architecture Alignment** and must begin from the current repository state.
 - Do not replay Biker migrations into Stay.
 - Create clean, Stay-specific migrations only when the requested phase needs them.
 - After a migration has been applied remotely, never edit it; add a new additive migration instead.

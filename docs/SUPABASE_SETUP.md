@@ -4,7 +4,7 @@ Use only the dedicated Tà Xùa Stay Supabase project. Never link this repositor
 
 ## Current remote status
 
-Verified on 2026-08-29 against the dedicated Supabase project returned by the CLI as `TaXuaStay`, project ref `kkrtajdgkinybpwermls`. The repository is linked through Supabase CLI metadata under the gitignored `supabase/.temp/` directory; no credentials or tracked `supabase/config.toml` were added.
+Verified again on 2026-08-30 against the dedicated Supabase project returned by the CLI as `TaXuaStay`, project ref `kkrtajdgkinybpwermls`. The repository is linked through Supabase CLI metadata under the gitignored `supabase/.temp/` directory; no credentials or tracked `supabase/config.toml` were added.
 
 Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the application dependencies were not changed. Remote migration history is reconciled and contains these migrations in order:
 
@@ -20,6 +20,12 @@ Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the appl
 ```
 
 The final remote dry-run reported the database up to date. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
+
+## V2 migration lineage
+
+Migrations 001–008 are the **Legacy Foundation Completed**. They remain the valid production lineage and must not be renamed, reordered, or edited. Master Plan V2 restarts product phase numbering, not database history.
+
+The next implementation, when separately authorized as **V2 Phase 1 — Architecture Alignment**, may introduce a new additive migration after 008 for Destination, Physical Room/Room ID, and exact-room-compatible Media/Verification. No V2 migration exists yet, no placeholder migration name is treated as real history, and this documentation-alignment task performs no `db push`.
 
 ## Migration order
 

@@ -2,7 +2,7 @@
 
 ## System boundary
 
-Tà Xùa Stay is a new, independent accommodation application. Tà Xùa Biker is a technical reference only; it is not a package, API, database, authentication, storage, or deployment dependency.
+Tà Xùa Stay is an independent verified accommodation application evolving toward a Verified Local Travel Commerce / Travel Operating System for Tà Xùa. The present implementation remains accommodation-heavy; the V2 target is a roadmap, not a claim that travel-commerce features already exist.
 
 Stay must have separate infrastructure:
 
@@ -14,13 +14,70 @@ Stay must have separate infrastructure:
 
 No production database or customer data is shared with Biker.
 
-## Phase 0 baseline
+## Source of truth and phase numbering
+
+`docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md` contains Master Plan V2 and is the sole canonical roadmap. It supersedes the former accommodation-oriented 11-phase plan. Migrations 001–008 and the existing `PHASE_1` through `PHASE_6` documents remain immutable/factual records of the **Legacy Foundation Completed**.
+
+New work uses a separate numbering sequence: **V2 Phase 1**, **V2 Phase 2**, and so on. An old Phase 1 is never the same thing as V2 Phase 1.
+
+## Currently implemented — legacy foundation completed
+
+The current repository actually implements:
+
+- site settings, Supabase Auth, `admin`/`staff` authorization, and the protected Admin shell;
+- properties, `room_types`, amenities, and evidence-aware property/room-type media;
+- verification lifecycle, Cloud View, Road Verified, verification evidence, and the 360 viewer;
+- room-type rate plans/rules, deterministic integer-VND pricing, and price confidence;
+- pooled room-type inventory, freshness-aware availability, and Admin bulk updates;
+- room-first public search, intent landing pages, metadata, sitemap, robots, and temporary-host indexing safety.
+
+There is currently no Destination domain, physical/exact-room identity, supplier or partner domain, generic services, package commerce, unified trip booking, booking items, payment, bus inventory, supplier confirmation workflow, or Trip Dashboard.
+
+## V2 target architecture — not implemented yet
+
+The accommodation hierarchy will evolve additively:
+
+```text
+Destination
+    ↓
+Property
+    ↓
+Room Type (commercial / pooled category)
+    ↓
+Physical Room (stable Room ID / exact unit)
+```
+
+The future Travel Commerce flow is:
+
+```text
+Destination
+    ↓
+Supplier / Partner / Services
+    ↓
+Package
+    ↓
+Booking
+    ↓
+Booking Items
+    ↓
+Supplier Confirmation
+    ↓
+Trip Operations / Trip Dashboard
+```
+
+The target product combines **VERIFY**, **BUNDLE**, **OPERATE**, and **DISTRIBUTE**. Existing room-type pricing, pooled inventory, search, SEO, and Verified Standard remain valid foundations while later V2 phases introduce these domains one reviewed step at a time.
+
+## Next implementation — explicitly deferred in this task
+
+The next implementation is **V2 Phase 1 — Architecture Alignment**: Destination, Physical Room, stable Room ID, exact-room-compatible Media, and exact-room-compatible Verification. It must preserve current rates, availability, search, SEO, Verified Standard, and public routes. None of those V2 Phase 1 changes is implemented by this documentation alignment task.
+
+## Legacy Phase 0 baseline
 
 The audited baseline contains the generic Next.js App Router, React, Tailwind CSS, Supabase SSR client factories, Admin authorization primitives, reusable UI components, and Vitest infrastructure.
 
 If Stay Supabase variables are absent, public pages remain available and the Admin login explains that configuration is required instead of crashing.
 
-## Phase 1 database and authorization foundation
+## Legacy Phase 1 database and authorization foundation
 
 Phase 1 adds one clean Stay migration with:
 
@@ -35,7 +92,7 @@ No service-role key is used by the public settings flow. Anonymous users cannot 
 
 The Phase 1 migration deliberately contains no property, room, rate, availability, customer, booking, fleet, or rental tables. Cross-product referral settings described for a later roadmap phase are also deferred.
 
-## Phase 2 accommodation content domain
+## Legacy Phase 2 accommodation content domain
 
 Phase 2 adds six normalized tables in one additive migration:
 
@@ -55,7 +112,7 @@ Phase 2 media approval means only that an individual asset was reviewed for publ
 
 The Phase 2 corrective migration models `car_access`, `motorbike_access`, and `parking` as explicit `unknown` / `yes` / `no` facts. Existing affirmative values remain `yes`; legacy false values become `unknown` because the old boolean could not prove a negative. Physical room `quantity` remains an Admin fact and is not granted or selected for anonymous pages. Property/room content and amenity replacement now execute in one PostgreSQL RPC transaction so an assignment failure rolls the content mutation back.
 
-## Phase 3 room-first search and SEO
+## Legacy Phase 3 room-first search and SEO
 
 Phase 3 adds `/tim-phong` as the primary discovery route. Search begins with public room types and joins only public-safe property facts. URL state preserves dates, adults, children, requested rooms, supported property/room/access/facility filters, and the current page. Dates and requested room count are context only: Phase 3 does not query inventory, compare against physical `quantity`, or claim availability.
 
@@ -67,7 +124,7 @@ Indexing is environment-aware. A valid explicit HTTPS brand domain in `NEXT_PUBL
 
 No runtime call site requires a service-role client. The tracked environment template contains only the final canonical URL and the two public Supabase variables. Any existing `SUPABASE_SERVICE_ROLE_KEY` in Vercel is unnecessary for the current application and should be removed by the owner.
 
-## Phase 4 Verified Standard
+## Legacy Phase 4 Verified Standard
 
 Phase 4 adds an evidence-backed trust domain without marking any existing content verified automatically. `verification_records` owns lifecycle, target, method, internal notes, staff audit references, verification time, and expiry. Type-specific facts live in `cloud_view_verifications` and `road_verifications`; `verification_evidence` links each lifecycle record to existing exact-target `media_assets` through foreign keys.
 
@@ -85,7 +142,7 @@ Approved `panorama_360` media now uses a small client component that requests th
 
 Indexing safety remains unchanged. `/verified` is emitted in the sitemap only when the existing explicit final-brand-domain policy enables indexing. Temporary `*.vercel.app` deployments remain usable but `noindex,nofollow` with crawling blocked.
 
-## Phase 5 pricing
+## Legacy Phase 5 pricing
 
 Phase 5 adds a Stay-owned pricing domain with `rate_plans` and `room_rate_rules`. Plans group business rules per property; each rule prices one room type in integer VND. PostgreSQL constraints and triggers enforce valid date ranges, non-negative whole-VND amounts, bounded priorities, special-rate date ranges, VND-only currency, room/plan ownership, and an effective date intersection for every active rule. Open-ended and partial overlaps are valid; inactive disjoint rules can be prepared but are flagged as non-effective. Owner-link triggers prevent later property moves from invalidating ownership. No price rows are seeded.
 
@@ -101,9 +158,9 @@ Search, property, and room pages show no generic invented “from” price. With
 
 Price and availability remain separate domains. Phase 5 contains no inventory, holds, blocks, room availability, or bookings. Phase 6 is responsible for availability and must consume pricing without changing Phase 5 night/date semantics.
 
-## Phase 6 room inventory and availability
+## Legacy Phase 6 room inventory and availability
 
-Phase 6 adds one latest-state `room_inventory` row per room type and lodging-night date. `available_quantity` is the number of sellable units for that night; it is separate from the physical `room_types.quantity`, cannot be negative, and cannot exceed that physical capacity. A room type cannot later be reduced below any recorded inventory. The unique room/date key, database validation, and one-transaction bulk RPC provide a safe row shape for Phase 7 to lock, but Phase 6 creates no booking, hold, customer, payment, or decrement workflow.
+Phase 6 adds one latest-state `room_inventory` row per room type and lodging-night date. `available_quantity` is the number of sellable units for that night; it is separate from the physical `room_types.quantity`, cannot be negative, and cannot exceed that physical capacity. A room type cannot later be reduced below any recorded inventory. The unique room/date key, database validation, and one-transaction bulk RPC provide a safe row shape for a future booking phase to lock, but legacy Phase 6 creates no booking, hold, customer, payment, or decrement workflow.
 
 Availability reuses the pricing calendar contract `[check_in, check_out)`. The pure resolver requires every lodging night and the requested room count. Fresh facts under six hours are `live`; facts from six through 24 hours are `verified_today`; facts older than 24 hours need confirmation; missing, invalid, or future-dated facts are unknown. A current quantity below the request is sold out, while a stale zero is only a prompt to reconfirm. A complete stay resolves current sold-out first, then unknown, stale, same-day verified, and live. Public code never falls back to physical quantity or price.
 
@@ -111,10 +168,10 @@ Public inventory is read through a `security_invoker` allow-listed view backed b
 
 `/admin/availability` lets authorized staff select a property and room, inspect a 14-night warning horizon, and atomically upsert one through 365 inclusive lodging-night dates. Normal saves use the current timestamp. Manual inputs support partner, Admin, and import sources; `booking_engine` is reserved in the database contract for a later automated integration. The optional integer-VND inventory override is stored for future audited integration and is excluded from public reads; Phase 5 remains the only active public price resolver.
 
-## Planned domains
+## V2 roadmap boundary
 
-Later phases may introduce stay bookings, weather and cloud forecasting, imports, and referrals as independent Stay domains, one reviewed phase at a time. These names document direction only. Phase 6 adds availability over the existing content, discovery, verification, and pricing domains; booking and every later domain remain deferred.
+The V2 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment comes first, followed only in separately authorized phases by verified exact-room profiles, supplier/partner foundations, private commercial economics, motorbike service integration, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
 
 ## Future Biker relationship
 
-Any future Biker integration should use an external referral or deep link with an opaque, non-sensitive reference unless the architecture is explicitly redesigned and reviewed. Stay must not create Biker rental records, transmit customer PII in query strings, or treat Biker as its source of truth.
+Tà Xùa Biker remains a separate repository, database, Auth boundary, deployment, and source of truth for motorbike fleet/rental operations. Stay must never query the Biker database directly or share a service-role key. A future V2 motorbike service adapter may use a safe API, signed server-to-server call, manual confirmation, webhook, or opaque external reference. Stay may record its own booking-item/external-confirmation state, but it must not copy fleet ownership or claim a Biker reservation without confirmation from Biker operations.
