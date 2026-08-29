@@ -81,6 +81,7 @@ describe("Phase 3 deterministic ranking", () => {
     verified.cloudView = {
       verification_id: "verification-1",
       room_type_id: verified.room.id,
+      physical_room_id: null,
       total_points: 92,
       score_10: 9.2,
       view_from_bed: "yes",

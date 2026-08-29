@@ -13,6 +13,7 @@ export const mediaAssetSchema = z
     id: z.preprocess((value) => (value === "" ? undefined : value), z.uuid().optional()),
     property_id: z.preprocess((value) => (value === "" ? null : value), z.uuid().nullable()),
     room_type_id: z.preprocess((value) => (value === "" ? null : value), z.uuid().nullable()),
+    physical_room_id: z.preprocess((value) => (value === "" ? null : value), z.uuid().nullable()),
     media_type: z.enum(MEDIA_TYPES),
     evidence_type: z.enum(EVIDENCE_TYPES),
     url: z.url({ protocol: /^https$/ }).max(2048),
@@ -28,11 +29,11 @@ export const mediaAssetSchema = z
     is_verified: formCheckbox,
   })
   .superRefine((value, context) => {
-    if ((value.property_id === null) === (value.room_type_id === null)) {
+    if ([value.property_id, value.room_type_id, value.physical_room_id].filter(Boolean).length !== 1) {
       context.addIssue({
         code: "custom",
         path: ["property_id"],
-        message: "Media phải thuộc đúng một nơi lưu trú hoặc một loại phòng.",
+        message: "Media phải thuộc đúng một nơi lưu trú, loại phòng hoặc phòng cụ thể.",
       });
     }
 
@@ -46,3 +47,17 @@ export const mediaAssetSchema = z
   });
 
 export type MediaAssetInput = z.infer<typeof mediaAssetSchema>;
+
+export const mediaOwnerSelectionSchema = z.string().transform((value, context) => {
+  const [kind, id, ...rest] = value.split(":");
+  const validKind = kind === "property" || kind === "room_type" || kind === "physical_room";
+  const validId = z.uuid().safeParse(id).success;
+  if (!validKind || !validId || rest.length) {
+    context.addIssue({ code: "custom", message: "Media owner không hợp lệ." });
+    return z.NEVER;
+  }
+  return { kind, id } as {
+    kind: "property" | "room_type" | "physical_room";
+    id: string;
+  };
+});

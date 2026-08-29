@@ -2,6 +2,7 @@ import "server-only";
 
 import { requireAdminUser } from "@/features/admin/auth";
 import type { PropertyOption } from "@/features/properties/types";
+import type { PhysicalRoomOption } from "@/features/physical-rooms/types";
 import {
   CLOUD_VIEW_VERIFICATION_QUERY,
   PUBLIC_CLOUD_VIEW_QUERY,
@@ -142,6 +143,7 @@ export async function getPublicSearchVerificationSummaries(
 export async function getAdminVerificationRecords(
   properties: PropertyOption[],
   rooms: AdminRoomOption[],
+  physicalRooms: PhysicalRoomOption[],
 ): Promise<AdminVerificationListItem[]> {
   await requireAdminUser();
   const supabase = await createServerSupabaseClient();
@@ -157,17 +159,23 @@ export async function getAdminVerificationRecords(
   if (error) return [];
   const propertyMap = new Map(properties.map((property) => [property.id, property.name]));
   const roomMap = new Map(rooms.map((room) => [room.id, room]));
+  const physicalRoomMap = new Map(physicalRooms.map((room) => [room.id, room]));
 
   return (data ?? []).map((record) => {
     const room = record.room_type_id ? roomMap.get(record.room_type_id) : null;
+    const physicalRoom = record.physical_room_id ? physicalRoomMap.get(record.physical_room_id) : null;
     return {
       ...record,
       target_name: record.property_id
         ? (propertyMap.get(record.property_id) ?? "Nơi lưu trú không xác định")
-        : (room?.name ?? "Loại phòng không xác định"),
+        : physicalRoom
+          ? (physicalRoom.display_name ? `${physicalRoom.room_code} · ${physicalRoom.display_name}` : physicalRoom.room_code)
+          : (room?.name ?? "Loại phòng không xác định"),
       property_name: record.property_id
         ? (propertyMap.get(record.property_id) ?? null)
-        : (room ? (propertyMap.get(room.property_id) ?? null) : null),
+        : physicalRoom
+          ? (propertyMap.get(physicalRoom.property_id) ?? null)
+          : (room ? (propertyMap.get(room.property_id) ?? null) : null),
       resolved_state: resolveVerificationState(record.status, record.verified_at, record.expires_at),
     };
   });

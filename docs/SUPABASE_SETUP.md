@@ -17,15 +17,16 @@ Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the appl
 202608290006
 202608290007
 202608290008
+202608290009
 ```
 
-The final remote dry-run reported the database up to date. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
+After migration 009, `migration list` reported 001–009 Local = Remote and linked database lint reported no schema errors. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
 
 ## V2 migration lineage
 
-Migrations 001–008 are the **Legacy Foundation Completed**. They remain the valid production lineage and must not be renamed, reordered, or edited. Master Plan V2 restarts product phase numbering, not database history.
+Migrations 001–008 are the **Legacy Foundation Completed**. They remain immutable production lineage. Master Plan V2 restarts product phase numbering, not database history.
 
-The next implementation, when separately authorized as **V2 Phase 1 — Architecture Alignment**, may introduce a new additive migration after 008 for Destination, Physical Room/Room ID, and exact-room-compatible Media/Verification. No V2 migration exists yet, no placeholder migration name is treated as real history, and this documentation-alignment task performs no `db push`.
+Migration `202608290009_v2_destination_and_physical_rooms.sql` is **V2 Phase 1 — Architecture Alignment**. It adds Destination, required property destination ownership, Physical Room/Room ID, and exact-room-compatible Media/Verification without changing pricing or pooled availability. V2 Phase 2 has not started.
 
 ## Migration order
 
@@ -40,6 +41,7 @@ supabase/migrations/202608290005_harden_phase4_verification.sql
 supabase/migrations/202608290006_rate_plans_and_pricing.sql
 supabase/migrations/202608290007_harden_phase5_pricing.sql
 supabase/migrations/202608290008_room_inventory_and_availability.sql
+supabase/migrations/202608290009_v2_destination_and_physical_rooms.sql
 ```
 
 Never reapply or edit a migration already present remotely. Migration `202608290003` is the additive corrective migration that preserves immutable migration `202608290002`; migration `202608290004` adds the normalized Verified Standard without seeding verification data; migration `202608290005` preserves immutable 004 while rejecting future/expired verified cycles, refreshing normal re-verification dates, and limiting anonymous Cloud/Road reads to public-view columns.
@@ -97,6 +99,10 @@ The post-007 remote smoke test preserved those boundaries: the public pricing vi
 
 The post-008 remote smoke test returned HTTP 200 for the inventory public view and the allow-listed base-table columns. Anonymous reads of `updated_by` and `price_override_vnd`, plus a zero-target anonymous update, returned HTTP 401. The public inventory view returned an exact count of zero, confirming that Phase 6 seeded no production availability. Migrations 001–008 were Local = Remote and `supabase db lint --linked` reported no schema errors. No test row was inserted.
 
+Migration 009 was authored after a service-authorized read confirmed that production contained zero property rows. The migration therefore seeds only the published Tà Xùa destination, performs a safe no-op property backfill on production, and makes `properties.destination_id` required. It creates no physical-room, media, verification, price, inventory, booking, or demonstration rows.
+
+The post-009 remote smoke test confirmed the Tà Xùa destination (`ta-xua`, `VN`, `Asia/Ho_Chi_Minh`) and zero properties with a null destination. `physical_rooms` contained exactly zero rows. Anonymous reads returned HTTP 200 for public destination fields, public physical-room fields, the exact-room public view, and the new media/verification FK fields. Requests for destination `updated_by` and physical-room `position_notes` returned HTTP 401; zero-target anonymous updates against both new base tables also returned HTTP 401. Migrations 001–009 were Local = Remote and `supabase db lint --linked` reported no schema errors. No smoke-test row was inserted.
+
 ## Environment configuration
 
 Copy `.env.example` to an uncommitted `.env.local` and fill it with values from the Stay project only. Do not commit that file. The public app uses the anon/publishable key and all authorization remains enforced by RLS.
@@ -112,7 +118,7 @@ No current application call site uses a service-role client, and the unused clie
 
 ## Storage architecture
 
-Phase 2 and Phase 4 use validated HTTPS media URLs and do not require live Storage or upload UX. Phase 4 links exact-target evidence to existing `media_assets`; no bucket was created by this task.
+The content, verification, and V2 Phase 1 exact-room workflows use validated HTTPS media URLs and do not require live Storage or upload UX. Exact-target evidence links existing `media_assets`; no bucket was created by this task.
 
 Future Stay-owned buckets documented by the Master Plan are:
 

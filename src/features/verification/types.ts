@@ -58,6 +58,7 @@ export interface VerificationRecordDto {
   status: VerificationStatus;
   property_id: string | null;
   room_type_id: string | null;
+  physical_room_id: string | null;
   verified_at: string | null;
   expires_at: string | null;
   verified_by_user_id: string | null;
@@ -101,12 +102,14 @@ export interface PublicVerificationBadgeDto {
   verification_type: VerificationType;
   property_id: string | null;
   room_type_id: string | null;
+  physical_room_id: string | null;
   verified_at: string;
   expires_at: string;
 }
 
 export interface PublicCloudViewVerificationDto extends Omit<CloudViewVerificationDto, keyof CloudViewComponents> {
-  room_type_id: string;
+  room_type_id: string | null;
+  physical_room_id: string | null;
   verified_at: string;
   expires_at: string;
 }
@@ -130,6 +133,7 @@ export interface PublicVerificationEvidenceDto {
   media_asset_id: string;
   property_id: string | null;
   room_type_id: string | null;
+  physical_room_id: string | null;
   media_type: MediaType;
   evidence_type: EvidenceType;
   url: string;
@@ -158,6 +162,7 @@ export interface VerificationEvidenceOption {
   id: string;
   property_id: string | null;
   room_type_id: string | null;
+  physical_room_id: string | null;
   media_type: MediaType;
   evidence_type: EvidenceType;
   url: string;

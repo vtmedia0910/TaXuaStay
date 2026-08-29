@@ -7,6 +7,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { saveMediaAssetAction } from "@/features/media/actions";
 import { EVIDENCE_TYPES, MEDIA_TYPES, type MediaAssetDto } from "@/features/media/types";
+import type { PhysicalRoomOption } from "@/features/physical-rooms/types";
 import type { PropertyOption } from "@/features/properties/types";
 
 function toVietnamLocalInput(value: string | null | undefined) {
@@ -18,12 +19,22 @@ export function MediaForm({
   asset,
   properties,
   rooms,
+  physicalRooms,
 }: {
   asset?: MediaAssetDto | null;
   properties: PropertyOption[];
   rooms: Array<{ id: string; property_id: string; name: string; slug: string }>;
+  physicalRooms: PhysicalRoomOption[];
 }) {
   const propertyMap = new Map(properties.map((property) => [property.id, property.name]));
+  const roomMap = new Map(rooms.map((room) => [room.id, room]));
+  const defaultOwner = asset?.property_id
+    ? `property:${asset.property_id}`
+    : asset?.room_type_id
+      ? `room_type:${asset.room_type_id}`
+      : asset?.physical_room_id
+        ? `physical_room:${asset.physical_room_id}`
+        : "";
 
   return (
     <form action={saveMediaAssetAction} className="grid gap-5 pb-24">
@@ -31,26 +42,25 @@ export function MediaForm({
       <Card className="grid gap-5 p-5 sm:p-6">
         <div>
           <h2 className="font-display text-xl font-bold text-pine">Quan hệ nội dung</h2>
-          <p className="mt-1 text-sm text-muted">Chọn đúng một: property hoặc room type.</p>
+          <p className="mt-1 text-sm text-muted">Chọn một owner duy nhất. Media của phòng cụ thể không đồng thời thuộc property hoặc loại phòng.</p>
         </div>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Property" htmlFor="property_id">
-            <Select id="property_id" name="property_id" defaultValue={asset?.property_id ?? ""}>
-              <option value="">Không gắn property trực tiếp</option>
-              {properties.map((property) => <option key={property.id} value={property.id}>{property.name}</option>)}
-            </Select>
-          </Field>
-          <Field label="Room type" htmlFor="room_type_id">
-            <Select id="room_type_id" name="room_type_id" defaultValue={asset?.room_type_id ?? ""}>
-              <option value="">Không gắn room type</option>
-              {rooms.map((room) => (
-                <option key={room.id} value={room.id}>
-                  {propertyMap.get(room.property_id) ?? "Property"} · {room.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        </div>
+        <Field label="Owner" htmlFor="owner">
+          <Select id="owner" name="owner" defaultValue={defaultOwner} required>
+            <option value="">Chọn nơi sở hữu media</option>
+            <optgroup label="Nơi lưu trú">
+              {properties.map((property) => <option key={`property:${property.id}`} value={`property:${property.id}`}>{property.name}</option>)}
+            </optgroup>
+            <optgroup label="Loại phòng">
+              {rooms.map((room) => <option key={`room_type:${room.id}`} value={`room_type:${room.id}`}>{propertyMap.get(room.property_id) ?? "Nơi lưu trú"} · {room.name}</option>)}
+            </optgroup>
+            <optgroup label="Phòng cụ thể / Room ID">
+              {physicalRooms.map((room) => {
+                const roomType = roomMap.get(room.room_type_id);
+                return <option key={`physical_room:${room.id}`} value={`physical_room:${room.id}`}>{propertyMap.get(room.property_id) ?? "Nơi lưu trú"} · {roomType?.name ?? "Loại phòng"} · {room.room_code}{room.display_name ? ` · ${room.display_name}` : ""}</option>;
+              })}
+            </optgroup>
+          </Select>
+        </Field>
       </Card>
 
       <Card className="grid gap-5 p-5 sm:p-6">

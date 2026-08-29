@@ -5,6 +5,7 @@ const validMedia = {
   id: "",
   property_id: "11111111-1111-4111-8111-111111111111",
   room_type_id: "",
+  physical_room_id: "",
   media_type: "photo",
   evidence_type: "property",
   url: "https://example.com/property.jpg",
@@ -38,5 +39,16 @@ describe("media asset schema", () => {
     expect(mediaAssetSchema.safeParse({ ...validMedia, compass_heading_deg: "360" }).success).toBe(false);
     expect(mediaAssetSchema.safeParse({ ...validMedia, horizontal_fov_deg: "0" }).success).toBe(false);
     expect(mediaAssetSchema.safeParse({ ...validMedia, longitude: "" }).success).toBe(false);
+  });
+
+  it("accepts exactly one physical-room owner and rejects conflicting owners", () => {
+    const physicalRoomMedia = {
+      ...validMedia,
+      property_id: "",
+      physical_room_id: "33333333-3333-4333-8333-333333333333",
+      evidence_type: "room",
+    };
+    expect(mediaAssetSchema.safeParse(physicalRoomMedia).success).toBe(true);
+    expect(mediaAssetSchema.safeParse({ ...physicalRoomMedia, room_type_id: "22222222-2222-4222-8222-222222222222" }).success).toBe(false);
   });
 });

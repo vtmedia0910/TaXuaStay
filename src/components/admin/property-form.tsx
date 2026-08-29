@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { AmenityDto } from "@/features/amenities/types";
+import type { DestinationOption } from "@/features/destinations/types";
 import { savePropertyAction } from "@/features/properties/actions";
 import {
   ACCESS_CERTAINTIES,
@@ -22,9 +23,11 @@ type PropertyFormValue = PropertyDto & { amenity_ids: string[] };
 export function PropertyForm({
   property,
   amenities,
+  destinations,
 }: {
   property?: PropertyFormValue | null;
   amenities: AmenityDto[];
+  destinations: DestinationOption[];
 }) {
   return (
     <form action={savePropertyAction} className="grid gap-5 pb-24">
@@ -36,6 +39,14 @@ export function PropertyForm({
           <p className="mt-1 text-sm text-muted">Property là cơ sở lưu trú, không phải Place chung.</p>
         </div>
         <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Điểm đến" htmlFor="destination_id" hint="area_name bên dưới là tiểu vùng trong điểm đến.">
+            <Select id="destination_id" name="destination_id" defaultValue={property?.destination_id ?? destinations[0]?.id ?? ""} required>
+              <option value="">Chọn điểm đến</option>
+              {destinations.map((destination) => (
+                <option key={destination.id} value={destination.id}>{destination.name}</option>
+              ))}
+            </Select>
+          </Field>
           <Field label="Tên nơi lưu trú" htmlFor="name">
             <Input id="name" name="name" defaultValue={property?.name ?? ""} maxLength={160} required />
           </Field>

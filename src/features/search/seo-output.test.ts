@@ -34,6 +34,7 @@ describe("Phase 3 SEO output", () => {
   it("emits factual lodging structured data without rating, price, review, or availability", () => {
     const property: PublicPropertyDto = {
       id: "property-1",
+      destination_id: "destination-ta-xua",
       slug: "stay-one",
       name: "Stay One",
       property_type: "homestay",

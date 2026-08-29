@@ -7,16 +7,17 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { getAdminPropertyOptions } from "@/features/properties/data";
+import { getAdminPhysicalRoomOptions } from "@/features/physical-rooms/data";
 import { getAdminRoomOptions } from "@/features/rooms/data";
 import { isVerificationExpiringSoon, VERIFICATION_STATE_LABELS, VERIFICATION_TYPE_LABELS } from "@/features/verification/policy";
 import { getAdminVerificationRecords } from "@/features/verification/data";
 import { VERIFICATION_STATUSES } from "@/features/verification/types";
 
-type Params = { saved?: string; error?: string; status?: string; property_id?: string; room_type_id?: string };
+type Params = { saved?: string; error?: string; status?: string; property_id?: string; room_type_id?: string; physical_room_id?: string };
 
 export default async function AdminVerificationPage({ searchParams }: { searchParams: Promise<Params> }) {
-  const [properties, rooms, params] = await Promise.all([getAdminPropertyOptions(), getAdminRoomOptions(), searchParams]);
-  const records = await getAdminVerificationRecords(properties, rooms);
+  const [properties, rooms, physicalRooms, params] = await Promise.all([getAdminPropertyOptions(), getAdminRoomOptions(), getAdminPhysicalRoomOptions(), searchParams]);
+  const records = await getAdminVerificationRecords(properties, rooms, physicalRooms);
   const filtered = records.filter((record) => {
     if (params.status === "current" && record.resolved_state !== "current") return false;
     if (params.status === "expired" && record.resolved_state !== "expired") return false;
@@ -24,6 +25,7 @@ export default async function AdminVerificationPage({ searchParams }: { searchPa
     if (params.status && !["current", "expired", "not_yet_valid"].includes(params.status) && record.status !== params.status) return false;
     if (params.property_id && record.property_id !== params.property_id && !rooms.some((room) => room.id === record.room_type_id && room.property_id === params.property_id)) return false;
     if (params.room_type_id && record.room_type_id !== params.room_type_id) return false;
+    if (params.physical_room_id && record.physical_room_id !== params.physical_room_id) return false;
     return true;
   });
 
@@ -31,10 +33,11 @@ export default async function AdminVerificationPage({ searchParams }: { searchPa
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <AdminPageHeader title="Verification" description="Lifecycle, bằng chứng và độ mới cho Tà Xùa Stay Verified Standard." action={<Link href="/admin/verification/new" className={buttonVariants()}><Plus size={18} />Tạo xác minh</Link>} />
       <FormFeedback saved={params.saved} error={params.error} />
-      <form className="mb-6 grid gap-3 rounded-3xl border border-line bg-surface p-4 sm:grid-cols-4" method="get">
+      <form className="mb-6 grid gap-3 rounded-3xl border border-line bg-surface p-4 sm:grid-cols-5" method="get">
         <Select name="status" defaultValue={params.status ?? ""}><option value="">Tất cả trạng thái</option><option value="current">Còn hiệu lực</option><option value="not_yet_valid">Ngày xác minh chưa có hiệu lực</option><option value="expired">Đã hết hạn</option>{VERIFICATION_STATUSES.filter((value) => !["verified", "expired"].includes(value)).map((value) => <option key={value}>{value}</option>)}</Select>
         <Select name="property_id" defaultValue={params.property_id ?? ""}><option value="">Tất cả nơi lưu trú</option>{properties.map((property) => <option key={property.id} value={property.id}>{property.name}</option>)}</Select>
         <Select name="room_type_id" defaultValue={params.room_type_id ?? ""}><option value="">Tất cả loại phòng</option>{rooms.map((room) => <option key={room.id} value={room.id}>{room.name}</option>)}</Select>
+        <Select name="physical_room_id" defaultValue={params.physical_room_id ?? ""}><option value="">Tất cả Room ID</option>{physicalRooms.map((room) => <option key={room.id} value={room.id}>{room.room_code}</option>)}</Select>
         <button className={buttonVariants({ variant: "secondary" })} type="submit">Lọc</button>
       </form>
       <div className="grid gap-4 sm:grid-cols-2">

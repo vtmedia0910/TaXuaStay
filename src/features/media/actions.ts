@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdminUser } from "@/features/admin/auth";
-import { mediaAssetSchema } from "@/features/media/schema";
+import { mediaAssetSchema, mediaOwnerSelectionSchema } from "@/features/media/schema";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 function vietnamLocalDateTime(value: string | null) {
@@ -14,10 +14,16 @@ function vietnamLocalDateTime(value: string | null) {
 
 export async function saveMediaAssetAction(formData: FormData) {
   await requireAdminUser();
+  const owner = mediaOwnerSelectionSchema.safeParse(formData.get("owner"));
+  if (!owner.success) redirect("/admin/media?error=invalid");
+  const ownerIds = {
+    property_id: owner.data.kind === "property" ? owner.data.id : null,
+    room_type_id: owner.data.kind === "room_type" ? owner.data.id : null,
+    physical_room_id: owner.data.kind === "physical_room" ? owner.data.id : null,
+  };
   const parsed = mediaAssetSchema.safeParse({
     id: formData.get("id"),
-    property_id: formData.get("property_id"),
-    room_type_id: formData.get("room_type_id"),
+    ...ownerIds,
     media_type: formData.get("media_type"),
     evidence_type: formData.get("evidence_type"),
     url: formData.get("url"),

@@ -21,6 +21,7 @@ export interface MediaAssetDto {
   id: string;
   property_id: string | null;
   room_type_id: string | null;
+  physical_room_id: string | null;
   media_type: MediaType;
   evidence_type: EvidenceType;
   url: string;
@@ -40,5 +41,5 @@ export interface MediaAssetDto {
 
 export interface MediaListItem extends MediaAssetDto {
   owner_name: string;
-  owner_kind: "property" | "room";
+  owner_kind: "property" | "room_type" | "physical_room";
 }

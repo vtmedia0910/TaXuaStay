@@ -17,6 +17,7 @@ import {
 export const propertySchema = z
   .object({
     id: z.preprocess((value) => (value === "" ? undefined : value), z.uuid().optional()),
+    destination_id: z.uuid(),
     slug: slugSchema,
     name: z.string().trim().min(2).max(160),
     property_type: z.enum(PROPERTY_TYPES),

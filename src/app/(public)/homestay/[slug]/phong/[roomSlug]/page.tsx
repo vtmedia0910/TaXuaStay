@@ -6,6 +6,7 @@ import { MediaGallery } from "@/components/media/media-gallery";
 import { AvailabilitySummary } from "@/components/availability/availability-summary";
 import { PriceSummary } from "@/components/pricing/price-summary";
 import { RoomVerifiedSection } from "@/components/verification/room-verified-section";
+import { ExactRoomVerifiedSection } from "@/components/verification/exact-room-verified-section";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { getPublicRoomAmenities } from "@/features/amenities/data";
@@ -13,6 +14,7 @@ import { getPublicAvailabilityQuotes } from "@/features/availability/data";
 import { getPublicRoomMedia } from "@/features/media/data";
 import { getPublicPropertyBySlug } from "@/features/properties/data";
 import { getPublicPriceQuotes } from "@/features/pricing/data";
+import { getPublicVerifiedPhysicalRoomsByRoomType } from "@/features/physical-rooms/data";
 import { getPublicRoom } from "@/features/rooms/data";
 import { BATHROOM_TYPE_LABELS, VIEW_TYPE_LABELS } from "@/features/search/labels";
 import { buildRoomSearchUrl, buildStayContextQuery, DEFAULT_ROOM_SEARCH_PARAMS, parseRoomSearchParams, type RawSearchParams } from "@/features/search/params";
@@ -42,10 +44,11 @@ export default async function RoomPage({ params, searchParams }: { params: RoomP
   const room = await getPublicRoom(property.id, roomSlug);
   if (!room) notFound();
 
-  const [amenities, media, verification, priceQuotes, availabilityQuotes] = await Promise.all([
+  const [amenities, media, verification, exactRooms, priceQuotes, availabilityQuotes] = await Promise.all([
     getPublicRoomAmenities(room.id),
     getPublicRoomMedia(room.id),
     getPublicRoomVerificationBundle(room.id),
+    getPublicVerifiedPhysicalRoomsByRoomType(room.id),
     getPublicPriceQuotes({ roomTypeIds: [room.id], checkIn: pricingContext.checkIn, checkOut: pricingContext.checkOut }),
     getPublicAvailabilityQuotes({ roomTypeIds: [room.id], checkIn: pricingContext.checkIn, checkOut: pricingContext.checkOut, requestedRooms: pricingContext.rooms }),
   ]);
@@ -77,6 +80,7 @@ export default async function RoomPage({ params, searchParams }: { params: RoomP
             <MediaGallery assets={media} />
           </section>
           <RoomVerifiedSection bundle={verification} />
+          <ExactRoomVerifiedSection rooms={exactRooms} />
           {room.description ? (
             <section><h2 className="font-display text-3xl font-bold text-pine">Chi tiết phòng</h2><p className="mt-4 whitespace-pre-line leading-8 text-muted">{room.description}</p></section>
           ) : null}

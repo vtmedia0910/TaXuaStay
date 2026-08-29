@@ -11,6 +11,7 @@ export async function savePropertyAction(formData: FormData) {
   await requireAdminUser();
   const parsed = propertySchema.safeParse({
     id: formData.get("id"),
+    destination_id: formData.get("destination_id"),
     slug: formData.get("slug"),
     name: formData.get("name"),
     property_type: formData.get("property_type"),

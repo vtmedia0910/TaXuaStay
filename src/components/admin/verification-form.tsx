@@ -18,6 +18,7 @@ import {
   VERIFICATION_TYPE_LABELS,
 } from "@/features/verification/policy";
 import type { PropertyOption } from "@/features/properties/types";
+import type { PhysicalRoomOption } from "@/features/physical-rooms/types";
 import type {
   AdminRoomOption,
   AdminVerificationRecord,
@@ -76,17 +77,27 @@ export function VerificationForm({
   record,
   properties,
   rooms,
+  physicalRooms,
   evidence,
 }: {
   record?: AdminVerificationRecord | null;
   properties: PropertyOption[];
   rooms: AdminRoomOption[];
+  physicalRooms: PhysicalRoomOption[];
   evidence: VerificationEvidenceOption[];
 }) {
   const [type, setType] = useState<VerificationType>(record?.verification_type ?? "property_identity");
   const [status, setStatus] = useState(record?.status ?? "pending");
   const [propertyId, setPropertyId] = useState(record?.property_id ?? "");
   const [roomTypeId, setRoomTypeId] = useState(record?.room_type_id ?? "");
+  const [physicalRoomId, setPhysicalRoomId] = useState(record?.physical_room_id ?? "");
+  const [roomScope, setRoomScope] = useState<"room_type" | "physical_room">(
+    record?.physical_room_id ? "physical_room" : "room_type",
+  );
+  const initialPhysicalRoom = physicalRooms.find((room) => room.id === record?.physical_room_id);
+  const [physicalPropertyId, setPhysicalPropertyId] = useState(
+    initialPhysicalRoom?.property_id ?? properties[0]?.id ?? "",
+  );
   const [components, setComponents] = useState(() => initialComponents(record));
   const previouslyCurrent = record?.resolved_state === "current";
   const initiallyStartsFreshCycle = record?.status === "verified" && !previouslyCurrent;
@@ -97,9 +108,22 @@ export function VerificationForm({
   const [useCustomDates, setUseCustomDates] = useState(false);
   const existingEvidence = new Set(record?.evidence_ids ?? []);
   const propertyMap = new Map(properties.map((property) => [property.id, property.name]));
+  const roomMap = new Map(rooms.map((room) => [room.id, room]));
   const editing = Boolean(record);
   const propertyTarget = isPropertyVerification(type);
   const startsFreshCycle = status === "verified" && !previouslyCurrent;
+  const eligiblePhysicalRooms = physicalRooms.filter((room) => room.property_id === physicalPropertyId);
+
+  function changeRoomScope(nextScope: "room_type" | "physical_room") {
+    setRoomScope(nextScope);
+    if (nextScope === "room_type") setPhysicalRoomId("");
+    else setRoomTypeId("");
+  }
+
+  function changePhysicalProperty(nextPropertyId: string) {
+    setPhysicalPropertyId(nextPropertyId);
+    setPhysicalRoomId(physicalRooms.find((room) => room.property_id === nextPropertyId)?.id ?? "");
+  }
 
   function changeStatus(nextStatus: AdminVerificationRecord["status"]) {
     setStatus(nextStatus);
@@ -115,15 +139,17 @@ export function VerificationForm({
 
   const eligibleEvidence = useMemo(() => evidence.filter((asset) => {
     if (propertyTarget) {
-      if (!propertyId || asset.property_id !== propertyId || asset.room_type_id) return false;
-    } else if (!roomTypeId || asset.room_type_id !== roomTypeId || asset.property_id) {
-      return false;
+      if (!propertyId || asset.property_id !== propertyId || asset.room_type_id || asset.physical_room_id) return false;
+    } else if (roomScope === "physical_room") {
+      if (!physicalRoomId || asset.physical_room_id !== physicalRoomId || asset.property_id || asset.room_type_id) return false;
+    } else {
+      if (!roomTypeId || asset.room_type_id !== roomTypeId || asset.property_id || asset.physical_room_id) return false;
     }
     if (type === "cloud_view") return ["view_from_room", "view_from_bed", "balcony", "sunrise", "verification"].includes(asset.evidence_type);
     if (type === "road_access") return ["road_access", "parking", "verification"].includes(asset.evidence_type);
     if (type === "media_360") return asset.media_type === "panorama_360";
     return true;
-  }), [evidence, propertyId, propertyTarget, roomTypeId, type]);
+  }), [evidence, physicalRoomId, propertyId, propertyTarget, roomScope, roomTypeId, type]);
 
   const scorePreview = useMemo(() => {
     try {
@@ -160,6 +186,7 @@ export function VerificationForm({
           <>
             {editing ? <input type="hidden" name="property_id" value={propertyId} /> : null}
             <input type="hidden" name="room_type_id" value="" />
+            <input type="hidden" name="physical_room_id" value="" />
             <Field label="Nơi lưu trú" htmlFor="property_id">
               <Select id="property_id" name={editing ? undefined : "property_id"} value={propertyId} disabled={editing} onChange={(event) => setPropertyId(event.target.value)} required>
                 <option value="">Chọn nơi lưu trú</option>
@@ -171,12 +198,36 @@ export function VerificationForm({
           <>
             <input type="hidden" name="property_id" value="" />
             {editing ? <input type="hidden" name="room_type_id" value={roomTypeId} /> : null}
-            <Field label="Loại phòng" htmlFor="room_type_id">
-              <Select id="room_type_id" name={editing ? undefined : "room_type_id"} value={roomTypeId} disabled={editing} onChange={(event) => setRoomTypeId(event.target.value)} required>
-                <option value="">Chọn loại phòng</option>
-                {rooms.map((room) => <option key={room.id} value={room.id}>{propertyMap.get(room.property_id) ?? "Nơi lưu trú"} · {room.name}</option>)}
+            {editing ? <input type="hidden" name="physical_room_id" value={physicalRoomId} /> : null}
+            <Field label="Phạm vi phòng" htmlFor="room_scope" hint="Loại phòng là nhóm gộp; phòng cụ thể chỉ áp dụng cho đúng Room ID.">
+              <Select id="room_scope" value={roomScope} disabled={editing} onChange={(event) => changeRoomScope(event.target.value as "room_type" | "physical_room")}>
+                <option value="room_type">Loại phòng</option>
+                <option value="physical_room">Phòng cụ thể / Room ID</option>
               </Select>
             </Field>
+            {roomScope === "room_type" ? (
+              <Field label="Loại phòng" htmlFor="room_type_id">
+                <Select id="room_type_id" name={editing ? undefined : "room_type_id"} value={roomTypeId} disabled={editing} onChange={(event) => setRoomTypeId(event.target.value)} required>
+                  <option value="">Chọn loại phòng</option>
+                  {rooms.map((room) => <option key={room.id} value={room.id}>{propertyMap.get(room.property_id) ?? "Nơi lưu trú"} · {room.name}</option>)}
+                </Select>
+              </Field>
+            ) : (
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Field label="Nơi lưu trú (lọc Room ID)" htmlFor="physical_property_filter">
+                  <Select id="physical_property_filter" value={physicalPropertyId} disabled={editing} onChange={(event) => changePhysicalProperty(event.target.value)}>
+                    <option value="">Chọn nơi lưu trú</option>
+                    {properties.map((property) => <option key={property.id} value={property.id}>{property.name}</option>)}
+                  </Select>
+                </Field>
+                <Field label="Phòng cụ thể" htmlFor="physical_room_id">
+                  <Select id="physical_room_id" name={editing ? undefined : "physical_room_id"} value={physicalRoomId} disabled={editing} onChange={(event) => setPhysicalRoomId(event.target.value)} required>
+                    <option value="">Chọn Room ID</option>
+                    {eligiblePhysicalRooms.map((room) => <option key={room.id} value={room.id}>{room.room_code} · {roomMap.get(room.room_type_id)?.name ?? "Loại phòng"}{room.display_name ? ` · ${room.display_name}` : ""}</option>)}
+                  </Select>
+                </Field>
+              </div>
+            )}
           </>
         )}
       </Card>
@@ -260,7 +311,7 @@ export function VerificationForm({
       ) : null}
 
       <Card className="grid gap-4 p-5 sm:p-6">
-        <div><h2 className="font-display text-xl font-bold text-pine">Bằng chứng đúng target</h2><p className="mt-1 text-sm text-muted">Chỉ media gắn chính xác target và phù hợp loại xác minh mới xuất hiện. Media chưa duyệt có thể lưu cho pending/review nhưng không thể tạo badge public.</p></div>
+        <div><h2 className="font-display text-xl font-bold text-pine">Bằng chứng đúng target</h2><p className="mt-1 text-sm text-muted">Chỉ media gắn chính xác target và phù hợp loại xác minh mới xuất hiện. Exact-room không dùng media của property, loại phòng hoặc Room ID khác. Media chưa duyệt có thể lưu cho pending/review nhưng không thể tạo badge public.</p></div>
         {eligibleEvidence.map((asset) => (
           <div key={asset.id} className="flex min-h-12 items-start gap-3 rounded-2xl border border-line p-3">
             <input id={`evidence-${asset.id}`} type="checkbox" name="evidence_ids" value={asset.id} defaultChecked={existingEvidence.has(asset.id)} className="mt-1 size-5 accent-pine" />

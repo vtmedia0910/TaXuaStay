@@ -3,6 +3,7 @@ import { verificationSchema } from "@/features/verification/schema";
 
 const base = {
   id: "",
+  physical_room_id: "",
   status: "verified",
   method: "Kiểm tra trực tiếp",
   notes: "",
@@ -95,6 +96,32 @@ describe("verification form validation", () => {
       sunrise_orientation: "unknown",
     });
     expect(result.success).toBe(false);
+  });
+
+  it("accepts an exact-room Cloud View and rejects ambiguous room targets", () => {
+    const exactRoom = {
+      ...base,
+      verification_type: "cloud_view",
+      property_id: "",
+      room_type_id: "",
+      physical_room_id: "44444444-4444-4444-8444-444444444444",
+      direct_valley_points: 20,
+      view_width_points: 15,
+      obstruction_points: 10,
+      view_from_bed_points: 0,
+      private_position_points: 5,
+      orientation_points: 3,
+      evidence_points: 5,
+      view_from_bed: "no",
+      viewing_position: "private_window",
+      view_direction: "E",
+      sunrise_orientation: "good",
+    };
+    expect(verificationSchema.safeParse(exactRoom).success).toBe(true);
+    expect(verificationSchema.safeParse({
+      ...exactRoom,
+      room_type_id: "22222222-2222-4222-8222-222222222222",
+    }).success).toBe(false);
   });
 
   it("rejects grade D when direct car access is claimed", () => {

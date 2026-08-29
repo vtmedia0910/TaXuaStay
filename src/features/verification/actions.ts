@@ -22,6 +22,7 @@ export async function saveVerificationAction(formData: FormData) {
     status: formData.get("status"),
     property_id: formData.get("property_id"),
     room_type_id: formData.get("room_type_id"),
+    physical_room_id: formData.get("physical_room_id"),
     method: formData.get("method"),
     notes: formData.get("notes"),
     verified_at: formData.get("verified_at"),
@@ -95,6 +96,7 @@ export async function saveVerificationAction(formData: FormData) {
     mutation = supabase.rpc("save_cloud_view_verification", {
       ...common,
       target_room_type_id: value.room_type_id,
+      target_physical_room_id: value.physical_room_id,
       target_direct_valley_points: value.direct_valley_points,
       target_view_width_points: value.view_width_points,
       target_obstruction_points: value.obstruction_points,
@@ -133,6 +135,7 @@ export async function saveVerificationAction(formData: FormData) {
       target_verification_type: value.verification_type,
       target_property_id: value.property_id,
       target_room_type_id: value.room_type_id,
+      target_physical_room_id: value.physical_room_id,
     });
   }
 

@@ -24,6 +24,7 @@ export const verificationSchema = z
     status: z.enum(VERIFICATION_STATUSES),
     property_id: optionalUuid,
     room_type_id: optionalUuid,
+    physical_room_id: optionalUuid,
     method: z.string().trim().min(2).max(200),
     notes: optionalText(5000),
     verified_at: optionalLocalDateTime,
@@ -66,11 +67,11 @@ export const verificationSchema = z
       ? new Date(`${value.expires_at}:00+07:00`).getTime()
       : null;
     const propertyTarget = ["property_identity", "property_location", "road_access"].includes(value.verification_type);
-    if (propertyTarget && (!value.property_id || value.room_type_id)) {
+    if (propertyTarget && (!value.property_id || value.room_type_id || value.physical_room_id)) {
       context.addIssue({ code: "custom", path: ["property_id"], message: "Loại xác minh này phải gắn đúng một nơi lưu trú." });
     }
-    if (!propertyTarget && (!value.room_type_id || value.property_id)) {
-      context.addIssue({ code: "custom", path: ["room_type_id"], message: "Loại xác minh này phải gắn đúng một loại phòng." });
+    if (!propertyTarget && (value.property_id || [value.room_type_id, value.physical_room_id].filter(Boolean).length !== 1)) {
+      context.addIssue({ code: "custom", path: ["room_type_id"], message: "Loại xác minh này phải gắn đúng một loại phòng hoặc một phòng cụ thể." });
     }
 
     if (value.status === "verified" && value.evidence_ids.length === 0) {

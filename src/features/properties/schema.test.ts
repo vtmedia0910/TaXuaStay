@@ -3,6 +3,7 @@ import { propertySchema } from "@/features/properties/schema";
 
 const validProperty = {
   id: "",
+  destination_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
   slug: "may-tren-doi",
   name: "Mây Trên Đồi",
   property_type: "homestay",

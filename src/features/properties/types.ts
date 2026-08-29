@@ -18,6 +18,7 @@ export type AccessCertainty = (typeof ACCESS_CERTAINTIES)[number];
 
 export interface PropertyDto {
   id: string;
+  destination_id: string;
   slug: string;
   name: string;
   property_type: PropertyType;

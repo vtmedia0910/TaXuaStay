@@ -7,15 +7,16 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getAdminMediaAssets } from "@/features/media/data";
 import { getAdminPropertyOptions } from "@/features/properties/data";
+import { getAdminPhysicalRoomOptions } from "@/features/physical-rooms/data";
 import { getAdminRoomOptions } from "@/features/rooms/data";
 
 export default async function AdminMediaPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string }> }) {
-  const [properties, rooms, params] = await Promise.all([getAdminPropertyOptions(), getAdminRoomOptions(), searchParams]);
-  const assets = await getAdminMediaAssets(properties, rooms);
+  const [properties, rooms, physicalRooms, params] = await Promise.all([getAdminPropertyOptions(), getAdminRoomOptions(), getAdminPhysicalRoomOptions(), searchParams]);
+  const assets = await getAdminMediaAssets(properties, rooms, physicalRooms);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-      <AdminPageHeader title="Media" description="Asset gắn đúng property/room và có metadata bằng chứng; Phase 2 dùng URL HTTPS." action={<Link href="/admin/media/new" className={buttonVariants()}><Plus size={18} />Thêm media</Link>} />
+      <AdminPageHeader title="Media" description="Asset gắn đúng một nơi lưu trú, loại phòng hoặc phòng cụ thể và có metadata bằng chứng." action={<Link href="/admin/media/new" className={buttonVariants()}><Plus size={18} />Thêm media</Link>} />
       <FormFeedback saved={params.saved} error={params.error} />
       <div className="grid gap-4 sm:grid-cols-2">
         {assets.map((asset) => (

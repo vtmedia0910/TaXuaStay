@@ -8,6 +8,8 @@ import {
   MountainSnow,
   BadgeDollarSign,
   CalendarCheck,
+  DoorOpen,
+  MapPinned,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -17,8 +19,10 @@ import type { AdminRole } from "@/features/admin/authz";
 
 const contentLinks = [
   { label: "Tổng quan", href: "/admin", icon: CircleGauge },
+  { label: "Điểm đến", href: "/admin/destinations", icon: MapPinned },
   { label: "Homestays", href: "/admin/properties", icon: House },
   { label: "Phòng", href: "/admin/rooms", icon: BedDouble },
+  { label: "Room ID", href: "/admin/physical-rooms", icon: DoorOpen },
   { label: "Amenities", href: "/admin/amenities", icon: Sparkles },
   { label: "Media", href: "/admin/media", icon: ImageIcon },
   { label: "Verification", href: "/admin/verification", icon: ShieldCheck },

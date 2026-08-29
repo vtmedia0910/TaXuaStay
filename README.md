@@ -2,13 +2,13 @@
 
 **Đúng phòng. Đúng view. Yên tâm lên Tà Xùa.**
 
-Tà Xùa Stay is evolving from a verified accommodation platform into a **Verified Local Travel Commerce** system for Tà Xùa. The current application is still accommodation-heavy: it provides properties, room types, verified evidence, Cloud View, Road Verified, pricing, availability, room-first search, SEO, and authorized operations. The V2 target combines four product pillars—**VERIFY, BUNDLE, OPERATE, DISTRIBUTE**—without rewriting that foundation.
+Tà Xùa Stay is evolving from a verified accommodation platform into a **Verified Local Travel Commerce** system for Tà Xùa. The application now provides a Destination → Property → Room Type → Physical Room identity hierarchy alongside verified evidence, Cloud View, Road Verified, pricing, pooled availability, room-first search, SEO, and authorized operations. The V2 target combines four product pillars—**VERIFY, BUNDLE, OPERATE, DISTRIBUTE**—without rewriting that foundation.
 
-Destination, physical/exact rooms, suppliers, partners, services, packages, unified trip booking, payments, bus integration, and the Trip Dashboard are target architecture only; they are not implemented yet. Tà Xùa Biker remains an independent product and source of truth for motorbike operations.
+Suppliers, partners, services, packages, unified trip booking, payments, bus integration, and the Trip Dashboard remain future architecture only. Tà Xùa Biker remains an independent product and source of truth for motorbike operations.
 
 ## Roadmap status
 
-Migrations 001–008 and their historical phase documents are the **Legacy Foundation Completed**. The canonical roadmap is now Master Plan V2. New implementation numbering restarts at **V2 Phase 1 — Architecture Alignment**, beginning from the current repository rather than a blank project.
+Migrations 001–008 and their historical phase documents are the **Legacy Foundation Completed**. Migration 009 implements **V2 Phase 1 — Architecture Alignment** additively: Destination, stable physical Room ID, and exact-room-compatible Media/Verification. V2 Phase 2 has not started.
 
 ## Local development
 
@@ -30,6 +30,7 @@ supabase/migrations/202608290005_harden_phase4_verification.sql
 supabase/migrations/202608290006_rate_plans_and_pricing.sql
 supabase/migrations/202608290007_harden_phase5_pricing.sql
 supabase/migrations/202608290008_room_inventory_and_availability.sql
+supabase/migrations/202608290009_v2_destination_and_physical_rooms.sql
 ```
 
 The public page remains usable with safe local defaults when Supabase environment variables are absent or settings cannot be read.
@@ -54,5 +55,6 @@ Project references:
 - `docs/PHASE_5_PRICING.md` — rate plans, nightly resolver, confidence, conflicts, Admin/public pricing, and the price-versus-availability boundary.
 - `docs/PHASE_6_AVAILABILITY.md` — nightly inventory, freshness, multi-night availability, Admin operations, public safety, and the no-booking boundary.
 - `docs/V2_CURRENT_STATE_MAPPING.md` — bridge from the completed accommodation foundation to the V2 target domains.
+- `docs/V2_PHASE_1_ARCHITECTURE_ALIGNMENT.md` — Destination, Physical Room/Room ID, exact-target media and verification contracts.
 - `docs/LEGACY_ROADMAP_STATUS.md` — concise historical status and phase-numbering boundary.
 - `docs/SUPABASE_SETUP.md` — manual migration and future Storage setup.

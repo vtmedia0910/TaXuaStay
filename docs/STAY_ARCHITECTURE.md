@@ -30,12 +30,13 @@ The current repository actually implements:
 - room-type rate plans/rules, deterministic integer-VND pricing, and price confidence;
 - pooled room-type inventory, freshness-aware availability, and Admin bulk updates;
 - room-first public search, intent landing pages, metadata, sitemap, robots, and temporary-host indexing safety.
+- a published Tà Xùa Destination, required property destination ownership, stable physical-room identity, and exact-room-compatible media/verification targets.
 
-There is currently no Destination domain, physical/exact-room identity, supplier or partner domain, generic services, package commerce, unified trip booking, booking items, payment, bus inventory, supplier confirmation workflow, or Trip Dashboard.
+There is currently no supplier or partner domain, generic services, package commerce, unified trip booking, booking items, payment, bus inventory, supplier confirmation workflow, or Trip Dashboard.
 
-## V2 target architecture — not implemented yet
+## V2 accommodation hierarchy — Phase 1 implemented
 
-The accommodation hierarchy will evolve additively:
+The accommodation hierarchy now exists additively:
 
 ```text
 Destination
@@ -65,11 +66,15 @@ Supplier Confirmation
 Trip Operations / Trip Dashboard
 ```
 
-The target product combines **VERIFY**, **BUNDLE**, **OPERATE**, and **DISTRIBUTE**. Existing room-type pricing, pooled inventory, search, SEO, and Verified Standard remain valid foundations while later V2 phases introduce these domains one reviewed step at a time.
+`room_types` remains the commercial category for current pricing and pooled inventory. `physical_rooms` represents a known real unit with an immutable uppercase `room_code`; no rows are inferred from `room_types.quantity`. Media has exactly one owner among property, room type, and physical room. Room, Cloud View, and 360 verification may target either a room type or a physical room, never both. Historical room-type records remain unchanged.
 
-## Next implementation — explicitly deferred in this task
+An exact physical room is publicly identified as verified only when its own active/published row has a current `room` verification and approved evidence owned by that same physical room. `exact_room_bookable` means only that operations may accept a request for the named Room ID; it is not availability, assignment, a guarantee, or verification. Internal `position_notes` and audit fields are not public.
 
-The next implementation is **V2 Phase 1 — Architecture Alignment**: Destination, Physical Room, stable Room ID, exact-room-compatible Media, and exact-room-compatible Verification. It must preserve current rates, availability, search, SEO, Verified Standard, and public routes. None of those V2 Phase 1 changes is implemented by this documentation alignment task.
+The target product combines **VERIFY**, **BUNDLE**, **OPERATE**, and **DISTRIBUTE**. Existing room-type pricing, pooled inventory, search, SEO, and Verified Standard remain valid foundations while later V2 phases introduce further domains one reviewed step at a time.
+
+## Next implementation — explicitly deferred
+
+The next roadmap step is **V2 Phase 2 — Verified Room Profile V2**. It is not implemented by V2 Phase 1 and requires a separately authorized task.
 
 ## Legacy Phase 0 baseline
 
@@ -99,7 +104,7 @@ Phase 2 adds six normalized tables in one additive migration:
 - `properties` for lodging/business entities;
 - `room_types` for the room-level content and future transaction entity;
 - `amenities`, `property_amenities`, and `room_amenities` for a shared normalized catalog;
-- `media_assets` for HTTPS photo, video, and panorama evidence linked to exactly one property or room type.
+- `media_assets` for HTTPS photo, video, and panorama evidence, originally linked to exactly one property or room type and extended by V2 Phase 1 to support one physical-room owner as a third exclusive option.
 
 Anonymous users can read only active/published properties and rooms, active amenities assigned to those records, and media assets explicitly reviewed for public display. Public application queries use field allowlists and exclude internal user/audit identifiers. Authenticated `admin` and `staff` users can manage this content through protected Server Actions, with RLS as the database backstop. Core records use archival/deactivation rather than default hard deletion.
 
@@ -128,7 +133,7 @@ No runtime call site requires a service-role client. The tracked environment tem
 
 Phase 4 adds an evidence-backed trust domain without marking any existing content verified automatically. `verification_records` owns lifecycle, target, method, internal notes, staff audit references, verification time, and expiry. Type-specific facts live in `cloud_view_verifications` and `road_verifications`; `verification_evidence` links each lifecycle record to existing exact-target `media_assets` through foreign keys.
 
-Cloud View is authoritative only at room-type level. Seven constrained integer components total 100 points; generated PostgreSQL columns derive `total_points` and `score_10`, so Admin cannot enter a final marketing score. The score measures physical viewing-position characteristics, not clouds or weather probability. Current public Cloud records include direct view facts, selected approved evidence, verification date, and expiry.
+Legacy Cloud View remains valid at room-type level. V2 Phase 1 additionally permits new Cloud View records for one exact physical room; it does not migrate, average, overwrite, or reinterpret historical room-type records. Seven constrained integer components total 100 points; generated PostgreSQL columns derive `total_points` and `score_10`, so Admin cannot enter a final marketing score. The score measures physical viewing-position characteristics, not clouds or weather probability.
 
 Road Verified is property-level and uses A–D grades plus tri-state access, surface, difficult-section, rain, parking, and walking facts. A current, evidence-backed Road record takes display precedence over Phase 2 preliminary access facts. It does not overwrite those preliminary facts, so expiry cleanly restores the original fallback instead of presenting a stale verified snapshot as preliminary data.
 
@@ -170,7 +175,7 @@ Public inventory is read through a `security_invoker` allow-listed view backed b
 
 ## V2 roadmap boundary
 
-The V2 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment comes first, followed only in separately authorized phases by verified exact-room profiles, supplier/partner foundations, private commercial economics, motorbike service integration, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
+The V2 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is implemented by additive migration 009. Only separately authorized later phases may add verified room profiles V2, supplier/partner foundations, private commercial economics, motorbike service integration, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
 
 ## Future Biker relationship
 
