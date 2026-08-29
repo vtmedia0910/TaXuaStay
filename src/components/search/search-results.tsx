@@ -5,8 +5,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/feedback/empty-state";
 import type { RoomSearchParams, RoomSearchResponse } from "@/features/search/types";
 
-function ResultGrid({ items }: { items: RoomSearchResponse["items"] }) {
-  return <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{items.map((result) => <SearchResultCard key={result.room.id} result={result} />)}</div>;
+function ResultGrid({ items, params }: { items: RoomSearchResponse["items"]; params: RoomSearchParams }) {
+  return <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{items.map((result) => <SearchResultCard key={result.room.id} result={result} params={params} />)}</div>;
 }
 
 export function SearchResults({ response, params, landingSlug, preferCloudVerified = false }: {
@@ -63,16 +63,16 @@ export function SearchResults({ response, params, landingSlug, preferCloudVerifi
           </h2>
         </div>
         <p className="max-w-md text-sm leading-6 text-muted">
-          Giá, đánh giá và tình trạng phòng theo ngày chưa được cung cấp; vui lòng xác nhận trực tiếp với nơi lưu trú.
+          Giá chỉ hiện khi có đủ dữ liệu cho ngày đã chọn. Tình trạng phòng vẫn cần xác nhận trực tiếp với nơi lưu trú.
         </p>
       </div>
 
       {preferCloudVerified ? (
         <div className="grid gap-10">
-          {verifiedItems.length ? <section aria-labelledby="verified-results-title"><h3 id="verified-results-title" className="mb-4 font-display text-2xl font-bold text-pine">Phòng có Cloud View Verified còn hiệu lực</h3><ResultGrid items={verifiedItems} /></section> : null}
-          {describedItems.length ? <section aria-labelledby="described-results-title"><h3 id="described-results-title" className="font-display text-2xl font-bold text-pine">Phòng có thông tin hướng nhìn, chưa được xác minh</h3><p className="mb-4 mt-2 text-sm leading-6 text-muted">Những phòng này khớp mô tả hướng nhìn cơ bản nhưng không mang badge hoặc điểm Cloud View Verified.</p><ResultGrid items={describedItems} /></section> : null}
+          {verifiedItems.length ? <section aria-labelledby="verified-results-title"><h3 id="verified-results-title" className="mb-4 font-display text-2xl font-bold text-pine">Phòng có Cloud View Verified còn hiệu lực</h3><ResultGrid items={verifiedItems} params={params} /></section> : null}
+          {describedItems.length ? <section aria-labelledby="described-results-title"><h3 id="described-results-title" className="font-display text-2xl font-bold text-pine">Phòng có thông tin hướng nhìn, chưa được xác minh</h3><p className="mb-4 mt-2 text-sm leading-6 text-muted">Những phòng này khớp mô tả hướng nhìn cơ bản nhưng không mang badge hoặc điểm Cloud View Verified.</p><ResultGrid items={describedItems} params={params} /></section> : null}
         </div>
-      ) : <ResultGrid items={response.items} />}
+      ) : <ResultGrid items={response.items} params={params} />}
       <SearchPagination params={params} totalPages={response.totalPages} landingSlug={landingSlug} />
     </section>
   );

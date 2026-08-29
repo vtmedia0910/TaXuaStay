@@ -85,6 +85,15 @@ export function buildRoomSearchUrl(params: RoomSearchParams, page = params.page)
   return query ? `/tim-phong?${query}` : "/tim-phong";
 }
 
+export function buildPriceContextQuery(params: Pick<RoomSearchParams, "checkIn" | "checkOut" | "adults" | "children">) {
+  const query = new URLSearchParams();
+  if (params.checkIn) query.set("check_in", params.checkIn);
+  if (params.checkOut) query.set("check_out", params.checkOut);
+  query.set("adults", String(params.adults));
+  query.set("children", String(params.children));
+  return query.toString();
+}
+
 export function parseRoomSearchParams(raw: RawSearchParams): ParsedRoomSearch {
   const issues: string[] = [];
   const rawCheckIn = firstValue(raw.check_in);

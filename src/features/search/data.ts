@@ -24,6 +24,7 @@ import type {
 import { SEARCH_PAGE_SIZE } from "@/features/search/types";
 import type { PublicRoomTypeDto } from "@/features/rooms/types";
 import { getPublicSearchVerificationSummaries } from "@/features/verification/data";
+import { getPublicPriceQuotes } from "@/features/pricing/data";
 import { createPublicSupabaseClient } from "@/lib/supabase/public";
 
 type SearchRoomRow = PublicRoomTypeDto & { property: SearchPropertyDto | null };
@@ -58,14 +59,14 @@ function pickRepresentativeMedia(
   return roomMedia.find(supported) ?? propertyMedia.find(supported) ?? null;
 }
 
-async function enrichSearchRows(rows: SearchRoomRow[]) {
+async function enrichSearchRows(rows: SearchRoomRow[], params: RoomSearchParams) {
   const supabase = createPublicSupabaseClient();
   if (!supabase || !rows.length) return [];
 
   const roomIds = rows.map((row) => row.id);
   const propertyIds = [...new Set(rows.map((row) => row.property?.id).filter(Boolean))] as string[];
 
-  const [roomAmenitiesResult, propertyAmenitiesResult, roomMediaResult, propertyMediaResult, verification] =
+  const [roomAmenitiesResult, propertyAmenitiesResult, roomMediaResult, propertyMediaResult, verification, priceQuotes] =
     await Promise.all([
       supabase
         .from("room_amenities")
@@ -90,6 +91,7 @@ async function enrichSearchRows(rows: SearchRoomRow[]) {
         .order("sort_order")
         .overrideTypes<SearchMediaDto[], { merge: false }>(),
       getPublicSearchVerificationSummaries(roomIds, propertyIds),
+      getPublicPriceQuotes({ roomTypeIds: roomIds, checkIn: params.checkIn, checkOut: params.checkOut }),
     ]);
 
   const roomAmenities = roomAmenitiesResult.data ?? [];
@@ -138,6 +140,7 @@ async function enrichSearchRows(rows: SearchRoomRow[]) {
       ),
       cloudView: cloudViewMap.get(row.id) ?? null,
       road: roadMap.get(row.property.id) ?? null,
+      priceQuote: priceQuotes.get(row.id) ?? null,
     }];
   });
 }
@@ -191,7 +194,7 @@ export async function searchPublicRooms(
 
   if (error) return emptyResponse(params, "error");
 
-  const enriched = await enrichSearchRows((data ?? []).filter((row) => row.property));
+  const enriched = await enrichSearchRows((data ?? []).filter((row) => row.property), params);
   const matched = enriched.filter((result) => matchesRoomSearch(result, params, preset));
   const total = count ?? 0;
 

@@ -10,6 +10,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   "amenity-save": "Không thể lưu amenity. Slug có thể đã tồn tại.",
   "media-save": "Không thể lưu media. Hãy kiểm tra quan hệ, HTTPS URL và metadata.",
   "verification-save": "Không thể lưu xác minh. Giao dịch đã được hoàn tác; hãy kiểm tra target, bằng chứng, rubric và thời hạn.",
+  "rate-plan-save": "Không thể lưu bảng giá. Hãy kiểm tra mã, nơi lưu trú, trạng thái và khoảng ngày.",
+  "rate-rule-save": "Không thể lưu quy tắc giá. Hãy kiểm tra phòng thuộc đúng nơi lưu trú, khoảng ngày, nguồn và mức ưu tiên.",
 };
 
 export function FormFeedback({ saved, error }: { saved?: string; error?: string }) {

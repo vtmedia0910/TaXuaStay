@@ -21,7 +21,7 @@ export default async function AdminHomePage({
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <AdminPageHeader
         title="Tổng quan"
-        description="PHASE 2 quản lý property, room type, amenities và media cơ bản; chưa có giá, availability hay booking."
+        description="Quản lý nội dung lưu trú, bằng chứng xác minh và giá theo ngày. Giá không đồng nghĩa với tình trạng phòng."
       />
       <FormFeedback error={params.error} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -32,15 +32,15 @@ export default async function AdminHomePage({
             {configured ? "Đã nhận cấu hình công khai" : "Chưa cấu hình"}
           </Badge>
           <p className="mt-3 text-sm leading-6 text-muted">
-            Kết nối phải thuộc project Stay riêng; service-role key chỉ được dùng ở server.
+            Kết nối phải thuộc project Stay riêng; ứng dụng hiện chỉ cần các biến Supabase công khai và RLS.
           </p>
         </Card>
         <Card className="p-5">
           <Layers3 className="text-pine" aria-hidden="true" />
           <h2 className="mt-4 font-display text-xl font-bold text-pine">Phạm vi hiện tại</h2>
-          <Badge className="mt-3 text-success">PHASE 2</Badge>
+          <Badge className="mt-3 text-success">PHASE 5</Badge>
           <p className="mt-3 text-sm leading-6 text-muted">
-            Content domain đã có; Booking, Availability và Rates chưa được triển khai.
+            Nội dung, tìm kiếm, xác minh và bảng giá đã có; tình trạng phòng và đặt phòng chưa được triển khai.
           </p>
         </Card>
         <Card className="p-5">

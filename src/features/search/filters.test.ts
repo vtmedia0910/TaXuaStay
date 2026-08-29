@@ -45,6 +45,7 @@ function makeResult(): RoomSearchResult {
     image: null,
     cloudView: null,
     road: null,
+    priceQuote: null,
   };
 }
 

@@ -6,6 +6,7 @@ import {
   House,
   ImageIcon,
   MountainSnow,
+  BadgeDollarSign,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -20,6 +21,7 @@ const contentLinks = [
   { label: "Amenities", href: "/admin/amenities", icon: Sparkles },
   { label: "Media", href: "/admin/media", icon: ImageIcon },
   { label: "Verification", href: "/admin/verification", icon: ShieldCheck },
+  { label: "Giá", href: "/admin/rates", icon: BadgeDollarSign },
 ] as const;
 
 const adminLinks = [{ label: "Cấu hình", href: "/admin/settings", icon: Settings }] as const;

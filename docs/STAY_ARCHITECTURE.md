@@ -85,19 +85,32 @@ Approved `panorama_360` media now uses a small client component that requests th
 
 Indexing safety remains unchanged. `/verified` is emitted in the sitemap only when the existing explicit final-brand-domain policy enables indexing. Temporary `*.vercel.app` deployments remain usable but `noindex,nofollow` with crawling blocked.
 
+## Phase 5 pricing
+
+Phase 5 adds a Stay-owned pricing domain with `rate_plans` and `room_rate_rules`. Plans group business rules per property; each rule prices one room type in integer VND. PostgreSQL constraints enforce valid date ranges, non-negative whole-VND amounts, bounded priorities, special-rate date ranges, VND-only currency, and room/plan ownership. Owner-link triggers prevent later property moves from invalidating that ownership. No price rows are seeded.
+
+The application resolver enumerates lodging nights as calendar dates in `[check_in, check_out)`. Monday–Thursday are weekday nights and Friday–Sunday are weekend nights unless a rule explicitly supplies ISO weekday numbers. Applicable rules resolve by rate-type precedence (`override > holiday > peak > weekend > weekday`), then higher rule priority, then higher plan priority. More than one rule at the winning effective priority is a visible conflict even when the stored prices match; no row order is used as a tiebreaker.
+
+Every successful quote contains currency, per-night source/rule facts, subtotal, zero discount/fees placeholders, total, confidence, and pricing policy version `phase5-v1`. Extra-adult and extra-child values can be stored, but the resolver deliberately does not add them until a later occupancy model defines base versus extra occupancy. JavaScript sums bounded integers only; no floating-point money is stored or calculated.
+
+Public pricing uses the anonymous client, a `security_invoker` allow-listed view, base-table RLS, and one bounded batch query for the current room IDs/date range. It exposes active rules only from active/published plans attached to public rooms/properties. It excludes plan names/descriptions, internal notes, staff IDs, and audit fields. The public application never needs a service-role key.
+
+Search, property, and room pages show no generic invented “from” price. Without dates they ask the customer to choose dates. With valid dates, they show a complete recorded quote only when every night resolves without conflict and state that availability still needs direct confirmation. `/admin/rates` provides property/room/plan/type filters, plan/rule management, stale/gap/overlap warnings, and nightly preview. Core price records are deactivated or archived rather than deleted.
+
+Price and availability remain separate domains. Phase 5 contains no inventory, holds, blocks, room availability, or bookings. Phase 6 is responsible for availability and must consume pricing without changing Phase 5 night/date semantics.
+
 ## Planned domains
 
 Later phases may introduce these independent Stay domains, one reviewed phase at a time:
 
 - properties
 - rooms
-- rates
 - availability
 - stay bookings
 - weather and cloud forecast
 - imports
 
-These names document direction only. Phase 4 adds verification over the Phase 2 content and Phase 3 discovery domains; rates, availability, bookings, weather, imports, and referrals remain deferred.
+These names document direction only. Phase 5 adds rates over the existing content, discovery, and verification domains; availability, bookings, weather, imports, and referrals remain deferred.
 
 ## Future Biker relationship
 

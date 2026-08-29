@@ -44,6 +44,7 @@ function candidate(id: string, maxGuests: number, featured = false, hasImage = f
     propertyAmenities: [],
     cloudView: null,
     road: null,
+    priceQuote: null,
     image: hasImage ? {
       id: `image-${id}`,
       property_id: null,

@@ -3,6 +3,7 @@ import { Bath, BedDouble, Car, ImageIcon, MapPin, Mountain, Users } from "lucide
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { PriceSummary } from "@/components/pricing/price-summary";
 import { formatAccessCertainty } from "@/features/properties/access";
 import {
   ACCESS_FILTER_LABELS,
@@ -10,15 +11,17 @@ import {
   BATHROOM_TYPE_LABELS,
   VIEW_TYPE_LABELS,
 } from "@/features/search/labels";
-import type { RoomSearchResult } from "@/features/search/types";
+import type { RoomSearchParams, RoomSearchResult } from "@/features/search/types";
+import { buildPriceContextQuery } from "@/features/search/params";
 import { CLOUD_VIEW_FROM_BED_LABELS, getCloudViewLabel, ROAD_GRADE_LABELS } from "@/features/verification/policy";
 
-export function SearchResultCard({ result }: { result: RoomSearchResult }) {
+export function SearchResultCard({ result, params }: { result: RoomSearchResult; params: RoomSearchParams }) {
   const { room, property, image } = result;
   const amenities = [...result.roomAmenities, ...result.propertyAmenities]
     .filter((amenity, index, values) => values.findIndex((item) => item.id === amenity.id) === index)
     .slice(0, 4);
   const carAccess = result.road?.car_access ?? property.car_access;
+  const contextQuery = buildPriceContextQuery(params);
 
   return (
     <article>
@@ -66,14 +69,16 @@ export function SearchResultCard({ result }: { result: RoomSearchResult }) {
             {amenities.map((amenity) => <Badge key={amenity.id}>{amenity.name}</Badge>)}
           </div>
 
+          <PriceSummary quote={result.priceQuote} compact />
+
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href={`/homestay/${property.slug}/phong/${room.slug}`}
+              href={`/homestay/${property.slug}/phong/${room.slug}?${contextQuery}`}
               className={buttonVariants({ variant: "accent", size: "sm" })}
             >
               XEM PHÒNG
             </Link>
-            <Link href={`/homestay/${property.slug}`} className="inline-flex min-h-11 items-center text-sm font-bold text-pine hover:text-copper-strong">
+            <Link href={`/homestay/${property.slug}?${contextQuery}`} className="inline-flex min-h-11 items-center text-sm font-bold text-pine hover:text-copper-strong">
               Xem nơi lưu trú →
             </Link>
           </div>
