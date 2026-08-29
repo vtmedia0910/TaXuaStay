@@ -1,5 +1,7 @@
 import "server-only";
 
+import { getPublicAvailabilityQuotes } from "@/features/availability/data";
+import { isCurrentlyAvailable } from "@/features/availability/policy";
 import type { PublicAmenityDto } from "@/features/amenities/types";
 import {
   SEARCH_MEDIA_QUERY,
@@ -66,7 +68,7 @@ async function enrichSearchRows(rows: SearchRoomRow[], params: RoomSearchParams)
   const roomIds = rows.map((row) => row.id);
   const propertyIds = [...new Set(rows.map((row) => row.property?.id).filter(Boolean))] as string[];
 
-  const [roomAmenitiesResult, propertyAmenitiesResult, roomMediaResult, propertyMediaResult, verification, priceQuotes] =
+  const [roomAmenitiesResult, propertyAmenitiesResult, roomMediaResult, propertyMediaResult, verification, priceQuotes, availabilityQuotes] =
     await Promise.all([
       supabase
         .from("room_amenities")
@@ -92,6 +94,7 @@ async function enrichSearchRows(rows: SearchRoomRow[], params: RoomSearchParams)
         .overrideTypes<SearchMediaDto[], { merge: false }>(),
       getPublicSearchVerificationSummaries(roomIds, propertyIds),
       getPublicPriceQuotes({ roomTypeIds: roomIds, checkIn: params.checkIn, checkOut: params.checkOut }),
+      getPublicAvailabilityQuotes({ roomTypeIds: roomIds, checkIn: params.checkIn, checkOut: params.checkOut, requestedRooms: params.rooms }),
     ]);
 
   const roomAmenities = roomAmenitiesResult.data ?? [];
@@ -141,6 +144,7 @@ async function enrichSearchRows(rows: SearchRoomRow[], params: RoomSearchParams)
       cloudView: cloudViewMap.get(row.id) ?? null,
       road: roadMap.get(row.property.id) ?? null,
       priceQuote: priceQuotes.get(row.id) ?? null,
+      availabilityQuote: availabilityQuotes.get(row.id) ?? null,
     }];
   });
 }
@@ -185,6 +189,36 @@ export async function searchPublicRooms(
 
   const from = (params.page - 1) * SEARCH_PAGE_SIZE;
   const to = from + SEARCH_PAGE_SIZE - 1;
+  if (params.availableOnly && params.checkIn && params.checkOut) {
+    const { data, error, count } = await query
+      .order("max_guests")
+      .order("name")
+      .order("id")
+      .limit(1000)
+      .overrideTypes<SearchRoomRow[], { merge: false }>();
+    if (error || (count ?? 0) > 1000) return emptyResponse(params, "error");
+    const candidates = (data ?? []).filter((row) => row.property);
+    const availability = await getPublicAvailabilityQuotes({
+      roomTypeIds: candidates.map((row) => row.id),
+      checkIn: params.checkIn,
+      checkOut: params.checkOut,
+      requestedRooms: params.rooms,
+    });
+    const availableRows = candidates.filter((row) => {
+      const quote = availability.get(row.id);
+      return quote ? isCurrentlyAvailable(quote.state) : false;
+    });
+    const enriched = await enrichSearchRows(availableRows.slice(from, to + 1), params);
+    const matched = enriched.filter((result) => matchesRoomSearch(result, params, preset));
+    return {
+      items: rankRoomSearchResults(matched, params),
+      total: availableRows.length,
+      page: params.page,
+      pageSize: SEARCH_PAGE_SIZE,
+      totalPages: Math.ceil(availableRows.length / SEARCH_PAGE_SIZE),
+      status: "ready",
+    };
+  }
   const { data, error, count } = await query
     .order("max_guests")
     .order("name")

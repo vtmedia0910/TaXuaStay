@@ -63,7 +63,7 @@ export function SearchResults({ response, params, landingSlug, preferCloudVerifi
           </h2>
         </div>
         <p className="max-w-md text-sm leading-6 text-muted">
-          Giá chỉ hiện khi có đủ dữ liệu cho ngày đã chọn. Tình trạng phòng vẫn cần xác nhận trực tiếp với nơi lưu trú.
+          Giá và tình trạng phòng được tính riêng cho ngày đã chọn. Tình trạng có thể thay đổi tới khi yêu cầu đặt phòng được xác nhận.
         </p>
       </div>
 

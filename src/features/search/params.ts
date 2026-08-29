@@ -14,6 +14,7 @@ export const DEFAULT_ROOM_SEARCH_PARAMS: RoomSearchParams = {
   breakfast: false,
   restaurant: false,
   bbq: false,
+  availableOnly: false,
   page: 1,
 };
 
@@ -76,6 +77,7 @@ export function normalizeRoomSearchParams(params: RoomSearchParams) {
   if (params.breakfast) query.set("breakfast", "1");
   if (params.restaurant) query.set("restaurant", "1");
   if (params.bbq) query.set("bbq", "1");
+  if (params.availableOnly) query.set("available", "1");
   if (params.page > 1) query.set("page", String(params.page));
   return query.toString();
 }
@@ -85,12 +87,13 @@ export function buildRoomSearchUrl(params: RoomSearchParams, page = params.page)
   return query ? `/tim-phong?${query}` : "/tim-phong";
 }
 
-export function buildPriceContextQuery(params: Pick<RoomSearchParams, "checkIn" | "checkOut" | "adults" | "children">) {
+export function buildStayContextQuery(params: Pick<RoomSearchParams, "checkIn" | "checkOut" | "adults" | "children" | "rooms">) {
   const query = new URLSearchParams();
   if (params.checkIn) query.set("check_in", params.checkIn);
   if (params.checkOut) query.set("check_out", params.checkOut);
   query.set("adults", String(params.adults));
   query.set("children", String(params.children));
+  query.set("rooms", String(params.rooms));
   return query.toString();
 }
 
@@ -138,6 +141,12 @@ export function parseRoomSearchParams(raw: RawSearchParams): ParsedRoomSearch {
   const area = rawArea && rawArea.length <= 120 ? rawArea : undefined;
   if (rawArea && !area) issues.push("Khu vực không hợp lệ.");
 
+  const requestedAvailableOnly = parseFlag(firstValue(raw.available));
+  const availableOnly = requestedAvailableOnly && Boolean(checkIn && checkOut);
+  if (requestedAvailableOnly && !availableOnly) {
+    issues.push("Chỉ có thể lọc phòng đang xác nhận còn khi đã chọn đủ ngày hợp lệ.");
+  }
+
   const params: RoomSearchParams = {
     checkIn,
     checkOut,
@@ -156,6 +165,7 @@ export function parseRoomSearchParams(raw: RawSearchParams): ParsedRoomSearch {
     breakfast: parseFlag(firstValue(raw.breakfast)),
     restaurant: parseFlag(firstValue(raw.restaurant)),
     bbq: parseFlag(firstValue(raw.bbq)),
+    availableOnly,
     page: page.value,
   };
 
@@ -181,5 +191,6 @@ export function countActiveSearchFilters(params: RoomSearchParams) {
     params.breakfast,
     params.restaurant,
     params.bbq,
+    params.availableOnly,
   ].filter(Boolean).length;
 }

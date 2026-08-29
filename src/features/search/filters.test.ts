@@ -46,6 +46,7 @@ function makeResult(): RoomSearchResult {
     cloudView: null,
     road: null,
     priceQuote: null,
+    availabilityQuote: null,
   };
 }
 
@@ -95,5 +96,14 @@ describe("Phase 3 room filtering", () => {
     expect(matchesRoomSearch(result, params(), { minGuests: 4 })).toBe(false);
     expect(matchesRoomSearch(result, params(), { viewTypes: ["mountain", "valley"] })).toBe(true);
     expect(matchesRoomSearch(result, params(), { carAccess: "yes", parking: "yes" })).toBe(false);
+  });
+
+  it("includes only current confirmed availability when explicitly requested", () => {
+    const result = makeResult();
+    expect(matchesRoomSearch(result, params({ availableOnly: true }))).toBe(false);
+    result.availabilityQuote = { state: "needs_confirmation" } as RoomSearchResult["availabilityQuote"];
+    expect(matchesRoomSearch(result, params({ availableOnly: true }))).toBe(false);
+    result.availabilityQuote = { state: "verified_today" } as RoomSearchResult["availabilityQuote"];
+    expect(matchesRoomSearch(result, params({ availableOnly: true }))).toBe(true);
   });
 });

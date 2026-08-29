@@ -82,6 +82,7 @@ export function SearchForm({ params, options }: {
           <FormField label="Số phòng cần" htmlFor="search-rooms">
             <Input id="search-rooms" name="rooms" type="number" min={1} max={10} defaultValue={params.rooms} required />
           </FormField>
+          <FacilityCheckbox name="available" label="Chỉ hiện phòng đang xác nhận còn" checked={params.availableOnly} />
         </fieldset>
 
         <fieldset className="grid gap-4 sm:grid-cols-2">
@@ -149,7 +150,7 @@ export function SearchForm({ params, options }: {
         </fieldset>
 
         <p className="rounded-2xl bg-mist/70 p-3 text-sm leading-6 text-muted">
-          Ngày đi và số phòng được lưu cùng bộ lọc. Kết quả hiện chưa xác nhận tình trạng phòng theo ngày; vui lòng liên hệ nơi lưu trú trước khi quyết định.
+          Khi có đủ ngày, hệ thống đối chiếu từng đêm và số phòng yêu cầu. Thiếu dữ liệu không được xem là còn phòng; tình trạng vẫn có thể thay đổi tới khi yêu cầu đặt phòng được xác nhận.
         </p>
 
         <div className="flex flex-wrap gap-3">

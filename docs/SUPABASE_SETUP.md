@@ -16,6 +16,7 @@ Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the appl
 202608290005
 202608290006
 202608290007
+202608290008
 ```
 
 The final remote dry-run reported the database up to date. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
@@ -32,6 +33,7 @@ supabase/migrations/202608290004_verified_standard.sql
 supabase/migrations/202608290005_harden_phase4_verification.sql
 supabase/migrations/202608290006_rate_plans_and_pricing.sql
 supabase/migrations/202608290007_harden_phase5_pricing.sql
+supabase/migrations/202608290008_room_inventory_and_availability.sql
 ```
 
 Never reapply or edit a migration already present remotely. Migration `202608290003` is the additive corrective migration that preserves immutable migration `202608290002`; migration `202608290004` adds the normalized Verified Standard without seeding verification data; migration `202608290005` preserves immutable 004 while rejecting future/expired verified cycles, refreshing normal re-verification dates, and limiting anonymous Cloud/Road reads to public-view columns.
@@ -46,6 +48,17 @@ Migration `202608290006` adds rate plans and room rate rules without seed prices
 6. No smoke-test production price rows are inserted. Schema/grant checks are sufficient when no real owner pricing exists.
 7. A `price_valid_until` before the Vietnam calendar date of `price_verified_at` is rejected, including timestamps that cross the UTC/Vietnam day boundary.
 8. Active rules with no plan-date overlap are rejected, and plan-date edits cannot strand existing active rules; inactive preparation rules may remain disjoint.
+
+Migration `202608290008` adds latest-state room inventory without seeding production data or creating booking/customer/payment domains. After applying Phase 6, verify additionally:
+
+1. `room_inventory` and `public_room_inventory` exist and RLS is enabled on the base table.
+2. `(room_type_id, date)` is unique; quantity is non-negative and cannot exceed the room type's physical quantity.
+3. Reducing a room type's physical quantity below recorded inventory is rejected.
+4. Anonymous reads of the public view and allow-listed base columns succeed only for public rooms/properties; `updated_by`, audit timestamps, IDs, and `price_override_vnd` are denied.
+5. Anonymous insert/update/delete is denied; authenticated staff/admin can use `set_room_inventory_range` without a service-role key.
+6. The range RPC updates one through 365 inclusive lodging-night dates atomically and rejects a negative/excess quantity, invalid source, oversized range, or future verification timestamp.
+7. The public view contains no rows for draft/inactive rooms or properties. Inventory for archived content may remain protected by RLS.
+8. No smoke-test or example production inventory is inserted.
 
 After `202608290003`, review every property whose access values became `unknown`. The migration deliberately converts legacy `true` to `yes` and legacy `false` to `unknown`; an old false value is not sufficient evidence for a customer-facing `no`.
 
@@ -75,6 +88,8 @@ The 2026-08-29 post-005 remote smoke test returned HTTP 200 for all four public 
 The post-006 remote smoke test returned HTTP 200 for the allow-listed pricing view and allowed base-table columns. Anonymous reads of plan `description`/`created_by` and rule `internal_notes`/`updated_by`, plus zero-target update attempts on each pricing table, returned HTTP 401. The public pricing view returned an exact count of zero immediately after migration, confirming that no production price was seeded. Migrations 001–006 were Local = Remote and linked database lint reported no schema errors. No test row or price was inserted.
 
 The post-007 remote smoke test preserved those boundaries: the public pricing view and both base tables' allow-listed columns returned HTTP 200; internal plan/rule columns and zero-target anonymous updates returned HTTP 401. The public pricing view still returned an exact count of zero, so the hardening added no price data. Migrations 001–007 were Local = Remote and linked database lint reported no schema errors. The migration preflight found no inconsistent existing verification dates or active disjoint rule/plan ranges.
+
+The post-008 remote smoke test returned HTTP 200 for the inventory public view and the allow-listed base-table columns. Anonymous reads of `updated_by` and `price_override_vnd`, plus a zero-target anonymous update, returned HTTP 401. The public inventory view returned an exact count of zero, confirming that Phase 6 seeded no production availability. Migrations 001–008 were Local = Remote and `supabase db lint --linked` reported no schema errors. No test row was inserted.
 
 ## Environment configuration
 

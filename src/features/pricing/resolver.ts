@@ -6,25 +6,10 @@ import {
   worseConfidence,
 } from "@/features/pricing/policy";
 import type { PriceConfidence, PriceNightLine, PriceQuote, PublicRateRuleDto } from "@/features/pricing/types";
-
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-
-function parseDate(value: string) {
-  if (!DATE_PATTERN.test(value)) return null;
-  const parsed = new Date(`${value}T00:00:00.000Z`);
-  return Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value ? null : parsed;
-}
+import { enumerateLodgingNights } from "@/lib/lodging-dates";
 
 export function enumerateStayNights(checkIn: string, checkOut: string) {
-  const start = parseDate(checkIn);
-  const end = parseDate(checkOut);
-  if (!start || !end || start >= end) return [];
-
-  const nights: string[] = [];
-  for (let cursor = start; cursor < end && nights.length <= MAX_PRICE_QUOTE_NIGHTS; cursor = new Date(cursor.getTime() + 86_400_000)) {
-    nights.push(cursor.toISOString().slice(0, 10));
-  }
-  return nights.length > MAX_PRICE_QUOTE_NIGHTS ? [] : nights;
+  return enumerateLodgingNights(checkIn, checkOut, MAX_PRICE_QUOTE_NIGHTS);
 }
 
 function isWithin(date: string, from: string | null, until: string | null) {

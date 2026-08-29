@@ -7,6 +7,7 @@ import {
   ImageIcon,
   MountainSnow,
   BadgeDollarSign,
+  CalendarCheck,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -22,6 +23,7 @@ const contentLinks = [
   { label: "Media", href: "/admin/media", icon: ImageIcon },
   { label: "Verification", href: "/admin/verification", icon: ShieldCheck },
   { label: "Giá", href: "/admin/rates", icon: BadgeDollarSign },
+  { label: "Tình trạng", href: "/admin/availability", icon: CalendarCheck },
 ] as const;
 
 const adminLinks = [{ label: "Cấu hình", href: "/admin/settings", icon: Settings }] as const;

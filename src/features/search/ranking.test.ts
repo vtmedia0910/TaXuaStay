@@ -45,6 +45,7 @@ function candidate(id: string, maxGuests: number, featured = false, hasImage = f
     cloudView: null,
     road: null,
     priceQuote: null,
+    availabilityQuote: null,
     image: hasImage ? {
       id: `image-${id}`,
       property_id: null,
@@ -94,5 +95,22 @@ describe("Phase 3 deterministic ranking", () => {
     };
     const ranked = rankRoomSearchResults([candidate("plain", 2), verified], DEFAULT_ROOM_SEARCH_PARAMS);
     expect(ranked[0].room.id).toBe("verified");
+  });
+
+  it("ranks current availability ahead of stale, unknown, and sold out when dates are selected", () => {
+    const live = candidate("live", 2);
+    const stale = candidate("stale", 2);
+    const unknown = candidate("unknown", 2);
+    const sold = candidate("sold", 2);
+    live.availabilityQuote = { state: "live" } as RoomSearchResult["availabilityQuote"];
+    stale.availabilityQuote = { state: "needs_confirmation" } as RoomSearchResult["availabilityQuote"];
+    unknown.availabilityQuote = { state: "unknown" } as RoomSearchResult["availabilityQuote"];
+    sold.availabilityQuote = { state: "sold_out" } as RoomSearchResult["availabilityQuote"];
+    const ranked = rankRoomSearchResults([sold, unknown, stale, live], {
+      ...DEFAULT_ROOM_SEARCH_PARAMS,
+      checkIn: "2026-11-15",
+      checkOut: "2026-11-17",
+    });
+    expect(ranked.map((item) => item.room.id)).toEqual(["live", "stale", "unknown", "sold"]);
   });
 });

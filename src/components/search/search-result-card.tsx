@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PriceSummary } from "@/components/pricing/price-summary";
+import { AvailabilitySummary } from "@/components/availability/availability-summary";
 import { formatAccessCertainty } from "@/features/properties/access";
 import {
   ACCESS_FILTER_LABELS,
@@ -12,7 +13,7 @@ import {
   VIEW_TYPE_LABELS,
 } from "@/features/search/labels";
 import type { RoomSearchParams, RoomSearchResult } from "@/features/search/types";
-import { buildPriceContextQuery } from "@/features/search/params";
+import { buildStayContextQuery } from "@/features/search/params";
 import { CLOUD_VIEW_FROM_BED_LABELS, getCloudViewLabel, ROAD_GRADE_LABELS } from "@/features/verification/policy";
 
 export function SearchResultCard({ result, params }: { result: RoomSearchResult; params: RoomSearchParams }) {
@@ -21,7 +22,7 @@ export function SearchResultCard({ result, params }: { result: RoomSearchResult;
     .filter((amenity, index, values) => values.findIndex((item) => item.id === amenity.id) === index)
     .slice(0, 4);
   const carAccess = result.road?.car_access ?? property.car_access;
-  const contextQuery = buildPriceContextQuery(params);
+  const contextQuery = buildStayContextQuery(params);
 
   return (
     <article>
@@ -70,6 +71,7 @@ export function SearchResultCard({ result, params }: { result: RoomSearchResult;
           </div>
 
           <PriceSummary quote={result.priceQuote} compact />
+          <AvailabilitySummary quote={result.availabilityQuote} />
 
           <div className="flex flex-wrap items-center gap-3">
             <Link

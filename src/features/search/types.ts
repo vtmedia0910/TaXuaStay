@@ -3,6 +3,7 @@ import type { AccessCertainty, PropertyType } from "@/features/properties/types"
 import type { BathroomType, PublicRoomTypeDto, ViewType } from "@/features/rooms/types";
 import type { PublicCloudViewVerificationDto, PublicRoadVerificationDto } from "@/features/verification/types";
 import type { PriceQuote } from "@/features/pricing/types";
+import type { AvailabilityQuote } from "@/features/availability/types";
 
 export const SEARCH_PAGE_SIZE = 18;
 
@@ -24,6 +25,7 @@ export interface RoomSearchParams {
   breakfast: boolean;
   restaurant: boolean;
   bbq: boolean;
+  availableOnly: boolean;
   page: number;
 }
 
@@ -70,6 +72,7 @@ export interface RoomSearchResult {
   cloudView: PublicCloudViewVerificationDto | null;
   road: PublicRoadVerificationDto | null;
   priceQuote: PriceQuote | null;
+  availabilityQuote: AvailabilityQuote | null;
 }
 
 export interface SearchPreset {

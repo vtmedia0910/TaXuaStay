@@ -41,7 +41,7 @@ export default async function RoomSearchPage({ searchParams }: {
           <Badge className="bg-white/15 text-white">Chọn phòng theo nhu cầu</Badge>
           <h1 className="mt-5 max-w-4xl font-display text-4xl font-bold sm:text-6xl">Tìm loại phòng phù hợp nhu cầu</h1>
           <p className="mt-4 max-w-3xl text-lg leading-8 text-white/80">
-            Bắt đầu từ loại phòng, sức chứa và những thông tin đã được công khai. Ngày đi được giữ trong đường dẫn để bạn dễ tiếp tục lựa chọn; tình trạng phòng vẫn cần xác nhận trực tiếp.
+            Bắt đầu từ loại phòng, sức chứa và những thông tin đã được công khai. Khi chọn ngày, hệ thống đối chiếu tình trạng từng đêm và không xem dữ liệu thiếu là còn phòng.
           </p>
         </div>
       </section>
@@ -64,7 +64,7 @@ export default async function RoomSearchPage({ searchParams }: {
           <Card className="mb-7 grid gap-4 p-5 sm:grid-cols-3">
             <div className="flex gap-3"><CalendarDays className="shrink-0 text-copper" aria-hidden="true" /><div><p className="font-bold">Lịch trình</p><p className="mt-1 text-sm text-muted">{parsed.params.checkIn ?? "Chưa chọn"} → {parsed.params.checkOut ?? "Chưa chọn"}</p></div></div>
             <div className="flex gap-3"><Users className="shrink-0 text-copper" aria-hidden="true" /><div><p className="font-bold">Khách</p><p className="mt-1 text-sm text-muted">{parsed.params.adults} người lớn · {parsed.params.children} trẻ em</p></div></div>
-            <div className="flex gap-3"><Info className="shrink-0 text-copper" aria-hidden="true" /><div><p className="font-bold">Yêu cầu phòng</p><p className="mt-1 text-sm text-muted">{parsed.params.rooms} phòng · cần xác nhận trực tiếp</p></div></div>
+            <div className="flex gap-3"><Info className="shrink-0 text-copper" aria-hidden="true" /><div><p className="font-bold">Yêu cầu phòng</p><p className="mt-1 text-sm text-muted">{parsed.params.rooms} phòng · kiểm tra trên mọi đêm</p></div></div>
           </Card>
 
           <SearchResults response={response} params={parsed.params} />

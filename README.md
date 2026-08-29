@@ -2,7 +2,7 @@
 
 **Đúng phòng. Đúng view. Yên tâm lên Tà Xùa.**
 
-This repository contains the independent Tà Xùa Stay application. Phase 5 adds VND rate plans, deterministic nightly room pricing, price confidence, conflict visibility, public date-aware price summaries, and an authorized Admin pricing workflow. A price answers what a room costs for selected dates; it never claims the room is available. Inventory, availability, booking, discounts, and weather forecasting have not been created.
+This repository contains the independent Tà Xùa Stay application. Phase 6 adds date-specific sellable room inventory, freshness-aware multi-night availability, requested-room checks, public availability filtering, and a fast authorized Admin editor. Availability is never inferred from physical room quantity, price, or missing data, and browsing never holds a room. Booking, holds, payments, discounts, and weather forecasting have not been created.
 
 ## Local development
 
@@ -22,6 +22,8 @@ supabase/migrations/202608290003_harden_phase2_accommodation.sql
 supabase/migrations/202608290004_verified_standard.sql
 supabase/migrations/202608290005_harden_phase4_verification.sql
 supabase/migrations/202608290006_rate_plans_and_pricing.sql
+supabase/migrations/202608290007_harden_phase5_pricing.sql
+supabase/migrations/202608290008_room_inventory_and_availability.sql
 ```
 
 The public page remains usable with safe local defaults when Supabase environment variables are absent or settings cannot be read.
@@ -44,4 +46,5 @@ Project references:
 - `docs/PHASE_3_SEARCH_SEO.md` — room-first search contracts, supported filters, ranking, pagination, and SEO strategy.
 - `docs/PHASE_4_VERIFIED_STANDARD.md` — verification lifecycle, Cloud View rubric, Road precedence, evidence, 360°, Admin, and public security contracts.
 - `docs/PHASE_5_PRICING.md` — rate plans, nightly resolver, confidence, conflicts, Admin/public pricing, and the price-versus-availability boundary.
+- `docs/PHASE_6_AVAILABILITY.md` — nightly inventory, freshness, multi-night availability, Admin operations, public safety, and the no-booking boundary.
 - `docs/SUPABASE_SETUP.md` — manual migration and future Storage setup.

@@ -3,18 +3,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BedDouble, Bike, Car, Clock3, MapPin, Mountain, ParkingCircle, Wifi } from "lucide-react";
 import { MediaGallery } from "@/components/media/media-gallery";
+import { AvailabilitySummary } from "@/components/availability/availability-summary";
 import { PriceSummary } from "@/components/pricing/price-summary";
 import { PropertyVerifiedSection } from "@/components/verification/property-verified-section";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { getSiteUrl } from "@/config/site";
+import { getPublicAvailabilityQuotes } from "@/features/availability/data";
 import { getPublicPropertyAmenities } from "@/features/amenities/data";
 import { getPublicPropertyMedia } from "@/features/media/data";
 import { formatAccessCertainty } from "@/features/properties/access";
 import { getPublicPropertyBySlug } from "@/features/properties/data";
 import { getPublicPriceQuotes } from "@/features/pricing/data";
 import { getPublicRoomsByProperty } from "@/features/rooms/data";
-import { buildPriceContextQuery, buildRoomSearchUrl, DEFAULT_ROOM_SEARCH_PARAMS, parseRoomSearchParams, type RawSearchParams } from "@/features/search/params";
+import { buildRoomSearchUrl, buildStayContextQuery, DEFAULT_ROOM_SEARCH_PARAMS, parseRoomSearchParams, type RawSearchParams } from "@/features/search/params";
 import { PROPERTY_TYPE_LABELS, ROAD_ACCESS_GRADE_LABELS } from "@/features/search/labels";
 import { buildPropertyStructuredData, serializeStructuredData } from "@/features/search/structured-data";
 import { getEffectiveRoadFacts, isPropertyVerified } from "@/features/verification/policy";
@@ -47,9 +49,10 @@ export default async function PropertyPage({ params, searchParams }: { params: P
     getPublicPropertyAmenities(property.id),
     getPublicPropertyMedia(property.id),
   ]);
-  const [verification, priceQuotes] = await Promise.all([
+  const [verification, priceQuotes, availabilityQuotes] = await Promise.all([
     getPublicPropertyVerificationBundle(property.id, rooms.map((room) => room.id)),
     getPublicPriceQuotes({ roomTypeIds: rooms.map((room) => room.id), checkIn: pricingContext.checkIn, checkOut: pricingContext.checkOut }),
+    getPublicAvailabilityQuotes({ roomTypeIds: rooms.map((room) => room.id), checkIn: pricingContext.checkIn, checkOut: pricingContext.checkOut, requestedRooms: pricingContext.rooms }),
   ]);
   const roadFacts = getEffectiveRoadFacts(property, verification.road);
   const propertyVerified = isPropertyVerified(verification.badges);
@@ -75,9 +78,10 @@ export default async function PropertyPage({ params, searchParams }: { params: P
     checkOut: pricingContext.checkOut,
     adults: pricingContext.adults,
     children: pricingContext.children,
+    rooms: pricingContext.rooms,
     area: property.area_name,
   });
-  const contextQuery = buildPriceContextQuery(pricingContext);
+  const contextQuery = buildStayContextQuery(pricingContext);
 
   return (
     <main className="bg-cream pb-20">
@@ -119,10 +123,11 @@ export default async function PropertyPage({ params, searchParams }: { params: P
               <h2 id="rooms-title" className="font-display text-3xl font-bold text-pine">Loại phòng</h2>
               <Link href={areaSearchUrl} className="inline-flex min-h-11 items-center text-sm font-bold text-copper-strong hover:text-pine">Tìm phòng cùng khu vực →</Link>
             </div>
-            <form method="get" className="mt-5 grid gap-3 rounded-3xl border border-line bg-surface p-4 sm:grid-cols-[1fr_1fr_auto]">
+            <form method="get" className="mt-5 grid gap-3 rounded-3xl border border-line bg-surface p-4 sm:grid-cols-4">
               <label className="text-sm font-bold text-pine">Nhận phòng<input className="mt-2 min-h-11 w-full rounded-xl border border-line bg-white px-3 font-normal" type="date" name="check_in" defaultValue={pricingContext.checkIn} /></label>
               <label className="text-sm font-bold text-pine">Trả phòng<input className="mt-2 min-h-11 w-full rounded-xl border border-line bg-white px-3 font-normal" type="date" name="check_out" defaultValue={pricingContext.checkOut} /></label>
-              <button className="min-h-11 self-end rounded-full bg-pine px-5 text-sm font-bold text-white">Xem giá</button>
+              <label className="text-sm font-bold text-pine">Số phòng cần<input className="mt-2 min-h-11 w-full rounded-xl border border-line bg-white px-3 font-normal" type="number" name="rooms" min={1} max={10} defaultValue={pricingContext.rooms} /></label>
+              <button className="min-h-11 self-end rounded-full bg-pine px-5 text-sm font-bold text-white">Xem giá và tình trạng</button>
               <input type="hidden" name="adults" value={pricingContext.adults} />
               <input type="hidden" name="children" value={pricingContext.children} />
             </form>
@@ -135,11 +140,13 @@ export default async function PropertyPage({ params, searchParams }: { params: P
                     <p className="mt-2 text-sm leading-6 text-muted">{room.short_description ?? "Thông tin phòng đang được hoàn thiện."}</p>
                     <p className="mt-4 text-sm font-bold text-ink">Tối đa {room.max_guests} khách</p>
                     <div className="mt-4"><PriceSummary quote={priceQuotes.get(room.id)} compact /></div>
+                    <div className="mt-3"><AvailabilitySummary quote={availabilityQuotes.get(room.id)} /></div>
                     <Link href={`/homestay/${property.slug}/phong/${room.slug}?${contextQuery}`} className="mt-5 inline-flex min-h-11 items-center font-bold text-copper-strong hover:text-pine">Xem phòng →</Link>
                   </Card>
                 ))}
               </div>
             ) : <p className="mt-4 text-muted">Chưa có loại phòng đang hiển thị.</p>}
+            <p className="mt-4 text-sm leading-6 text-muted">Tình trạng hiển thị thuộc từng loại phòng, không đại diện cho toàn bộ nơi lưu trú và không phải giữ chỗ.</p>
           </section>
         </div>
 

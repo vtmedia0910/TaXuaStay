@@ -61,4 +61,14 @@ describe("Phase 3 search params", () => {
       "/tim-phong?check_in=2026-11-15&check_out=2026-11-17&adults=2&children=0&rooms=1&area=T%C3%A0+X%C3%B9a&parking=yes&wifi=1",
     );
   });
+
+  it("enables the current-availability filter only with a complete valid stay", () => {
+    const valid = parseRoomSearchParams({ check_in: "2026-11-15", check_out: "2026-11-17", available: "1" });
+    expect(valid.params.availableOnly).toBe(true);
+    expect(valid.normalizedQuery).toContain("available=1");
+
+    const missingDates = parseRoomSearchParams({ available: "1" });
+    expect(missingDates.params.availableOnly).toBe(false);
+    expect(missingDates.issues).toContain("Chỉ có thể lọc phòng đang xác nhận còn khi đã chọn đủ ngày hợp lệ.");
+  });
 });

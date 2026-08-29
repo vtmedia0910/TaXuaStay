@@ -3,17 +3,19 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Bath, BedDouble, Maximize2, Mountain, Users } from "lucide-react";
 import { MediaGallery } from "@/components/media/media-gallery";
+import { AvailabilitySummary } from "@/components/availability/availability-summary";
 import { PriceSummary } from "@/components/pricing/price-summary";
 import { RoomVerifiedSection } from "@/components/verification/room-verified-section";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { getPublicRoomAmenities } from "@/features/amenities/data";
+import { getPublicAvailabilityQuotes } from "@/features/availability/data";
 import { getPublicRoomMedia } from "@/features/media/data";
 import { getPublicPropertyBySlug } from "@/features/properties/data";
 import { getPublicPriceQuotes } from "@/features/pricing/data";
 import { getPublicRoom } from "@/features/rooms/data";
 import { BATHROOM_TYPE_LABELS, VIEW_TYPE_LABELS } from "@/features/search/labels";
-import { buildPriceContextQuery, buildRoomSearchUrl, DEFAULT_ROOM_SEARCH_PARAMS, parseRoomSearchParams, type RawSearchParams } from "@/features/search/params";
+import { buildRoomSearchUrl, buildStayContextQuery, DEFAULT_ROOM_SEARCH_PARAMS, parseRoomSearchParams, type RawSearchParams } from "@/features/search/params";
 import { getPublicRoomVerificationBundle } from "@/features/verification/data";
 
 type RoomParams = Promise<{ slug: string; roomSlug: string }>;
@@ -40,11 +42,12 @@ export default async function RoomPage({ params, searchParams }: { params: RoomP
   const room = await getPublicRoom(property.id, roomSlug);
   if (!room) notFound();
 
-  const [amenities, media, verification, priceQuotes] = await Promise.all([
+  const [amenities, media, verification, priceQuotes, availabilityQuotes] = await Promise.all([
     getPublicRoomAmenities(room.id),
     getPublicRoomMedia(room.id),
     getPublicRoomVerificationBundle(room.id),
     getPublicPriceQuotes({ roomTypeIds: [room.id], checkIn: pricingContext.checkIn, checkOut: pricingContext.checkOut }),
+    getPublicAvailabilityQuotes({ roomTypeIds: [room.id], checkIn: pricingContext.checkIn, checkOut: pricingContext.checkOut, requestedRooms: pricingContext.rooms }),
   ]);
   const relatedSearchUrl = buildRoomSearchUrl({
     ...DEFAULT_ROOM_SEARCH_PARAMS,
@@ -52,9 +55,10 @@ export default async function RoomPage({ params, searchParams }: { params: RoomP
     checkOut: pricingContext.checkOut,
     adults: pricingContext.adults,
     children: pricingContext.children,
+    rooms: pricingContext.rooms,
     area: property.area_name,
   });
-  const contextQuery = buildPriceContextQuery(pricingContext);
+  const contextQuery = buildStayContextQuery(pricingContext);
 
   return (
     <main className="bg-cream pb-20">
@@ -99,16 +103,21 @@ export default async function RoomPage({ params, searchParams }: { params: RoomP
           </Card>
           <Card className="p-5">
             <h2 className="font-display text-2xl font-bold text-pine">Giá theo ngày</h2>
-            <form method="get" className="mt-4 grid gap-3 sm:grid-cols-2">
+            <form method="get" className="mt-4 grid gap-3 sm:grid-cols-3">
               <label className="text-sm font-bold text-pine">Nhận phòng<input className="mt-2 min-h-11 w-full rounded-xl border border-line bg-white px-3 font-normal" type="date" name="check_in" defaultValue={pricingContext.checkIn} /></label>
               <label className="text-sm font-bold text-pine">Trả phòng<input className="mt-2 min-h-11 w-full rounded-xl border border-line bg-white px-3 font-normal" type="date" name="check_out" defaultValue={pricingContext.checkOut} /></label>
+              <label className="text-sm font-bold text-pine">Số phòng cần<input className="mt-2 min-h-11 w-full rounded-xl border border-line bg-white px-3 font-normal" type="number" name="rooms" min={1} max={10} defaultValue={pricingContext.rooms} /></label>
               <input type="hidden" name="adults" value={pricingContext.adults} />
               <input type="hidden" name="children" value={pricingContext.children} />
-              <button className="min-h-11 rounded-full bg-pine px-5 text-sm font-bold text-white sm:col-span-2">Tính giá cơ bản</button>
+              <button className="min-h-11 rounded-full bg-pine px-5 text-sm font-bold text-white sm:col-span-3">Xem giá và tình trạng</button>
             </form>
             <div className="mt-4"><PriceSummary quote={priceQuotes.get(room.id)} /></div>
           </Card>
-          <p className="rounded-3xl border border-line bg-surface p-4 text-sm leading-6 text-muted">Giá hiển thị không phải xác nhận tình trạng phòng. Vui lòng liên hệ trực tiếp với nơi lưu trú trước khi quyết định.</p>
+          <Card className="p-5">
+            <h2 className="font-display text-2xl font-bold text-pine">Tình trạng phòng theo ngày</h2>
+            <div className="mt-4"><AvailabilitySummary quote={availabilityQuotes.get(room.id)} detailed /></div>
+          </Card>
+          <p className="rounded-3xl border border-line bg-surface p-4 text-sm leading-6 text-muted">Giá và tình trạng phòng là hai thông tin riêng. Tình trạng có thể thay đổi cho tới khi yêu cầu đặt phòng được xác nhận; trang này không giữ chỗ.</p>
           <Link href={relatedSearchUrl} className="inline-flex min-h-12 items-center justify-center rounded-full border border-line bg-surface px-5 text-sm font-bold text-pine hover:bg-mist">Tìm phòng liên quan tại {property.area_name}</Link>
         </aside>
       </div>

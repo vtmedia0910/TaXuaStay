@@ -1,4 +1,5 @@
 import type { RoomSearchParams, RoomSearchResult } from "@/features/search/types";
+import { AVAILABILITY_STATE_RANK } from "@/features/availability/policy";
 
 export function getRoomSearchScore(result: RoomSearchResult, params: RoomSearchParams) {
   const requestedGuests = params.adults + params.children;
@@ -22,6 +23,11 @@ export function rankRoomSearchResults(
   params: RoomSearchParams,
 ) {
   return [...results].sort((left, right) => {
+    if (params.checkIn && params.checkOut) {
+      const leftAvailability = left.availabilityQuote ? AVAILABILITY_STATE_RANK[left.availabilityQuote.state] : 0;
+      const rightAvailability = right.availabilityQuote ? AVAILABILITY_STATE_RANK[right.availabilityQuote.state] : 0;
+      if (rightAvailability !== leftAvailability) return rightAvailability - leftAvailability;
+    }
     const scoreDifference = getRoomSearchScore(right, params) - getRoomSearchScore(left, params);
     if (scoreDifference) return scoreDifference;
 

@@ -1,4 +1,5 @@
 import type { RoomSearchParams, RoomSearchResult, SearchPreset } from "@/features/search/types";
+import { isCurrentlyAvailable } from "@/features/availability/policy";
 
 export function matchesRoomSearch(
   result: RoomSearchResult,
@@ -23,6 +24,7 @@ export function matchesRoomSearch(
   if (params.breakfast && !property.breakfast) return false;
   if (params.restaurant && !property.restaurant) return false;
   if (params.bbq && !property.bbq) return false;
+  if (params.availableOnly && (!result.availabilityQuote || !isCurrentlyAvailable(result.availabilityQuote.state))) return false;
 
   if (preset.propertyTypes && !preset.propertyTypes.includes(property.property_type)) return false;
   if (preset.viewTypes && !preset.viewTypes.includes(room.view_type)) return false;

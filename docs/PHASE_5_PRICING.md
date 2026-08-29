@@ -99,6 +99,6 @@ All three surfaces explicitly say that price is not room availability. Missing/c
 
 Admin errors remain accurate: a failed single-table mutation does not report success. No service-role key is required.
 
-## Future contract
+## Downstream contract
 
-Phase 6 may add availability but must not overload rate rules or change checkout-exclusive pricing. A later booking phase can snapshot currency, exact nightly lines, subtotal, zero/real discount and fees when supported, total, source/rule facts, verification timestamp, and `phase5-v1` policy version. Phase 5 itself creates no booking table and no booking dependency.
+Phase 6 implements availability as a separate inventory domain and preserves checkout-exclusive pricing unchanged. Its optional per-night operational price override is not consumed by the public pricing resolver because it lacks the full verification provenance required by Phase 5 confidence. A later booking phase can snapshot currency, exact nightly price lines, subtotal, zero/real discount and fees when supported, total, source/rule facts, verification timestamp, and `phase5-v1` policy version. Phase 5 itself still has no booking table or booking dependency.

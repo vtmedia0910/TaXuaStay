@@ -101,18 +101,19 @@ Search, property, and room pages show no generic invented “from” price. With
 
 Price and availability remain separate domains. Phase 5 contains no inventory, holds, blocks, room availability, or bookings. Phase 6 is responsible for availability and must consume pricing without changing Phase 5 night/date semantics.
 
+## Phase 6 room inventory and availability
+
+Phase 6 adds one latest-state `room_inventory` row per room type and lodging-night date. `available_quantity` is the number of sellable units for that night; it is separate from the physical `room_types.quantity`, cannot be negative, and cannot exceed that physical capacity. A room type cannot later be reduced below any recorded inventory. The unique room/date key, database validation, and one-transaction bulk RPC provide a safe row shape for Phase 7 to lock, but Phase 6 creates no booking, hold, customer, payment, or decrement workflow.
+
+Availability reuses the pricing calendar contract `[check_in, check_out)`. The pure resolver requires every lodging night and the requested room count. Fresh facts under six hours are `live`; facts from six through 24 hours are `verified_today`; facts older than 24 hours need confirmation; missing, invalid, or future-dated facts are unknown. A current quantity below the request is sold out, while a stale zero is only a prompt to reconfirm. A complete stay resolves current sold-out first, then unknown, stale, same-day verified, and live. Public code never falls back to physical quantity or price.
+
+Public inventory is read through a `security_invoker` allow-listed view backed by RLS. Only active published rooms and properties are visible, and anonymous users receive no inventory mutation privilege or staff/audit columns. Search can optionally keep only currently confirmed room types and otherwise ranks current availability ahead of stale, unknown, and sold-out states while preserving established relevance within each group. Property and room pages resolve each room type independently; price and availability remain visually and logically separate.
+
+`/admin/availability` lets authorized staff select a property and room, inspect a 14-night warning horizon, and atomically upsert one through 365 inclusive lodging-night dates. Normal saves use the current timestamp. Manual inputs support partner, Admin, and import sources; `booking_engine` is reserved in the database contract for a later automated integration. The optional integer-VND inventory override is stored for future audited integration and is excluded from public reads; Phase 5 remains the only active public price resolver.
+
 ## Planned domains
 
-Later phases may introduce these independent Stay domains, one reviewed phase at a time:
-
-- properties
-- rooms
-- availability
-- stay bookings
-- weather and cloud forecast
-- imports
-
-These names document direction only. Phase 5 adds rates over the existing content, discovery, and verification domains; availability, bookings, weather, imports, and referrals remain deferred.
+Later phases may introduce stay bookings, weather and cloud forecasting, imports, and referrals as independent Stay domains, one reviewed phase at a time. These names document direction only. Phase 6 adds availability over the existing content, discovery, verification, and pricing domains; booking and every later domain remain deferred.
 
 ## Future Biker relationship
 
