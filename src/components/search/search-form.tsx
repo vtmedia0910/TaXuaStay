@@ -85,7 +85,7 @@ export function SearchForm({ params, options }: {
         </fieldset>
 
         <fieldset className="grid gap-4 sm:grid-cols-2">
-          <legend className="mb-3 font-display text-xl font-bold text-pine">Property và room type</legend>
+          <legend className="mb-3 font-display text-xl font-bold text-pine">Nơi lưu trú và phòng</legend>
           <FormField label="Loại nơi lưu trú" htmlFor="search-property-type">
             <Select id="search-property-type" name="property_type" defaultValue={params.propertyType ?? ""}>
               <option value="">Tất cả loại</option>
@@ -112,7 +112,7 @@ export function SearchForm({ params, options }: {
               <option value="no">Không</option>
             </Select>
           </FormField>
-          <FormField label="View cơ bản" htmlFor="search-view">
+          <FormField label="Hướng nhìn" htmlFor="search-view">
             <Select id="search-view" name="view" defaultValue={params.viewType ?? ""}>
               <option value="">Tất cả</option>
               {VIEW_TYPES.map((value) => <option key={value} value={value}>{VIEW_TYPE_LABELS[value]}</option>)}
@@ -139,7 +139,7 @@ export function SearchForm({ params, options }: {
         </fieldset>
 
         <fieldset>
-          <legend className="mb-3 font-display text-xl font-bold text-pine">Tiện ích property</legend>
+          <legend className="mb-3 font-display text-xl font-bold text-pine">Tiện ích nơi lưu trú</legend>
           <div className="grid gap-3 sm:grid-cols-2">
             <FacilityCheckbox name="wifi" label="Wi-Fi" checked={params.wifi} />
             <FacilityCheckbox name="breakfast" label="Bữa sáng" checked={params.breakfast} />
@@ -149,7 +149,7 @@ export function SearchForm({ params, options }: {
         </fieldset>
 
         <p className="rounded-2xl bg-mist/70 p-3 text-sm leading-6 text-muted">
-          Ngày và số phòng được giữ làm ngữ cảnh tìm kiếm. Phase 3 chưa biết availability theo ngày và không dùng số lượng phòng vật lý để khẳng định còn phòng.
+          Ngày đi và số phòng được lưu cùng bộ lọc. Kết quả hiện chưa xác nhận tình trạng phòng theo ngày; vui lòng liên hệ nơi lưu trú trước khi quyết định.
         </p>
 
         <div className="flex flex-wrap gap-3">

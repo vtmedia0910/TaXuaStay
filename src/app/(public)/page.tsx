@@ -19,7 +19,7 @@ export default async function HomePage() {
 
       <section className="stay-backdrop px-5 py-16 sm:px-8 sm:py-24">
         <div className="mx-auto max-w-6xl">
-          <Badge className="bg-white/65 uppercase tracking-[0.14em]">Room-first discovery</Badge>
+          <Badge className="bg-white/65 uppercase tracking-[0.14em]">Tìm phòng theo nhu cầu</Badge>
           <h1 className="mt-5 max-w-4xl font-display text-5xl font-bold leading-[0.98] tracking-[-0.045em] text-pine sm:text-7xl">
             Tìm chỗ ở Tà Xùa từ đúng loại phòng
           </h1>
@@ -27,7 +27,7 @@ export default async function HomePage() {
             {settings.tagline}
           </p>
           <p className="mt-3 max-w-3xl text-base leading-7 text-muted">
-            Lọc theo sức chứa, room facts, khu vực, tiếp cận và tiện ích đã công khai. Ngày đi là ngữ cảnh cho phase availability sau, chưa phải cam kết còn phòng.
+            Lọc theo sức chứa, thông tin phòng, khu vực, đường vào và tiện ích đã công khai. Ngày đi giúp lưu lại nhu cầu; tình trạng phòng theo ngày vẫn cần được xác nhận trực tiếp.
           </p>
           <div className="mt-8"><SearchEntryForm /></div>
         </div>
@@ -35,14 +35,14 @@ export default async function HomePage() {
 
       <section className="bg-surface px-5 py-16 sm:px-8">
         <div className="mx-auto max-w-6xl">
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">PHASE 3</p>
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">Thông tin hữu ích</p>
           <h2 className="mt-2 font-display text-3xl font-bold text-pine sm:text-4xl">Thông tin đang dùng để thu hẹp lựa chọn</h2>
           <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              [BedDouble, "Room type", "Sức chứa, giường, phòng tắm và ban công của đúng loại phòng."],
-              [Eye, "View cơ bản", "Dùng view_type đã ghi nhận; chưa phải Cloud View Verified."],
-              [Car, "Tiếp cận rõ trạng thái", "Có, Không và Chưa xác nhận luôn được tách biệt."],
-              [ListFilter, "URL có thể chia sẻ", "Ngày, khách và bộ lọc được giữ trong đường dẫn tìm kiếm."],
+              [BedDouble, "Loại phòng", "Sức chứa, giường, phòng tắm và ban công của đúng loại phòng."],
+              [Eye, "Hướng nhìn đã ghi nhận", "Dựa trên thông tin hiện có; chưa được kiểm chứng theo tiêu chuẩn Cloud View Verified."],
+              [Car, "Thông tin đường vào", "Có, Không và Chưa xác nhận luôn được tách biệt."],
+              [ListFilter, "Lưu lựa chọn trong đường dẫn", "Ngày, khách và bộ lọc được giữ trong đường dẫn tìm kiếm."],
             ].map(([Icon, title, description]) => (
               <Card key={String(title)} className="p-5">
                 <Icon className="text-copper" aria-hidden="true" />

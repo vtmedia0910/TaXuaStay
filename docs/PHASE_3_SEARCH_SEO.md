@@ -134,9 +134,9 @@ The hunting-cloud and view pages use only `view_type = mountain | valley`. They 
 ## Canonicals, robots, sitemap, and structured data
 
 - `/tim-phong` has canonical `/tim-phong`.
-- Parameterized search states are `noindex,follow` to avoid uncontrolled index surfaces.
+- Parameterized search states are `noindex,follow` after brand-domain indexing is enabled; on temporary deployments the stricter site-wide `noindex,nofollow` policy wins.
 - Each intent landing, property page, and room page has its own canonical.
-- Robots allow public content and disallow `/admin`.
+- Robots allow public content and disallow `/admin` only after a final brand domain enables indexing.
 - Sitemap includes homepage, search, seven landing pages, and only properties/rooms visible through anonymous RLS.
 - If Supabase is unavailable, sitemap generation returns the static public routes rather than failing the build.
 - Property JSON-LD uses `LodgingBusiness` or `Hotel` with current factual fields and approved images only.
@@ -152,9 +152,20 @@ NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 ```
 
-Do not add a service-role key for public search. After changing Vercel environment values, redeploy production so the Next.js build and runtime receive them.
+No runtime code uses a service-role client. Do not configure `SUPABASE_SERVICE_ROLE_KEY` for the current application; the owner should remove that variable from Vercel and retain only the public variables above. After changing Vercel environment values, redeploy production so the Next.js build and runtime receive them.
 
-Canonical generation prefers `NEXT_PUBLIC_SITE_URL`. It accepts either an absolute HTTP(S) URL or a production hostname and falls back to Vercel's build/runtime `VERCEL_PROJECT_PRODUCTION_URL` before using the local development URL.
+### Indexing safety before the final brand domain
+
+Canonical URL resolution prefers `NEXT_PUBLIC_SITE_URL`, then Vercel's build/runtime `VERCEL_PROJECT_PRODUCTION_URL`, then the local development URL. Indexing is enabled only when the explicit `NEXT_PUBLIC_SITE_URL` value is a valid HTTPS URL on a non-local, non-`*.vercel.app` hostname.
+
+When the application uses only a technical Vercel hostname—or that hostname is explicitly configured by mistake—public pages remain fully usable, but:
+
+- page metadata emits `noindex,nofollow` plus no-cache/no-archive safeguards;
+- `robots.txt` disallows `/` and does not advertise the sitemap;
+- `sitemap.xml` still renders normally so builds and deployment checks remain safe;
+- canonical URLs continue using the active technical hostname without pretending it is the final SEO domain.
+
+To enable production indexing later, the owner must set `NEXT_PUBLIC_SITE_URL` to the chosen final HTTPS brand domain and redeploy. After deployment, verify the canonical, public `index,follow` metadata, `robots.txt`, and sitemap hostname before submitting the site to search engines.
 
 ## Explicit scope stop
 

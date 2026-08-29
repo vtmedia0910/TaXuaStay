@@ -31,7 +31,7 @@ export function SearchResultCard({ result }: { result: RoomSearchResult }) {
           />
         ) : (
           <div className="grid aspect-[4/3] place-items-center bg-mist text-muted">
-            <span className="grid justify-items-center gap-2 text-sm"><ImageIcon aria-hidden="true" />Chưa có ảnh phòng đã duyệt</span>
+            <span className="grid justify-items-center gap-2 text-sm"><ImageIcon aria-hidden="true" />Chưa có ảnh phòng</span>
           </div>
         )}
 
@@ -47,7 +47,7 @@ export function SearchResultCard({ result }: { result: RoomSearchResult }) {
           <dl className="grid grid-cols-2 gap-3 text-sm">
             <div><dt className="flex items-center gap-1 font-bold"><Users size={16} aria-hidden="true" />Sức chứa</dt><dd className="mt-1 text-muted">Tối đa {room.max_guests} khách</dd></div>
             <div><dt className="flex items-center gap-1 font-bold"><Bath size={16} aria-hidden="true" />Phòng tắm</dt><dd className="mt-1 text-muted">{BATHROOM_TYPE_LABELS[room.bathroom_type]}</dd></div>
-            <div><dt className="flex items-center gap-1 font-bold"><Mountain size={16} aria-hidden="true" />View cơ bản</dt><dd className="mt-1 text-muted">{VIEW_TYPE_LABELS[room.view_type]}</dd></div>
+            <div><dt className="flex items-center gap-1 font-bold"><Mountain size={16} aria-hidden="true" />Hướng nhìn</dt><dd className="mt-1 text-muted">{VIEW_TYPE_LABELS[room.view_type]}</dd></div>
             <div><dt className="flex items-center gap-1 font-bold"><Car size={16} aria-hidden="true" />Ô tô</dt><dd className="mt-1 text-muted"><span aria-hidden="true">{ACCESS_FILTER_MARKS[property.car_access]}</span> {ACCESS_FILTER_LABELS[property.car_access]}</dd></div>
           </dl>
 

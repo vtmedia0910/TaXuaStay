@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { getPublicPageRobots } from "@/config/seo";
 import { getSiteUrl, SITE } from "@/config/site";
 import "./globals.css";
 
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
   description: SITE.description,
   applicationName: SITE.name,
   alternates: { canonical: "/" },
+  robots: getPublicPageRobots(),
   openGraph: {
     type: "website",
     locale: "vi_VN",

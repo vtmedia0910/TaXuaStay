@@ -12,6 +12,7 @@ import { formatAccessCertainty } from "@/features/properties/access";
 import { getPublicPropertyBySlug } from "@/features/properties/data";
 import { getPublicRoomsByProperty } from "@/features/rooms/data";
 import { buildRoomSearchUrl, DEFAULT_ROOM_SEARCH_PARAMS } from "@/features/search/params";
+import { PROPERTY_TYPE_LABELS, ROAD_ACCESS_GRADE_LABELS } from "@/features/search/labels";
 import { buildPropertyStructuredData, serializeStructuredData } from "@/features/search/structured-data";
 
 export async function generateMetadata({
@@ -64,7 +65,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
       <section className="bg-pine px-5 py-12 text-white sm:px-8 sm:py-16">
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-wrap gap-2">
-            <Badge className="bg-white/15 text-white">{property.property_type}</Badge>
+            <Badge className="bg-white/15 text-white">{PROPERTY_TYPE_LABELS[property.property_type]}</Badge>
             {property.is_featured ? <Badge className="bg-copper text-white">Nổi bật</Badge> : null}
           </div>
           <h1 className="mt-5 max-w-4xl font-display text-4xl font-bold sm:text-6xl">{property.name}</h1>
@@ -104,7 +105,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
                   </Card>
                 ))}
               </div>
-            ) : <p className="mt-4 text-muted">Chưa có loại phòng đã xuất bản.</p>}
+            ) : <p className="mt-4 text-muted">Chưa có loại phòng đang hiển thị.</p>}
           </section>
         </div>
 
@@ -116,7 +117,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
               <div className="flex gap-3"><Car className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Ô tô tiếp cận</dt><dd className="mt-1 text-muted">{formatAccessCertainty(property.car_access)}</dd></div></div>
               <div className="flex gap-3"><Bike className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Xe máy tiếp cận</dt><dd className="mt-1 text-muted">{formatAccessCertainty(property.motorbike_access)}</dd></div></div>
               <div className="flex gap-3"><ParkingCircle className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Chỗ đỗ xe</dt><dd className="mt-1 text-muted">{formatAccessCertainty(property.parking)}</dd></div></div>
-              <div className="flex gap-3"><Mountain className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Đường vào sơ bộ</dt><dd className="mt-1 text-muted">{property.road_access_grade.toUpperCase()} · chưa phải Road Verified</dd></div></div>
+              <div className="flex gap-3"><Mountain className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Đường vào sơ bộ</dt><dd className="mt-1 text-muted">{ROAD_ACCESS_GRADE_LABELS[property.road_access_grade]} · chưa được kiểm chứng đầy đủ</dd></div></div>
               {property.wifi ? <div className="flex gap-3"><Wifi className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Wi-Fi</dt><dd className="mt-1 text-muted">Có</dd></div></div> : null}
             </dl>
           </Card>

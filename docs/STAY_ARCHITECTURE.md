@@ -61,9 +61,11 @@ Phase 3 adds `/tim-phong` as the primary discovery route. Search begins with pub
 
 The search data layer uses the anonymous Supabase client and existing RLS. It performs one paginated room/property query followed by a fixed batch of room/property amenity and approved-media queries for the current page, avoiding per-card N+1 requests. Public search DTOs exclude lifecycle fields, audit IDs, physical quantity, verification placeholders, prices, and future booking data.
 
-Seven intent landing pages reuse deterministic current facts for homestay, basic mountain/valley view, two-guest room needs, group capacity, confirmed car access plus parking, and hotel property type. Cloud/view pages explicitly remain pre-Phase 4 and do not claim Cloud View Verified. Search filter combinations canonicalize to `/tim-phong` and are `noindex,follow`; each landing page has its own canonical.
+Seven intent landing pages reuse deterministic current facts for homestay, basic mountain/valley view, two-guest room needs, group capacity, confirmed car access plus parking, and hotel property type. Cloud/view pages explicitly remain pre-Phase 4 and do not claim Cloud View Verified. Search filter combinations canonicalize to `/tim-phong` and are `noindex,follow` once brand-domain indexing is enabled; each landing page has its own canonical.
 
-`robots.ts` allows public discovery and blocks Admin crawling. `sitemap.ts` contains public static routes plus RLS-visible property and room URLs, and falls back to static routes if Supabase is unavailable. Property JSON-LD uses factual `LodgingBusiness`/`Hotel` fields only and omits ratings, reviews, prices, and availability.
+Indexing is environment-aware. A valid explicit HTTPS brand domain in `NEXT_PUBLIC_SITE_URL` enables normal public indexing. Local hosts, technical `*.vercel.app` hosts, and deployments that rely only on `VERCEL_PROJECT_PRODUCTION_URL` remain usable but emit public `noindex` metadata; `robots.ts` blocks crawling and does not advertise the sitemap. The sitemap route still builds and contains public static routes plus RLS-visible property and room URLs, falling back to static routes if Supabase is unavailable. Property JSON-LD uses factual `LodgingBusiness`/`Hotel` fields only and omits ratings, reviews, prices, and availability.
+
+No runtime call site requires a service-role client. The tracked environment template contains only the final canonical URL and the two public Supabase variables. Any existing `SUPABASE_SERVICE_ROLE_KEY` in Vercel is unnecessary for the current application and should be removed by the owner.
 
 ## Planned domains
 

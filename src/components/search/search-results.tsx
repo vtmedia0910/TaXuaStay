@@ -13,8 +13,8 @@ export function SearchResults({ response, params, landingSlug }: {
   if (response.status === "unconfigured") {
     return (
       <EmptyState
-        title="Chưa kết nối dữ liệu Stay"
-        description="Trang vẫn hoạt động an toàn, nhưng cần cấu hình public Supabase URL và anon key của đúng project Stay để tải room type."
+        title="Danh sách phòng đang tạm thời chưa khả dụng"
+        description="Bạn vẫn có thể xem trang và thử lại sau. Chúng tôi không hiển thị dữ liệu thay thế khi chưa kết nối được nguồn thông tin."
       />
     );
   }
@@ -49,13 +49,13 @@ export function SearchResults({ response, params, landingSlug }: {
     <section aria-labelledby="search-results-title">
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.12em] text-copper-strong">Room-first discovery</p>
+          <p className="text-sm font-bold uppercase tracking-[0.12em] text-copper-strong">Phòng phù hợp nhu cầu</p>
           <h2 id="search-results-title" className="mt-1 font-display text-3xl font-bold text-pine">
-            {response.total} loại phòng phù hợp dữ liệu hiện có
+            {response.total} loại phòng có thông tin phù hợp
           </h2>
         </div>
         <p className="max-w-md text-sm leading-6 text-muted">
-          Không hiển thị giá, rating hay tình trạng còn phòng vì các dữ liệu đó chưa tồn tại trong Phase 3.
+          Giá, đánh giá và tình trạng phòng theo ngày chưa được cung cấp; vui lòng xác nhận trực tiếp với nơi lưu trú.
         </p>
       </div>
 

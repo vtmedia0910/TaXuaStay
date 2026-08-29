@@ -32,7 +32,7 @@ export function MediaGallery({ assets }: { assets: MediaAssetDto[] }) {
   if (!assets.length) {
     return (
       <div className="grid min-h-52 place-items-center rounded-[2rem] border border-dashed border-line bg-mist/50 p-6 text-center text-sm text-muted">
-        Chưa có media đã được kiểm duyệt để hiển thị công khai.
+        Chưa có hình ảnh để hiển thị.
       </div>
     );
   }
@@ -44,7 +44,7 @@ export function MediaGallery({ assets }: { assets: MediaAssetDto[] }) {
           <div className="relative">
             <MediaFrame asset={asset} />
             {asset.media_type === "panorama_360" ? (
-              <Badge className="absolute left-3 top-3 bg-pine text-white">360° panorama</Badge>
+              <Badge className="absolute left-3 top-3 bg-pine text-white">Ảnh toàn cảnh 360°</Badge>
             ) : null}
           </div>
           {asset.caption ? (

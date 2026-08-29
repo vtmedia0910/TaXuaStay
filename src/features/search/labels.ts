@@ -1,4 +1,4 @@
-import type { AccessCertainty, PropertyType } from "@/features/properties/types";
+import type { AccessCertainty, PropertyType, RoadAccessGrade } from "@/features/properties/types";
 import type { BathroomType, ViewType } from "@/features/rooms/types";
 
 export const PROPERTY_TYPE_LABELS: Record<PropertyType, string> = {
@@ -8,6 +8,14 @@ export const PROPERTY_TYPE_LABELS: Record<PropertyType, string> = {
   guesthouse: "Nhà nghỉ",
   glamping: "Glamping",
   other: "Loại khác",
+};
+
+export const ROAD_ACCESS_GRADE_LABELS: Record<RoadAccessGrade, string> = {
+  unknown: "Chưa xác nhận",
+  a: "Mức A — dễ tiếp cận",
+  b: "Mức B — cần lưu ý",
+  c: "Mức C — khó tiếp cận",
+  d: "Mức D — không có đường ô tô trực tiếp",
 };
 
 export const BATHROOM_TYPE_LABELS: Record<BathroomType, string> = {
@@ -24,8 +32,8 @@ export const VIEW_TYPE_LABELS: Record<ViewType, string> = {
   garden: "Vườn",
   village: "Bản làng",
   courtyard: "Sân trong",
-  none: "Không có view",
-  other: "View khác",
+  none: "Không có hướng nhìn đặc trưng",
+  other: "Hướng nhìn khác",
 };
 
 export const ACCESS_FILTER_LABELS: Record<AccessCertainty, string> = {

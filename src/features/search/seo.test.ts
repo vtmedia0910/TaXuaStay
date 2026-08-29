@@ -15,9 +15,26 @@ describe("Phase 3 SEO landing configuration", () => {
   it("keeps cloud/view pages cautious before Phase 4", () => {
     for (const slug of ["homestay-san-may-ta-xua", "homestay-ta-xua-view-dep"] as const) {
       const text = JSON.stringify(SEO_LANDING_PAGES[slug]);
-      expect(text).toContain("chưa phải Cloud View Verified");
+      expect(text).toContain("chưa được kiểm chứng theo tiêu chuẩn Cloud View Verified");
       expect(text).not.toContain("đã xác minh");
       expect(text).not.toMatch(/\b9\.\d\b|tốt nhất/i);
+    }
+  });
+
+  it("keeps implementation vocabulary out of customer-facing landing copy", () => {
+    for (const page of Object.values(SEO_LANDING_PAGES)) {
+      const customerCopy = [
+        page.title,
+        page.description,
+        page.h1,
+        page.intro,
+        page.criteria,
+        "note" in page ? page.note : undefined,
+      ].filter(Boolean).join(" ");
+
+      expect(customerCopy).not.toMatch(
+        /\b(room type|property|facts?|availability|phase \d+|view_type|max_guests|bathroom_type)\b/i,
+      );
     }
   });
 

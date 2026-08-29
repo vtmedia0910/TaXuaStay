@@ -5,6 +5,7 @@ import { SearchForm } from "@/components/search/search-form";
 import { SearchResults } from "@/components/search/search-results";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { getPublicPageRobots } from "@/config/seo";
 import { getPublicSearchOptions, searchPublicRooms } from "@/features/search/data";
 import { parseRoomSearchParams, type RawSearchParams } from "@/features/search/params";
 import { SEO_LANDING_PAGES, SEO_LANDING_SLUGS } from "@/features/search/seo";
@@ -16,9 +17,11 @@ export async function generateMetadata({ searchParams }: {
   const hasQuery = Object.values(raw).some((value) => value !== undefined);
   return {
     title: "Tìm phòng Tà Xùa theo nhu cầu",
-    description: "Tìm room type tại Tà Xùa theo sức chứa, loại property, khu vực, phòng tắm, view cơ bản, đường vào và tiện ích đang được ghi nhận.",
+    description: "Tìm phòng tại Tà Xùa theo sức chứa, loại nơi lưu trú, khu vực, phòng tắm, hướng nhìn, đường vào và tiện ích đang được ghi nhận.",
     alternates: { canonical: "/tim-phong" },
-    robots: hasQuery ? { index: false, follow: true } : { index: true, follow: true },
+    robots: getPublicPageRobots(
+      hasQuery ? { index: false, follow: true } : { index: true, follow: true },
+    ),
   };
 }
 
@@ -35,10 +38,10 @@ export default async function RoomSearchPage({ searchParams }: {
     <main className="bg-cream pb-20">
       <section className="bg-pine px-5 py-12 text-white sm:px-8 sm:py-16">
         <div className="mx-auto max-w-6xl">
-          <Badge className="bg-white/15 text-white">PHASE 3 · ROOM-FIRST</Badge>
+          <Badge className="bg-white/15 text-white">Chọn phòng theo nhu cầu</Badge>
           <h1 className="mt-5 max-w-4xl font-display text-4xl font-bold sm:text-6xl">Tìm loại phòng phù hợp nhu cầu</h1>
           <p className="mt-4 max-w-3xl text-lg leading-8 text-white/80">
-            Bắt đầu từ room type, sức chứa và các facts đã xuất bản. Ngày đi được giữ trong URL để dùng cho availability ở phase sau, không phải cam kết còn phòng.
+            Bắt đầu từ loại phòng, sức chứa và những thông tin đã được công khai. Ngày đi được giữ trong đường dẫn để bạn dễ tiếp tục lựa chọn; tình trạng phòng vẫn cần xác nhận trực tiếp.
           </p>
         </div>
       </section>

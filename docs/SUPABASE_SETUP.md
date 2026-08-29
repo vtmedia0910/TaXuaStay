@@ -51,7 +51,7 @@ NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 ```
 
-No current application call site uses the service-role client, so do not configure `SUPABASE_SERVICE_ROLE_KEY` locally or in Vercel for Phase 2. At the 2026-08-29 verification, `.env.local` was absent and the production `/admin/login` page rendered the missing-Supabase warning with login disabled. Configure both public variables in the local uncommitted `.env.local` and the Vercel project, then redeploy production.
+No current application call site uses a service-role client, and the unused client factory and environment-template placeholder have been removed. Do not configure `SUPABASE_SERVICE_ROLE_KEY` locally or in Vercel for the current application. If that variable already exists in the Vercel project, the owner should remove it. Keep only the two public Supabase variables above, then redeploy after any environment change.
 
 ## Storage architecture
 
