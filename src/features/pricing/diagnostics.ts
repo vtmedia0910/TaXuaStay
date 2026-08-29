@@ -1,9 +1,6 @@
 import { RATE_TYPE_PRECEDENCE, RECENT_PRICE_DAYS, vietnamDate } from "@/features/pricing/policy";
+import { dateIntervalsOverlap, intersectDateIntervals } from "@/features/pricing/intervals";
 import type { AdminPricingIssue, RatePlanDto, RoomRateRuleDto } from "@/features/pricing/types";
-
-function rangesOverlap(aFrom: string | null, aUntil: string | null, bFrom: string | null, bUntil: string | null) {
-  return (!aUntil || !bFrom || aUntil >= bFrom) && (!bUntil || !aFrom || bUntil >= aFrom);
-}
 
 function daysOverlap(left: RoomRateRuleDto, right: RoomRateRuleDto) {
   const defaults = (rule: RoomRateRuleDto) => rule.days_of_week?.length
@@ -11,15 +8,6 @@ function daysOverlap(left: RoomRateRuleDto, right: RoomRateRuleDto) {
     : rule.rate_type === "weekday" ? [1, 2, 3, 4]
       : rule.rate_type === "weekend" ? [5, 6, 7] : [1, 2, 3, 4, 5, 6, 7];
   return defaults(left).some((day) => defaults(right).includes(day));
-}
-
-function effectiveRange(rule: RoomRateRuleDto, plan: RatePlanDto) {
-  const starts = [rule.valid_from, plan.valid_from].filter((value): value is string => Boolean(value));
-  const ends = [rule.valid_until, plan.valid_until].filter((value): value is string => Boolean(value));
-  return {
-    from: starts.length ? starts.sort().at(-1) ?? null : null,
-    until: ends.length ? ends.sort()[0] : null,
-  };
 }
 
 export function detectAdminPricingIssues(input: {
@@ -40,6 +28,16 @@ export function detectAdminPricingIssues(input: {
   }
 
   for (const rule of input.rules) {
+    const plan = plans.get(rule.rate_plan_id);
+    if (plan && !dateIntervalsOverlap(rule, plan)) {
+      issues.push({
+        severity: rule.is_active ? "error" : "warning",
+        code: "disjoint-range",
+        room_type_id: rule.room_type_id,
+        rule_ids: [rule.id],
+        message: `Quy tắc ${rule.id.slice(0, 8)} không giao ngày với bảng giá “${plan.name}” nên không thể áp dụng.`,
+      });
+    }
     if (!rule.is_active || !rule.price_verified_at) continue;
     const age = now.getTime() - new Date(rule.price_verified_at).getTime();
     if ((rule.price_valid_until && rule.price_valid_until < today) || age > RECENT_PRICE_DAYS * 86_400_000) {
@@ -47,7 +45,10 @@ export function detectAdminPricingIssues(input: {
     }
   }
 
-  const activeRules = input.rules.filter((rule) => rule.is_active && plans.get(rule.rate_plan_id)?.is_active);
+  const activeRules = input.rules.filter((rule) => {
+    const plan = plans.get(rule.rate_plan_id);
+    return rule.is_active && plan?.is_active && dateIntervalsOverlap(rule, plan);
+  });
   for (let index = 0; index < activeRules.length; index += 1) {
     for (let otherIndex = index + 1; otherIndex < activeRules.length; otherIndex += 1) {
       const left = activeRules[index];
@@ -57,9 +58,9 @@ export function detectAdminPricingIssues(input: {
       if (!leftPlan || !rightPlan || left.room_type_id !== right.room_type_id) continue;
       if (RATE_TYPE_PRECEDENCE[left.rate_type] !== RATE_TYPE_PRECEDENCE[right.rate_type]) continue;
       if (left.priority !== right.priority || leftPlan.priority !== rightPlan.priority) continue;
-      const leftRange = effectiveRange(left, leftPlan);
-      const rightRange = effectiveRange(right, rightPlan);
-      if (!rangesOverlap(leftRange.from, leftRange.until, rightRange.from, rightRange.until)) continue;
+      const leftRange = intersectDateIntervals(left, leftPlan);
+      const rightRange = intersectDateIntervals(right, rightPlan);
+      if (!leftRange || !rightRange || !dateIntervalsOverlap(leftRange, rightRange)) continue;
       if (!daysOverlap(left, right)) continue;
       issues.push({
         severity: "error",

@@ -87,7 +87,9 @@ Indexing safety remains unchanged. `/verified` is emitted in the sitemap only wh
 
 ## Phase 5 pricing
 
-Phase 5 adds a Stay-owned pricing domain with `rate_plans` and `room_rate_rules`. Plans group business rules per property; each rule prices one room type in integer VND. PostgreSQL constraints enforce valid date ranges, non-negative whole-VND amounts, bounded priorities, special-rate date ranges, VND-only currency, and room/plan ownership. Owner-link triggers prevent later property moves from invalidating that ownership. No price rows are seeded.
+Phase 5 adds a Stay-owned pricing domain with `rate_plans` and `room_rate_rules`. Plans group business rules per property; each rule prices one room type in integer VND. PostgreSQL constraints and triggers enforce valid date ranges, non-negative whole-VND amounts, bounded priorities, special-rate date ranges, VND-only currency, room/plan ownership, and an effective date intersection for every active rule. Open-ended and partial overlaps are valid; inactive disjoint rules can be prepared but are flagged as non-effective. Owner-link triggers prevent later property moves from invalidating ownership. No price rows are seeded.
+
+Price verification validity follows the Vietnam calendar. If both verification fields exist, `price_valid_until` cannot precede `(price_verified_at at time zone 'Asia/Ho_Chi_Minh')::date`; Zod/Admin and PostgreSQL enforce the same rule. A rule without `price_verified_at` is still a permitted reference price, preserving the Phase 5 confidence model.
 
 The application resolver enumerates lodging nights as calendar dates in `[check_in, check_out)`. Monday–Thursday are weekday nights and Friday–Sunday are weekend nights unless a rule explicitly supplies ISO weekday numbers. Applicable rules resolve by rate-type precedence (`override > holiday > peak > weekend > weekday`), then higher rule priority, then higher plan priority. More than one rule at the winning effective priority is a visible conflict even when the stored prices match; no row order is used as a tiebreaker.
 

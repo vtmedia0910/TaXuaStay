@@ -22,8 +22,8 @@ export function RatePlanForm({ plan, properties }: { plan?: RatePlanDto | null; 
         </div>
         <Field label="Ghi chú nội bộ" htmlFor="description"><Textarea id="description" name="description" defaultValue={plan?.description ?? ""} className="min-h-28" /></Field>
         <div className="grid gap-5 sm:grid-cols-3">
-          <Field label="Hiệu lực từ" htmlFor="valid_from"><Input id="valid_from" name="valid_from" type="date" defaultValue={plan?.valid_from ?? ""} /></Field>
-          <Field label="Hiệu lực đến" htmlFor="valid_until"><Input id="valid_until" name="valid_until" type="date" defaultValue={plan?.valid_until ?? ""} /></Field>
+          <Field label="Hiệu lực từ" htmlFor="valid_from" hint="Khoảng mới phải còn giao với mọi quy tắc đang hoạt động."><Input id="valid_from" name="valid_from" type="date" defaultValue={plan?.valid_from ?? ""} /></Field>
+          <Field label="Hiệu lực đến" htmlFor="valid_until" hint="Nếu cần chuẩn bị trước, hãy tắt quy tắc chưa cùng khoảng ngày."><Input id="valid_until" name="valid_until" type="date" defaultValue={plan?.valid_until ?? ""} /></Field>
           <Field label="Ưu tiên bảng giá" htmlFor="priority" hint="Số cao hơn thắng sau khi xét loại giá."><Input id="priority" name="priority" type="number" min={-10000} max={10000} defaultValue={plan?.priority ?? 0} required /></Field>
         </div>
         <div className="grid gap-5 sm:grid-cols-2">

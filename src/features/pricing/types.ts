@@ -111,7 +111,7 @@ export interface AdminRatePlanOption {
 
 export interface AdminPricingIssue {
   severity: "error" | "warning";
-  code: "overlap" | "stale" | "expired-plan" | "missing-rule";
+  code: "overlap" | "stale" | "expired-plan" | "missing-rule" | "disjoint-range";
   message: string;
   room_type_id?: string;
   rule_ids?: string[];

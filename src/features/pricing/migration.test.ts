@@ -6,6 +6,10 @@ const sql = fs.readFileSync(
   path.join(process.cwd(), "supabase/migrations/202608290006_rate_plans_and_pricing.sql"),
   "utf8",
 );
+const correctiveSql = fs.readFileSync(
+  path.join(process.cwd(), "supabase/migrations/202608290007_harden_phase5_pricing.sql"),
+  "utf8",
+);
 
 describe("Phase 5 migration", () => {
   it("adds integer VND rate plans and rules without inventory or bookings", () => {
@@ -39,5 +43,25 @@ describe("Phase 5 migration", () => {
     expect(sql).toMatch(/Rate plan and room type must belong to the same property/);
     expect(sql).toMatch(/room_types_protect_rate_owner_links/);
     expect(sql).not.toMatch(/grant (insert|update|delete)[\s\S]*? to anon/i);
+  });
+});
+
+describe("Phase 5 hardening migration", () => {
+  it("uses Vietnam calendar dates as the database verification backstop", () => {
+    expect(correctiveSql).toMatch(/price_valid_until\s*<\s*\(new\.price_verified_at at time zone 'Asia\/Ho_Chi_Minh'\)::date/i);
+    expect(correctiveSql).toMatch(/Existing price validity ends before its Vietnam verification date/i);
+  });
+
+  it("rejects active disjoint rules and plan edits that would make them disjoint", () => {
+    expect(correctiveSql).toMatch(/Active room rate rule must overlap its rate plan date range/i);
+    expect(correctiveSql).toMatch(/create trigger rate_plans_validate_rule_ranges/i);
+    expect(correctiveSql).toMatch(/Rate plan date range must overlap every active room rate rule/i);
+    expect(correctiveSql).toMatch(/rule\.is_active/i);
+  });
+
+  it("does not alter RLS, anonymous grants, or later-phase domains", () => {
+    expect(correctiveSql).not.toMatch(/create policy|drop policy|enable row level security/i);
+    expect(correctiveSql).not.toMatch(/grant\s|revoke all on table/i);
+    expect(correctiveSql).not.toMatch(/create table public\.(bookings|availability|inventory)/i);
   });
 });

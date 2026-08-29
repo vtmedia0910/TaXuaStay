@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdminUser } from "@/features/admin/auth";
+import { dateIntervalsOverlap } from "@/features/pricing/intervals";
 import { ratePlanSchema, roomRateRuleSchema } from "@/features/pricing/schema";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -37,6 +38,18 @@ export async function saveRatePlanAction(formData: FormData) {
   const supabase = await createServerSupabaseClient();
   if (!supabase) redirect("/admin/rates?error=config");
   const { id, ...value } = parsed.data;
+  if (id) {
+    const { data: activeRules, error: activeRulesError } = await supabase
+      .from("room_rate_rules")
+      .select("valid_from,valid_until")
+      .eq("rate_plan_id", id)
+      .eq("is_active", true)
+      .overrideTypes<Array<{ valid_from: string | null; valid_until: string | null }>, { merge: false }>();
+    if (activeRulesError) redirect("/admin/rates?error=rate-plan-save");
+    if ((activeRules ?? []).some((rule) => !dateIntervalsOverlap(value, rule))) {
+      redirect("/admin/rates?error=rate-plan-range");
+    }
+  }
   const mutation = id
     ? supabase.from("rate_plans").update({ ...value, currency: "VND" }).eq("id", id).select("id").single()
     : supabase.from("rate_plans").insert({ ...value, currency: "VND" }).select("id").single();
@@ -71,6 +84,16 @@ export async function saveRoomRateRuleAction(formData: FormData) {
   if (!supabase) redirect("/admin/rates?error=config");
   const { id, price_verified_at, ...rest } = parsed.data;
   const value = { ...rest, price_verified_at: vietnamLocalDateTime(price_verified_at) };
+  const { data: plan, error: planError } = await supabase
+    .from("rate_plans")
+    .select("valid_from,valid_until")
+    .eq("id", value.rate_plan_id)
+    .maybeSingle()
+    .overrideTypes<{ valid_from: string | null; valid_until: string | null }, { merge: false }>();
+  if (planError || !plan) redirect("/admin/rates?error=rate-rule-save");
+  if (value.is_active && !dateIntervalsOverlap(value, plan)) {
+    redirect("/admin/rates?error=rate-rule-range");
+  }
   const mutation = id
     ? supabase.from("room_rate_rules").update(value).eq("id", id).select("id").single()
     : supabase.from("room_rate_rules").insert(value).select("id").single();

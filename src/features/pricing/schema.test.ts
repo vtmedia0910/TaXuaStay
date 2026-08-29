@@ -39,6 +39,20 @@ describe("Phase 5 pricing schemas", () => {
     expect(roomRateRuleSchema.safeParse({ ...baseRule, price_verified_at: "2999-01-01T00:00" }).success).toBe(false);
   });
 
+  it("keeps verification validity on or after the Vietnam verification date", () => {
+    expect(roomRateRuleSchema.safeParse({
+      ...baseRule,
+      price_verified_at: "2025-01-01T00:30",
+      price_valid_until: "2024-12-31",
+    }).success).toBe(false);
+    expect(roomRateRuleSchema.safeParse({
+      ...baseRule,
+      price_verified_at: "2025-01-01T00:30",
+      price_valid_until: "2025-01-01",
+    }).success).toBe(true);
+    expect(roomRateRuleSchema.safeParse({ ...baseRule, price_valid_until: "2025-01-01" }).success).toBe(true);
+  });
+
   it("enforces plan dates and lifecycle consistency", () => {
     const basePlan = { id: "", property_id: uuid, code: "standard-2026", name: "Standard 2026", description: "", valid_from: "2026-12-02", valid_until: "2026-12-01", priority: "0", is_active: "on", publish_status: "published" };
     expect(ratePlanSchema.safeParse(basePlan).success).toBe(false);

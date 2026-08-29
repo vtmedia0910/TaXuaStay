@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { priceVerificationDatesAreConsistent } from "@/features/pricing/policy";
 import { PRICE_SOURCES, RATE_TYPES } from "@/features/pricing/types";
 import { blankToNull, formCheckbox, optionalNumber, optionalText } from "@/lib/validation";
 
@@ -57,6 +58,13 @@ export const roomRateRuleSchema = z.object({
     if (submitted.getTime() > Date.now()) {
       context.addIssue({ code: "custom", path: ["price_verified_at"], message: "Thời điểm xác minh không được ở tương lai." });
     }
+  }
+  if (!priceVerificationDatesAreConsistent(value.price_verified_at, value.price_valid_until)) {
+    context.addIssue({
+      code: "custom",
+      path: ["price_valid_until"],
+      message: "Ngày hết xác minh không được trước ngày xác minh theo giờ Việt Nam.",
+    });
   }
 });
 

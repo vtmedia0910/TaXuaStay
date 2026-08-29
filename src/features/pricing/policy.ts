@@ -38,6 +38,13 @@ export const RATE_TYPE_PRECEDENCE: Record<RateType, number> = {
 
 const TRUSTED_VERIFIED_SOURCES = new Set<PriceSource>(["partner", "admin", "contract"]);
 const RECENT_SOURCES = new Set<PriceSource>(["partner", "admin", "contract", "import"]);
+const HAS_TIME_ZONE = /(Z|[+-]\d{2}:\d{2})$/i;
+const VIETNAM_DATE_FORMATTER = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Ho_Chi_Minh",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
 
 export function formatVnd(value: number) {
   return new Intl.NumberFormat("vi-VN").format(value) + " ₫";
@@ -48,15 +55,28 @@ export function formatLodgingDate(value: string) {
     .format(new Date(`${value}T00:00:00.000Z`));
 }
 
+export function vietnamCalendarDate(value: string | Date) {
+  const instant = typeof value === "string"
+    ? new Date(HAS_TIME_ZONE.test(value) ? value : `${value}+07:00`)
+    : value;
+  if (Number.isNaN(instant.getTime())) return null;
+
+  const parts = VIETNAM_DATE_FORMATTER.formatToParts(instant);
+  const calendarParts = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${calendarParts.year}-${calendarParts.month}-${calendarParts.day}`;
+}
+
 export function vietnamDate(now = new Date()) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Ho_Chi_Minh",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(now);
-  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  return `${value.year}-${value.month}-${value.day}`;
+  return vietnamCalendarDate(now) ?? "";
+}
+
+export function priceVerificationDatesAreConsistent(
+  verifiedAt: string | null,
+  validUntil: string | null,
+) {
+  if (!verifiedAt || !validUntil) return true;
+  const verifiedDate = vietnamCalendarDate(verifiedAt);
+  return verifiedDate !== null && validUntil >= verifiedDate;
 }
 
 export function resolvePriceConfidence(

@@ -40,8 +40,8 @@ export function RateRuleForm({ rule, plans, rooms, properties }: {
           <Field label="Phụ thu trẻ em (chưa tự cộng)" htmlFor="extra_child_vnd"><Input id="extra_child_vnd" name="extra_child_vnd" type="number" min={0} step={1} defaultValue={rule?.extra_child_vnd ?? ""} /></Field>
         </div>
         <div className="grid gap-5 sm:grid-cols-3">
-          <Field label="Áp dụng từ" htmlFor="valid_from"><Input id="valid_from" name="valid_from" type="date" defaultValue={rule?.valid_from ?? ""} /></Field>
-          <Field label="Áp dụng đến" htmlFor="valid_until"><Input id="valid_until" name="valid_until" type="date" defaultValue={rule?.valid_until ?? ""} /></Field>
+          <Field label="Áp dụng từ" htmlFor="valid_from" hint="Quy tắc hoạt động phải giao ngày với bảng giá."><Input id="valid_from" name="valid_from" type="date" defaultValue={rule?.valid_from ?? ""} /></Field>
+          <Field label="Áp dụng đến" htmlFor="valid_until" hint="Quy tắc tắt có thể lưu trước dù chưa giao ngày."><Input id="valid_until" name="valid_until" type="date" defaultValue={rule?.valid_until ?? ""} /></Field>
           <Field label="Ưu tiên quy tắc" htmlFor="priority" hint="Số cao hơn thắng trong cùng loại giá."><Input id="priority" name="priority" type="number" min={-10000} max={10000} defaultValue={rule?.priority ?? 0} required /></Field>
         </div>
         <fieldset><legend className="text-sm font-bold">Ngày trong tuần (để trống dùng mặc định theo loại giá)</legend><div className="mt-3 flex flex-wrap gap-3">{DAY_LABELS.map(([day, label]) => <label key={day} className="flex min-h-11 items-center gap-2 rounded-xl border border-line px-3 text-sm"><input type="checkbox" name="days_of_week" value={day} defaultChecked={rule?.days_of_week?.includes(day)} />{label}</label>)}</div></fieldset>
@@ -51,7 +51,7 @@ export function RateRuleForm({ rule, plans, rooms, properties }: {
         <div className="grid gap-5 sm:grid-cols-3">
           <Field label="Nguồn giá" htmlFor="source"><Select id="source" name="source" defaultValue={rule?.source ?? "admin"}>{PRICE_SOURCES.map((value) => <option key={value} value={value}>{PRICE_SOURCE_LABELS[value]}</option>)}</Select></Field>
           <Field label="Xác minh lúc" htmlFor="price_verified_at" hint="Giờ Việt Nam; không được ở tương lai."><Input id="price_verified_at" name="price_verified_at" type="datetime-local" defaultValue={localDateTime(rule?.price_verified_at)} /></Field>
-          <Field label="Giá còn xác minh đến" htmlFor="price_valid_until" hint="Bao gồm ngày này."><Input id="price_valid_until" name="price_valid_until" type="date" defaultValue={rule?.price_valid_until ?? ""} /></Field>
+          <Field label="Giá còn xác minh đến" htmlFor="price_valid_until" hint="Bao gồm ngày này; nếu có thời điểm xác minh, ngày này không được sớm hơn ngày xác minh theo giờ Việt Nam."><Input id="price_valid_until" name="price_valid_until" type="date" defaultValue={rule?.price_valid_until ?? ""} /></Field>
         </div>
         <Field label="Ghi chú nội bộ" htmlFor="internal_notes"><Textarea id="internal_notes" name="internal_notes" defaultValue={rule?.internal_notes ?? ""} className="min-h-28" /></Field>
         <CheckboxField name="is_active" label="Quy tắc đang hoạt động" defaultChecked={rule?.is_active ?? true} />

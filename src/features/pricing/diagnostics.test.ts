@@ -58,4 +58,23 @@ describe("Admin pricing diagnostics", () => {
     });
     expect(issues.some((issue) => issue.code === "missing-rule")).toBe(true);
   });
+
+  it("flags disjoint plan/rule ranges and does not count them as effective coverage", () => {
+    const issues = detectAdminPricingIssues({
+      plans: [{ ...plan, valid_from: "2026-01-01", valid_until: "2026-12-31" }],
+      rules: [{ ...rule, valid_from: "2027-01-01", valid_until: "2027-01-31" }],
+      activeRoomIds: [rule.room_type_id],
+    });
+    expect(issues.some((issue) => issue.code === "disjoint-range" && issue.severity === "error")).toBe(true);
+    expect(issues.some((issue) => issue.code === "missing-rule")).toBe(true);
+  });
+
+  it("allows inactive draft preparation but warns when its dates are disjoint", () => {
+    const issues = detectAdminPricingIssues({
+      plans: [{ ...plan, valid_from: "2026-01-01", valid_until: "2026-12-31" }],
+      rules: [{ ...rule, is_active: false, valid_from: "2027-01-01", valid_until: null }],
+      activeRoomIds: [],
+    });
+    expect(issues.some((issue) => issue.code === "disjoint-range" && issue.severity === "warning")).toBe(true);
+  });
 });

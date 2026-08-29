@@ -4,7 +4,7 @@
 
 Phase 5 answers: “What recorded room price applies to these dates?” It does not answer whether a physical room is free. There are no inventory calendars, availability blocks, holds, bookings, discounts, or fabricated seed prices in this phase.
 
-The migration is `supabase/migrations/202608290006_rate_plans_and_pricing.sql`. Migrations 001–005 remain immutable.
+The domain migration is `supabase/migrations/202608290006_rate_plans_and_pricing.sql`. The additive hardening migration is `supabase/migrations/202608290007_harden_phase5_pricing.sql`; migrations 001–006 remain immutable.
 
 ## Database model
 
@@ -17,7 +17,9 @@ The migration is `supabase/migrations/202608290006_rate_plans_and_pricing.sql`. 
 - optional inclusive `DATE` range and optional ISO weekday mask (`1` Monday through `7` Sunday);
 - integer rule priority, source, verification timestamp, inclusive price-valid-until date, active state, internal notes, and audit fields.
 
-Prices and extras are non-negative PostgreSQL integers. Currency is currently exactly `VND`; there is no conversion. Plan/rule ranges reject an end before a start. `peak`, `holiday`, and `override` require explicit bounded dates. A trigger rejects future price verification timestamps and requires the plan and room to belong to the same property. Once rules exist, the related plan or room cannot be moved to another property, preserving the invariant for future audit/snapshots.
+Prices and extras are non-negative PostgreSQL integers. Currency is currently exactly `VND`; there is no conversion. Plan/rule ranges reject an end before a start. `peak`, `holiday`, and `override` require explicit bounded dates. A trigger rejects future price verification timestamps and requires the plan and room to belong to the same property. When both verification fields exist, `price_valid_until` must be on or after the Vietnam calendar date of `price_verified_at`; `timestamptz at time zone 'Asia/Ho_Chi_Minh'` is the database backstop, so a UTC day boundary cannot move the business date. A missing `price_verified_at` remains valid and produces only reference confidence.
+
+An active rule must overlap its plan's inclusive validity interval. Open-ended and partial overlaps are valid; completely disjoint bounded ranges are rejected. The rule trigger protects inserts/updates, and a plan trigger prevents later plan-date edits from stranding existing active rules. Inactive rules may be stored as future preparation even when currently disjoint, but Admin marks them as non-effective until their dates overlap and they can be safely activated.
 
 The schema indexes plan property/status/priority, rule room/active/date applicability, and plan/type/priority. Records have no hard-delete grant or UI; operators deactivate rules and deactivate/archive plans.
 
@@ -92,6 +94,7 @@ All three surfaces explicitly say that price is not room availability. Missing/c
 - plan list/create/edit, validity, priority, active and publish lifecycle;
 - room-rule list/create/edit, dates, weekday mask, whole-VND price/extras, priority, source, verification facts, and active state;
 - warnings for active expired plans, stale verification facts, public rooms missing a public rule, and overlapping equal-priority rules;
+- rejection of active disjoint plan/rule dates, with a visible non-effective warning for inactive preparation rules;
 - a nightly preview with total/confidence and exact conflict rule IDs. Preview may include active drafts so staff can validate them before publication.
 
 Admin errors remain accurate: a failed single-table mutation does not report success. No service-role key is required.
