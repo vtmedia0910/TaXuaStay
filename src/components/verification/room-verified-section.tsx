@@ -2,6 +2,9 @@ import { CalendarCheck, Eye, ShieldCheck } from "lucide-react";
 import { PanoramaViewer } from "@/components/media/panorama-viewer";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { RoomQualityPanel } from "@/components/verification/room-quality-panel";
+import { RoomProfileNotes } from "@/components/verification/room-profile-notes";
+import type { VerifiedRoomProfileBundle } from "@/features/room-profiles/types";
 import {
   CLOUD_VIEW_FROM_BED_LABELS,
   getCloudViewLabel,
@@ -15,12 +18,12 @@ function formatDate(value: string | null) {
   return value ? new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium" }).format(new Date(value)) : "Chưa xác nhận";
 }
 
-function EvidenceAsset({ asset }: { asset: PublicVerificationEvidenceDto }) {
+export function VerificationEvidenceAsset({ asset, positionLabel: explicitPositionLabel }: { asset: PublicVerificationEvidenceDto; positionLabel?: string }) {
   const positionLabel = asset.evidence_role === "room_interior_360" ? "Phòng" : "Vị trí ngắm view";
   if (asset.media_type === "panorama_360") {
     return (
       <div>
-        <PanoramaViewer mediaType={asset.media_type} url={asset.url} thumbnailUrl={asset.thumbnail_url} alt={asset.alt_text} positionLabel={positionLabel} />
+        <PanoramaViewer mediaType={asset.media_type} url={asset.url} thumbnailUrl={asset.thumbnail_url} alt={asset.alt_text} positionLabel={explicitPositionLabel ?? positionLabel} />
         <p className="mt-2 text-sm text-white/70">Chụp: {formatDate(asset.captured_at)}</p>
       </div>
     );
@@ -39,7 +42,7 @@ function EvidenceAsset({ asset }: { asset: PublicVerificationEvidenceDto }) {
   );
 }
 
-export function RoomVerifiedSection({ bundle }: { bundle: RoomVerificationBundle }) {
+export function RoomVerifiedSection({ bundle, profile }: { bundle: RoomVerificationBundle; profile: VerifiedRoomProfileBundle }) {
   const cloud = bundle.cloudView;
   const cloudEvidence = cloud ? bundle.evidence.filter((item) => item.verification_id === cloud.verification_id) : [];
   const roomVerified = bundle.badges.find((badge) => badge.verification_type === "room");
@@ -48,7 +51,7 @@ export function RoomVerifiedSection({ bundle }: { bundle: RoomVerificationBundle
   return (
     <section aria-labelledby="verified-room-title" className="rounded-[2rem] bg-pine p-5 text-white sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper">View Thật</p><h2 id="verified-room-title" className="mt-2 font-display text-3xl font-bold">TÀ XÙA STAY VERIFIED</h2><p className="mt-2 text-sm leading-6 text-white/70">Thông tin và hình ảnh từ đúng loại phòng, có ngày xác minh và thời hạn kiểm tra lại.</p></div>
+        <div><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper">Hồ sơ phòng đã kiểm tra</p><h2 id="verified-room-title" className="mt-2 font-display text-3xl font-bold">TÀ XÙA STAY VERIFIED</h2><p className="mt-2 text-sm leading-6 text-white/70">Áp dụng cho loại phòng. Thông tin này không bảo đảm mọi phòng vật lý trong cùng loại hoàn toàn giống nhau.</p></div>
         <div className="flex flex-wrap gap-2">{roomVerified ? <Badge className="bg-white text-pine"><ShieldCheck size={15} />{VERIFICATION_TYPE_LABELS.room}</Badge> : null}{panoramaVerified ? <Badge className="bg-white text-pine">{VERIFICATION_TYPE_LABELS.media_360}</Badge> : null}</div>
       </div>
 
@@ -63,7 +66,7 @@ export function RoomVerifiedSection({ bundle }: { bundle: RoomVerificationBundle
         <>
           <div className="mt-6 grid gap-4 lg:grid-cols-[0.7fr_1.3fr]">
             <Card className="bg-white p-5 text-ink">
-              <p className="text-sm font-bold uppercase tracking-[0.12em] text-copper-strong">Cloud View Verified</p>
+              <p className="text-sm font-bold uppercase tracking-[0.12em] text-copper-strong">Cloud View · áp dụng cho loại phòng</p>
               <p className="mt-3 font-display text-5xl font-bold text-pine">{Number(cloud.score_10).toFixed(1)}<span className="text-xl"> / 10</span></p>
               <p className="mt-2 text-lg font-bold text-copper-strong">{getCloudViewLabel(Number(cloud.score_10))}</p>
               <p className="mt-4 flex items-center gap-2 text-sm text-muted"><CalendarCheck size={17} aria-hidden="true" />Xác minh {formatDate(cloud.verified_at)}</p>
@@ -84,12 +87,17 @@ export function RoomVerifiedSection({ bundle }: { bundle: RoomVerificationBundle
           </div>
           <div className="mt-7">
             <h3 className="flex items-center gap-2 font-display text-2xl font-bold"><Eye className="text-copper" aria-hidden="true" />VIEW THẬT · Tà Xùa Stay đã kiểm tra</h3>
-            {cloudEvidence.length ? <div className="mt-4 grid gap-4 sm:grid-cols-2">{cloudEvidence.map((asset) => <EvidenceAsset key={asset.media_asset_id} asset={asset} />)}</div> : <p className="mt-3 text-sm text-white/70">Bằng chứng công khai đang được rà soát lại.</p>}
+            {cloudEvidence.length ? <div className="mt-4 grid gap-4 sm:grid-cols-2">{cloudEvidence.map((asset) => <VerificationEvidenceAsset key={asset.media_asset_id} asset={asset} positionLabel="View của loại phòng" />)}</div> : <p className="mt-3 text-sm text-white/70">Bằng chứng công khai đang được rà soát lại.</p>}
           </div>
         </>
       ) : (
         <div className="mt-6 rounded-3xl bg-white/10 p-5"><h3 className="font-bold">Chưa được Tà Xùa Stay xác minh view.</h3><p className="mt-2 text-sm leading-6 text-white/70">Bạn vẫn có thể xem hình ảnh và thông tin phòng hiện có, sau đó xác nhận trực tiếp với nơi lưu trú.</p></div>
       )}
+
+      <div className="mt-6 grid gap-4">
+        <RoomQualityPanel assessment={profile.roomTypeQuality} scopeLabel="Áp dụng cho loại phòng" />
+        <RoomProfileNotes notes={profile.roomTypeNotes} />
+      </div>
     </section>
   );
 }

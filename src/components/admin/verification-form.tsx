@@ -10,6 +10,12 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { saveVerificationAction } from "@/features/verification/actions";
 import {
+  ROOM_QUALITY_FRESHNESS,
+  ROOM_QUALITY_LABELS,
+  ROOM_QUALITY_RUBRICS,
+} from "@/features/room-profiles/policy";
+import { ROOM_QUALITY_DIMENSIONS } from "@/features/room-profiles/types";
+import {
   calculateCloudViewScore,
   calculateCloudViewTotal,
   CLOUD_COMPONENT_LIMITS,
@@ -75,18 +81,20 @@ function isPropertyVerification(type: VerificationType) {
 
 export function VerificationForm({
   record,
+  initialType,
   properties,
   rooms,
   physicalRooms,
   evidence,
 }: {
   record?: AdminVerificationRecord | null;
+  initialType?: VerificationType;
   properties: PropertyOption[];
   rooms: AdminRoomOption[];
   physicalRooms: PhysicalRoomOption[];
   evidence: VerificationEvidenceOption[];
 }) {
-  const [type, setType] = useState<VerificationType>(record?.verification_type ?? "property_identity");
+  const [type, setType] = useState<VerificationType>(record?.verification_type ?? initialType ?? "property_identity");
   const [status, setStatus] = useState(record?.status ?? "pending");
   const [propertyId, setPropertyId] = useState(record?.property_id ?? "");
   const [roomTypeId, setRoomTypeId] = useState(record?.room_type_id ?? "");
@@ -147,6 +155,7 @@ export function VerificationForm({
     }
     if (type === "cloud_view") return ["view_from_room", "view_from_bed", "balcony", "sunrise", "verification"].includes(asset.evidence_type);
     if (type === "road_access") return ["road_access", "parking", "verification"].includes(asset.evidence_type);
+    if (type === "room_quality") return ["room", "bathroom", "view_from_room", "view_from_bed", "balcony", "verification"].includes(asset.evidence_type);
     if (type === "media_360") return asset.media_type === "panorama_360";
     return true;
   }), [evidence, physicalRoomId, propertyId, propertyTarget, roomScope, roomTypeId, type]);
@@ -307,6 +316,46 @@ export function VerificationForm({
           <Field label="Rủi ro khi mưa" htmlFor="rain_risk_notes"><Textarea id="rain_risk_notes" name="rain_risk_notes" defaultValue={record?.road?.rain_risk_notes ?? ""} maxLength={2000} /></Field>
           <Field label="Vị trí đỗ xe" htmlFor="parking_location"><Input id="parking_location" name="parking_location" defaultValue={record?.road?.parking_location ?? ""} maxLength={1000} /></Field>
           <Field label="Ghi chú đường công khai" htmlFor="road_notes"><Textarea id="road_notes" name="road_notes" defaultValue={record?.road?.notes ?? ""} maxLength={3000} /></Field>
+        </Card>
+      ) : null}
+
+      {type === "room_quality" ? (
+        <Card className="grid gap-5 p-5 sm:p-6">
+          <div>
+            <h2 className="font-display text-xl font-bold text-pine">Room Quality · từng chiều độc lập</h2>
+            <p className="mt-1 text-sm leading-6 text-muted">Nhập số nguyên 0–100; hệ thống hiển thị tương ứng trên thang 10. Để trống chiều chưa quan sát, không nhập 0 thay cho chưa biết. Không có điểm tổng.</p>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {ROOM_QUALITY_DIMENSIONS.map((dimension) => {
+              const field = `${dimension}_score` as const;
+              return (
+                <Field
+                  key={dimension}
+                  label={ROOM_QUALITY_LABELS[dimension]}
+                  htmlFor={field}
+                  hint={`${ROOM_QUALITY_RUBRICS[dimension]} Độ mới: ${ROOM_QUALITY_FRESHNESS[dimension].label}.`}
+                >
+                  <Input
+                    id={field}
+                    name={field}
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={1}
+                    defaultValue={record?.room_quality?.[field] ?? ""}
+                    placeholder="Chưa xác minh"
+                  />
+                </Field>
+              );
+            })}
+          </div>
+          <Field label="Ghi chú chất lượng công khai" htmlFor="quality_notes_public" hint="Quan sát ngắn, factual; không dùng ngôn ngữ quảng cáo hoặc so sánh đối thủ.">
+            <Textarea id="quality_notes_public" name="quality_notes_public" defaultValue={record?.room_quality?.notes_public ?? ""} maxLength={3000} />
+          </Field>
+          <Field label="Ghi chú đánh giá nội bộ" htmlFor="quality_notes_internal" hint="Không nằm trong public DTO.">
+            <Textarea id="quality_notes_internal" name="quality_notes_internal" defaultValue={record?.room_quality?.notes_internal ?? ""} maxLength={5000} />
+          </Field>
+          <p className="rounded-2xl bg-mist p-4 text-sm leading-6 text-muted"><strong className="text-ink">Room Accuracy:</strong> so sánh phòng thực tế với diện tích, cấu hình giường, loại phòng tắm, ban công/cửa sổ/view, nội thất, bố cục và ảnh đã công bố. Không đo mức hài lòng, giá hoặc Cloud View.</p>
         </Card>
       ) : null}
 

@@ -30,7 +30,8 @@ The current repository actually implements:
 - room-type rate plans/rules, deterministic integer-VND pricing, and price confidence;
 - pooled room-type inventory, freshness-aware availability, and Admin bulk updates;
 - room-first public search, intent landing pages, metadata, sitemap, robots, and temporary-host indexing safety.
-- a published Tà Xùa Destination, required property destination ownership, stable physical-room identity, and exact-room-compatible media/verification targets.
+- a published Tà Xùa Destination, required property destination ownership, stable physical-room identity, and exact-room-compatible media/verification targets;
+- Verified Room Profile V2 with independent Room Quality dimensions, factual strengths/caveats, and richer exact-room presentation.
 
 There is currently no supplier or partner domain, generic services, package commerce, unified trip booking, booking items, payment, bus inventory, supplier confirmation workflow, or Trip Dashboard.
 
@@ -72,9 +73,13 @@ An exact physical room is publicly identified as verified only when its own acti
 
 The target product combines **VERIFY**, **BUNDLE**, **OPERATE**, and **DISTRIBUTE**. Existing room-type pricing, pooled inventory, search, SEO, and Verified Standard remain valid foundations while later V2 phases introduce further domains one reviewed step at a time.
 
-## Next implementation — explicitly deferred
+## V2 Phase 2 — Verified Room Profile implemented
 
-The next roadmap step is **V2 Phase 2 — Verified Room Profile V2**. It is not implemented by V2 Phase 1 and requires a separately authorized task.
+Migration 010 adds `room_quality` to the shared verification lifecycle, normalized `room_quality_assessments`, and ordered `room_profile_notes`. Assessments target exactly one room type or physical Room ID, use integer 0–100 dimension values, have no overall score, and never alter Cloud View. Null dimensions remain unknown. Freshness is centralized per dimension: cleanliness 90 days; Wi-Fi/heating/hot water/comfort six months; soundproof/bathroom/Room Accuracy twelve months.
+
+Exact Room Verified now resolves centrally to verified/expired/needs-review/not-verified and still requires a published Room ID, current exact-target `room` verification, and approved evidence owned by the same physical room. `exact_room_bookable` remains outside verification. The room-type page batches room-type and exact-room quality, notes, Cloud View, and evidence without creating physical-room SEO routes.
+
+Anonymous users can read only current public quality and explicitly public notes through allow-listed views backed by RLS. Internal assessment notes, private profile notes, staff IDs, lifecycle method, and private evidence remain protected. `/admin/verification` manages Room Quality lifecycle/assessment data and `/admin/room-profiles` manages strengths/caveats.
 
 ## Legacy Phase 0 baseline
 
@@ -175,7 +180,7 @@ Public inventory is read through a `security_invoker` allow-listed view backed b
 
 ## V2 roadmap boundary
 
-The V2 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is implemented by additive migration 009. Only separately authorized later phases may add verified room profiles V2, supplier/partner foundations, private commercial economics, motorbike service integration, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
+The V2 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is implemented by migration 009 and Verified Room Profile by migration 010. Only separately authorized later phases may add supplier/partner foundations, private commercial economics, motorbike service integration, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
 
 ## Future Biker relationship
 

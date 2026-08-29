@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { isExactRoomVerified } from "@/features/physical-rooms/policy";
+import {
+  isExactRoomVerified,
+  resolveExactRoomVerificationState,
+} from "@/features/physical-rooms/policy";
 import type { PublicVerificationBadgeDto } from "@/features/verification/types";
 
 const now = new Date("2026-08-30T00:00:00.000Z");
@@ -49,5 +52,19 @@ describe("exact physical-room verification resolver", () => {
 
   it("does not treat bookability or an unpublished physical room as verification", () => {
     expect(resolve({ isPublicPhysicalRoom: false })).toBe(false);
+  });
+
+  it("resolves lifecycle states without using exact-room bookability", () => {
+    const common = {
+      physicalRoomId: "physical-room-a",
+      roomCode: "TX-MAY-203",
+      isPublicPhysicalRoom: true,
+      evidencePhysicalRoomIds: ["physical-room-a"],
+      now,
+    };
+    expect(resolveExactRoomVerificationState({ ...common, roomVerification: null })).toBe("not_verified");
+    expect(resolveExactRoomVerificationState({ ...common, roomVerification: { ...exactBadge, status: "needs_review" } })).toBe("needs_review");
+    expect(resolveExactRoomVerificationState({ ...common, roomVerification: { ...exactBadge, status: "expired" } })).toBe("expired");
+    expect(resolveExactRoomVerificationState({ ...common, roomVerification: exactBadge })).toBe("verified");
   });
 });

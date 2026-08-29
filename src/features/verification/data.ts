@@ -1,6 +1,8 @@
 import "server-only";
 
 import { requireAdminUser } from "@/features/admin/auth";
+import { ROOM_QUALITY_QUERY } from "@/features/room-profiles/columns";
+import type { RoomQualityAssessmentDto } from "@/features/room-profiles/types";
 import type { PropertyOption } from "@/features/properties/types";
 import type { PhysicalRoomOption } from "@/features/physical-rooms/types";
 import {
@@ -186,7 +188,7 @@ export async function getAdminVerificationRecord(id: string): Promise<AdminVerif
   const supabase = await createServerSupabaseClient();
   if (!supabase) return null;
 
-  const [recordResult, cloudResult, roadResult, evidenceResult] = await Promise.all([
+  const [recordResult, cloudResult, roadResult, qualityResult, evidenceResult] = await Promise.all([
     supabase
       .from("verification_records")
       .select(VERIFICATION_RECORD_QUERY)
@@ -206,6 +208,12 @@ export async function getAdminVerificationRecord(id: string): Promise<AdminVerif
       .maybeSingle()
       .overrideTypes<RoadVerificationDto, { merge: false }>(),
     supabase
+      .from("room_quality_assessments")
+      .select(ROOM_QUALITY_QUERY)
+      .eq("verification_record_id", id)
+      .maybeSingle()
+      .overrideTypes<RoomQualityAssessmentDto, { merge: false }>(),
+    supabase
       .from("verification_evidence")
       .select("verification_id,media_asset_id,evidence_role,public_visible")
       .eq("verification_id", id)
@@ -217,6 +225,7 @@ export async function getAdminVerificationRecord(id: string): Promise<AdminVerif
     ...recordResult.data,
     cloud_view: cloudResult.error ? null : cloudResult.data,
     road: roadResult.error ? null : roadResult.data,
+    room_quality: qualityResult.error ? null : qualityResult.data,
     evidence_ids: evidenceResult.error ? [] : (evidenceResult.data ?? []).map((item) => item.media_asset_id),
     resolved_state: resolveVerificationState(
       recordResult.data.status,

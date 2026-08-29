@@ -12,6 +12,7 @@ This document bridges the **Legacy Foundation Completed** (migrations 001–008)
 | `physical_rooms` stores known exact units with stable uppercase `room_code` beneath one Property/Room Type | Physical Room with stable Room ID beneath Room Type | Implemented in V2 Phase 1. The table starts empty and is never backfilled from quantity. |
 | Verification targets property, room type, or exact physical room according to type | Property + Room Type + exact Physical Room verification where material unit differences exist | Implemented additively. Historical room-type records remain valid; exact-room evidence must use the same Room ID. |
 | `media_assets` belongs to exactly one property, room type, or physical room | Property / Room Type / Physical Room media with exact-target evidence | Implemented in V2 Phase 1; existing media ownership is unchanged. |
+| Room Quality dimensions and factual strengths/caveats target a room type or exact Room ID | Transparent Verified Room Profile without contaminating Cloud View | Implemented in V2 Phase 2. Quality has per-dimension freshness and no overall score; public/private notes remain independent of commercial status. |
 | `room_rate_rules.price_vnd` and the resolver provide public/commercial sell price | Sell-price engine plus future private Net Cost, Market Reference, and package economics | Sell pricing is implemented. Private cost/margin layers are not. |
 | `room_inventory` provides latest pooled room-type availability by lodging night | Pooled availability remains; future modes may add exact-unit, allotment, and manual-confirmation models | Pooled mode is implemented. Exact-unit/allotment modes are not. |
 | Room-first search, SEO landings, Verified Standard, price and availability summaries | Search remains; later deterministic Trip Finder composes verified trip options | Room search is implemented. Trip Finder and package recommendations are not. |
@@ -25,14 +26,14 @@ This document bridges the **Legacy Foundation Completed** (migrations 001–008)
 
 - site settings, Supabase Auth, `admin`/`staff`, RLS, and Admin shell;
 - Destination-owned properties, room types, stable physical Room IDs, amenities, and exclusive property/room-type/physical-room media;
-- verification lifecycle, Cloud View, Road Verified, exact-target evidence at property/room-type/physical-room levels, and 360 presentation;
+- verification lifecycle, Cloud View, Road Verified, exact-target evidence, 360, Room Quality dimensions, and ordered public strengths/caveats;
 - integer-VND room sell pricing and price confidence;
 - pooled room-type inventory, freshness-aware availability, and Admin bulk updates;
 - room-first search, public property/room routes, SEO landings, sitemap, robots, and temporary-host `noindex` safety.
 
 ## Explicitly not implemented
 
-Verified Room Profile V2, Suppliers, Partners, private supplier economics, generic Services, motorbike service integration, Bus, Packages, Trip Finder, unified Booking, Booking Items, Supplier Confirmation, supplier tasks, Payment, Trip Operations, and Trip Dashboard do not exist yet. V2 Phase 1 creates exact-room identity and verification-compatible foundations only; it does not create booking, assignment, exact-unit availability, or a guarantee from `exact_room_bookable`.
+Suppliers, Partners, private supplier economics, generic Services, motorbike service integration, Bus, Packages, Trip Finder, unified Booking, Booking Items, Supplier Confirmation, supplier tasks, Payment, Trip Operations, and Trip Dashboard do not exist yet. V2 Phase 2 adds trust/profile data only; it does not create booking, assignment, exact-unit availability, or a guarantee from `exact_room_bookable`.
 
 ## Numbering and next step
 
@@ -42,4 +43,6 @@ The completed V2 implementation is:
 
 **V2 Phase 1 — Architecture Alignment: Destination + Physical Room + Room ID + exact-room-compatible Media/Verification.**
 
-The next separately authorized step is **V2 Phase 2 — Verified Room Profile V2**. It has not started. Current rates, pooled availability, room-first search, SEO, Verified Standard, public routes, and migrations 001–008 remain preserved.
+**V2 Phase 2 — Verified Room Profile V2: Room Type/Exact Room trust scopes + Room Quality + factual strengths/caveats.**
+
+The next separately authorized step is **V2 Phase 3 — Supplier + Partner Foundation**. It has not started. Current rates, pooled availability, room-first search, SEO, Verified Standard, public routes, and migrations 001–009 remain preserved.

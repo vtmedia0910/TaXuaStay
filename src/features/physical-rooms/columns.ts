@@ -6,5 +6,6 @@ export const ADMIN_PHYSICAL_ROOM_QUERY = [
 export const PUBLIC_VERIFIED_PHYSICAL_ROOM_QUERY = [
   "physical_room_id", "property_id", "room_type_id", "room_code",
   "display_name", "floor_label", "unit_label", "exact_room_bookable",
-  "room_verification_id", "verified_at", "expires_at", "cloud_view_verified",
+  "room_verification_id", "verified_at", "expires_at", "exact_verification_state",
+  "cloud_view_verified",
 ].join(",");

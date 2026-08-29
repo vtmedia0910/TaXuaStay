@@ -14,7 +14,7 @@ import { getPublicAvailabilityQuotes } from "@/features/availability/data";
 import { getPublicRoomMedia } from "@/features/media/data";
 import { getPublicPropertyBySlug } from "@/features/properties/data";
 import { getPublicPriceQuotes } from "@/features/pricing/data";
-import { getPublicVerifiedPhysicalRoomsByRoomType } from "@/features/physical-rooms/data";
+import { getPublicVerifiedRoomProfileBundle } from "@/features/room-profiles/data";
 import { getPublicRoom } from "@/features/rooms/data";
 import { BATHROOM_TYPE_LABELS, VIEW_TYPE_LABELS } from "@/features/search/labels";
 import { buildRoomSearchUrl, buildStayContextQuery, DEFAULT_ROOM_SEARCH_PARAMS, parseRoomSearchParams, type RawSearchParams } from "@/features/search/params";
@@ -44,11 +44,11 @@ export default async function RoomPage({ params, searchParams }: { params: RoomP
   const room = await getPublicRoom(property.id, roomSlug);
   if (!room) notFound();
 
-  const [amenities, media, verification, exactRooms, priceQuotes, availabilityQuotes] = await Promise.all([
+  const [amenities, media, verification, roomProfile, priceQuotes, availabilityQuotes] = await Promise.all([
     getPublicRoomAmenities(room.id),
     getPublicRoomMedia(room.id),
     getPublicRoomVerificationBundle(room.id),
-    getPublicVerifiedPhysicalRoomsByRoomType(room.id),
+    getPublicVerifiedRoomProfileBundle(room.id),
     getPublicPriceQuotes({ roomTypeIds: [room.id], checkIn: pricingContext.checkIn, checkOut: pricingContext.checkOut }),
     getPublicAvailabilityQuotes({ roomTypeIds: [room.id], checkIn: pricingContext.checkIn, checkOut: pricingContext.checkOut, requestedRooms: pricingContext.rooms }),
   ]);
@@ -79,8 +79,8 @@ export default async function RoomPage({ params, searchParams }: { params: RoomP
             <h2 className="mb-5 font-display text-3xl font-bold text-pine">Hình ảnh của loại phòng</h2>
             <MediaGallery assets={media} />
           </section>
-          <RoomVerifiedSection bundle={verification} />
-          <ExactRoomVerifiedSection rooms={exactRooms} />
+          <RoomVerifiedSection bundle={verification} profile={roomProfile} />
+          <ExactRoomVerifiedSection rooms={roomProfile.exactRooms} />
           {room.description ? (
             <section><h2 className="font-display text-3xl font-bold text-pine">Chi tiết phòng</h2><p className="mt-4 whitespace-pre-line leading-8 text-muted">{room.description}</p></section>
           ) : null}

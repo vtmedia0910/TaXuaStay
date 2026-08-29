@@ -12,6 +12,7 @@ import {
   MapPinned,
   Settings,
   ShieldCheck,
+  ListChecks,
   Sparkles,
 } from "lucide-react";
 import { logoutAction } from "@/features/admin/auth-actions";
@@ -26,6 +27,7 @@ const contentLinks = [
   { label: "Amenities", href: "/admin/amenities", icon: Sparkles },
   { label: "Media", href: "/admin/media", icon: ImageIcon },
   { label: "Verification", href: "/admin/verification", icon: ShieldCheck },
+  { label: "Hồ sơ phòng", href: "/admin/room-profiles", icon: ListChecks },
   { label: "Giá", href: "/admin/rates", icon: BadgeDollarSign },
   { label: "Tình trạng", href: "/admin/availability", icon: CalendarCheck },
 ] as const;

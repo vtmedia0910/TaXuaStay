@@ -224,4 +224,45 @@ describe("verification form validation", () => {
     expect(missingExpiry.success).toBe(false);
     expect(expired.success).toBe(false);
   });
+
+  it("accepts Room Quality for one room type or one exact Room ID", () => {
+    const quality = {
+      ...base,
+      verification_type: "room_quality",
+      property_id: "",
+      room_type_id: "22222222-2222-4222-8222-222222222222",
+      physical_room_id: "",
+      cleanliness_score: 85,
+      soundproof_score: "",
+      heating_score: "",
+      hot_water_score: "",
+      wifi_score: 80,
+      bathroom_score: "",
+      room_accuracy_score: 90,
+      comfort_score: "",
+      quality_notes_public: "Quan sát tại thời điểm kiểm tra.",
+      quality_notes_internal: "",
+    };
+    expect(verificationSchema.safeParse(quality).success).toBe(true);
+    expect(verificationSchema.safeParse({
+      ...quality,
+      room_type_id: "",
+      physical_room_id: "44444444-4444-4444-8444-444444444444",
+    }).success).toBe(true);
+  });
+
+  it("rejects Room Quality with property/both targets, no score, or out-of-range score", () => {
+    const quality = {
+      ...base,
+      verification_type: "room_quality",
+      property_id: "",
+      room_type_id: "22222222-2222-4222-8222-222222222222",
+      physical_room_id: "",
+      cleanliness_score: 85,
+    };
+    expect(verificationSchema.safeParse({ ...quality, property_id: "33333333-3333-4333-8333-333333333333" }).success).toBe(false);
+    expect(verificationSchema.safeParse({ ...quality, physical_room_id: "44444444-4444-4444-8444-444444444444" }).success).toBe(false);
+    expect(verificationSchema.safeParse({ ...quality, cleanliness_score: "" }).success).toBe(false);
+    expect(verificationSchema.safeParse({ ...quality, cleanliness_score: 101 }).success).toBe(false);
+  });
 });

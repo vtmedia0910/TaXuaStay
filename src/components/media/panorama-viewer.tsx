@@ -23,7 +23,7 @@ export function PanoramaViewer({
   url?: string | null;
   thumbnailUrl?: string | null;
   alt: string;
-  positionLabel: "Phòng" | "Vị trí ngắm view" | "Không gian";
+  positionLabel: string;
 }) {
   const [active, setActive] = useState(false);
   const [pan, setPan] = useState(50);

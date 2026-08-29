@@ -25,6 +25,7 @@ export const VERIFICATION_FRESHNESS_MONTHS: Record<VerificationType, number> = {
   cloud_view: 12,
   road_access: 6,
   media_360: 12,
+  room_quality: 12,
 };
 
 export const VERIFICATION_TYPE_LABELS: Record<VerificationType, string> = {
@@ -34,6 +35,7 @@ export const VERIFICATION_TYPE_LABELS: Record<VerificationType, string> = {
   cloud_view: "Cloud View Verified",
   road_access: "Road Verified",
   media_360: "360° Verified",
+  room_quality: "Hồ sơ chất lượng phòng",
 };
 
 export const VERIFICATION_STATE_LABELS: Record<VerificationResolvedState, string> = {

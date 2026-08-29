@@ -18,15 +18,16 @@ Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the appl
 202608290007
 202608290008
 202608290009
+202608290010
 ```
 
-After migration 009, `migration list` reported 001–009 Local = Remote and linked database lint reported no schema errors. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
+After migration 010, `migration list` must report 001–010 Local = Remote and linked database lint must report no schema errors. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
 
 ## V2 migration lineage
 
 Migrations 001–008 are the **Legacy Foundation Completed**. They remain immutable production lineage. Master Plan V2 restarts product phase numbering, not database history.
 
-Migration `202608290009_v2_destination_and_physical_rooms.sql` is **V2 Phase 1 — Architecture Alignment**. It adds Destination, required property destination ownership, Physical Room/Room ID, and exact-room-compatible Media/Verification without changing pricing or pooled availability. V2 Phase 2 has not started.
+Migration `202608290009_v2_destination_and_physical_rooms.sql` is **V2 Phase 1 — Architecture Alignment**. Migration `202608290010_v2_verified_room_profile.sql` is **V2 Phase 2 — Verified Room Profile**. It adds Room Quality, factual strengths/caveats, and stronger exact-room resolution without changing pricing, pooled availability, search, Road Verified, or the Cloud View rubric. V2 Phase 3 has not started.
 
 ## Migration order
 
@@ -42,6 +43,7 @@ supabase/migrations/202608290006_rate_plans_and_pricing.sql
 supabase/migrations/202608290007_harden_phase5_pricing.sql
 supabase/migrations/202608290008_room_inventory_and_availability.sql
 supabase/migrations/202608290009_v2_destination_and_physical_rooms.sql
+supabase/migrations/202608290010_v2_verified_room_profile.sql
 ```
 
 Never reapply or edit a migration already present remotely. Migration `202608290003` is the additive corrective migration that preserves immutable migration `202608290002`; migration `202608290004` adds the normalized Verified Standard without seeding verification data; migration `202608290005` preserves immutable 004 while rejecting future/expired verified cycles, refreshing normal re-verification dates, and limiting anonymous Cloud/Road reads to public-view columns.
@@ -102,6 +104,17 @@ The post-008 remote smoke test returned HTTP 200 for the inventory public view a
 Migration 009 was authored after a service-authorized read confirmed that production contained zero property rows. The migration therefore seeds only the published Tà Xùa destination, performs a safe no-op property backfill on production, and makes `properties.destination_id` required. It creates no physical-room, media, verification, price, inventory, booking, or demonstration rows.
 
 The post-009 remote smoke test confirmed the Tà Xùa destination (`ta-xua`, `VN`, `Asia/Ho_Chi_Minh`) and zero properties with a null destination. `physical_rooms` contained exactly zero rows. Anonymous reads returned HTTP 200 for public destination fields, public physical-room fields, the exact-room public view, and the new media/verification FK fields. Requests for destination `updated_by` and physical-room `position_notes` returned HTTP 401; zero-target anonymous updates against both new base tables also returned HTTP 401. Migrations 001–009 were Local = Remote and `supabase db lint --linked` reported no schema errors. No smoke-test row was inserted.
+
+After migration 010, verify additionally:
+
+1. `room_quality_assessments` and `room_profile_notes` exist with RLS enabled, and the two allow-listed public views return HTTP 200.
+2. Anonymous requests for `notes_internal`, `created_by`, or `updated_by`, plus zero-target mutations, are denied.
+3. Public quality requires a current evidence-backed `room_quality` lifecycle record. Future, expired, pending, rejected, and review records do not appear as current.
+4. Cleanliness becomes stale after 90 days; other dimensions follow the centralized six/twelve-month policy without displaying a stale numeric score as current.
+5. Exact Room Verified still requires a current exact-target `room` verification and exact approved evidence; `exact_room_bookable` alone has no effect.
+6. Room A media is rejected for Room B quality/verification, and no score, note, exact-room verification, or other example row is inserted for smoke testing.
+
+The post-010 remote smoke test returned HTTP 200 for both public room-profile views, both base tables' allow-listed columns, and the exact-room public view. Anonymous requests for quality `notes_internal`, profile-note `created_by`, and mutations carrying a writable field returned HTTP 401. The exact-room resolver returned `not_verified` for an unknown physical-room ID. Both new public views returned an exact count of zero, confirming that no score, note, or verification example was seeded. Migrations 001–010 were Local = Remote and `supabase db lint --linked` reported no schema errors.
 
 ## Environment configuration
 

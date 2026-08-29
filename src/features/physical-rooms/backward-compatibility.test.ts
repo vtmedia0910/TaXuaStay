@@ -12,8 +12,8 @@ const availabilityData = readFileSync(new URL("../availability/data.ts", import.
 describe("V2 Phase 1 backward compatibility", () => {
   it("keeps the public room-type route and makes the exact-room section optional", () => {
     expect(roomPage).toContain("getPublicRoom(property.id, roomSlug)");
-    expect(roomPage).toContain("getPublicVerifiedPhysicalRoomsByRoomType(room.id)");
-    expect(roomPage).toContain("<ExactRoomVerifiedSection rooms={exactRooms} />");
+    expect(roomPage).toContain("getPublicVerifiedRoomProfileBundle(room.id)");
+    expect(roomPage).toContain("<ExactRoomVerifiedSection rooms={roomProfile.exactRooms} />");
   });
 
   it("keeps search room-type-first", () => {

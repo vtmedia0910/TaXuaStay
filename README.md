@@ -8,7 +8,7 @@ Suppliers, partners, services, packages, unified trip booking, payments, bus int
 
 ## Roadmap status
 
-Migrations 001–008 and their historical phase documents are the **Legacy Foundation Completed**. Migration 009 implements **V2 Phase 1 — Architecture Alignment** additively: Destination, stable physical Room ID, and exact-room-compatible Media/Verification. V2 Phase 2 has not started.
+Migrations 001–008 and their historical phase documents are the **Legacy Foundation Completed**. Migration 009 implements **V2 Phase 1 — Architecture Alignment**. Migration 010 implements **V2 Phase 2 — Verified Room Profile** with separate Room Type Verified, Exact Room Verified, Room Quality dimensions, and factual strengths/caveats. V2 Phase 3 has not started.
 
 ## Local development
 
@@ -31,6 +31,7 @@ supabase/migrations/202608290006_rate_plans_and_pricing.sql
 supabase/migrations/202608290007_harden_phase5_pricing.sql
 supabase/migrations/202608290008_room_inventory_and_availability.sql
 supabase/migrations/202608290009_v2_destination_and_physical_rooms.sql
+supabase/migrations/202608290010_v2_verified_room_profile.sql
 ```
 
 The public page remains usable with safe local defaults when Supabase environment variables are absent or settings cannot be read.
@@ -56,5 +57,6 @@ Project references:
 - `docs/PHASE_6_AVAILABILITY.md` — nightly inventory, freshness, multi-night availability, Admin operations, public safety, and the no-booking boundary.
 - `docs/V2_CURRENT_STATE_MAPPING.md` — bridge from the completed accommodation foundation to the V2 target domains.
 - `docs/V2_PHASE_1_ARCHITECTURE_ALIGNMENT.md` — Destination, Physical Room/Room ID, exact-target media and verification contracts.
+- `docs/V2_PHASE_2_VERIFIED_ROOM_PROFILE.md` — Room Type versus Exact Room verification, quality rubrics/freshness, pros/cons, evidence, Admin, and public security.
 - `docs/LEGACY_ROADMAP_STATUS.md` — concise historical status and phase-numbering boundary.
 - `docs/SUPABASE_SETUP.md` — manual migration and future Storage setup.

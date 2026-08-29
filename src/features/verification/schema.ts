@@ -11,6 +11,11 @@ import {
   VIEWING_POSITIONS,
 } from "@/features/verification/types";
 import { blankToNull, formCheckbox, optionalLocalDateTime, optionalNumber, optionalText } from "@/lib/validation";
+import {
+  roomQualityInternalNotesSchema,
+  roomQualityPublicNotesSchema,
+  roomQualityScoreSchema,
+} from "@/features/room-profiles/schema";
 
 const optionalUuid = z.preprocess(blankToNull, z.uuid().nullable());
 const optionalEnum = <T extends readonly [string, ...string[]]>(values: T) =>
@@ -57,6 +62,16 @@ export const verificationSchema = z
     parking_location: optionalText(1000),
     walk_from_parking_m: optionalNumber(z.coerce.number().int().min(0)),
     road_notes: optionalText(3000),
+    cleanliness_score: roomQualityScoreSchema,
+    soundproof_score: roomQualityScoreSchema,
+    heating_score: roomQualityScoreSchema,
+    hot_water_score: roomQualityScoreSchema,
+    wifi_score: roomQualityScoreSchema,
+    bathroom_score: roomQualityScoreSchema,
+    room_accuracy_score: roomQualityScoreSchema,
+    comfort_score: roomQualityScoreSchema,
+    quality_notes_public: roomQualityPublicNotesSchema,
+    quality_notes_internal: roomQualityInternalNotesSchema,
   })
   .superRefine((value, context) => {
     const now = Date.now();
@@ -139,6 +154,26 @@ export const verificationSchema = z
       }
       if (value.grade === "d" && (value.car_access !== "no" || value.sedan_access !== "no")) {
         context.addIssue({ code: "custom", path: ["grade"], message: "Grade D yêu cầu ô tô và sedan không vào trực tiếp." });
+      }
+    }
+
+    if (value.verification_type === "room_quality") {
+      const scores = [
+        value.cleanliness_score,
+        value.soundproof_score,
+        value.heating_score,
+        value.hot_water_score,
+        value.wifi_score,
+        value.bathroom_score,
+        value.room_accuracy_score,
+        value.comfort_score,
+      ];
+      if (!scores.some((score) => score !== null)) {
+        context.addIssue({
+          code: "custom",
+          path: ["cleanliness_score"],
+          message: "Hãy nhập ít nhất một chiều chất lượng đã quan sát.",
+        });
       }
     }
   });

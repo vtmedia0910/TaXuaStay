@@ -42,5 +42,6 @@ export interface PublicVerifiedPhysicalRoomDto {
   room_verification_id: string;
   verified_at: string;
   expires_at: string;
+  exact_verification_state: "verified";
   cloud_view_verified: boolean;
 }

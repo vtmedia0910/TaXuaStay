@@ -8,6 +8,7 @@ export const VERIFICATION_TYPES = [
   "cloud_view",
   "road_access",
   "media_360",
+  "room_quality",
 ] as const;
 
 export const VERIFICATION_STATUSES = [
@@ -148,6 +149,7 @@ export interface PublicVerificationEvidenceDto {
 export interface AdminVerificationRecord extends VerificationRecordDto {
   cloud_view: CloudViewVerificationDto | null;
   road: RoadVerificationDto | null;
+  room_quality: import("@/features/room-profiles/types").RoomQualityAssessmentDto | null;
   evidence_ids: string[];
   resolved_state: VerificationResolvedState;
 }

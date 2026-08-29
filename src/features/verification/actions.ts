@@ -55,6 +55,16 @@ export async function saveVerificationAction(formData: FormData) {
     parking_location: formData.get("parking_location"),
     walk_from_parking_m: formData.get("walk_from_parking_m"),
     road_notes: formData.get("road_notes"),
+    cleanliness_score: formData.get("cleanliness_score"),
+    soundproof_score: formData.get("soundproof_score"),
+    heating_score: formData.get("heating_score"),
+    hot_water_score: formData.get("hot_water_score"),
+    wifi_score: formData.get("wifi_score"),
+    bathroom_score: formData.get("bathroom_score"),
+    room_accuracy_score: formData.get("room_accuracy_score"),
+    comfort_score: formData.get("comfort_score"),
+    quality_notes_public: formData.get("quality_notes_public"),
+    quality_notes_internal: formData.get("quality_notes_internal"),
   });
 
   if (!parsed.success) redirect("/admin/verification?error=invalid");
@@ -128,6 +138,22 @@ export async function saveVerificationAction(formData: FormData) {
       target_parking_location: value.parking_location,
       target_walk_from_parking_m: value.walk_from_parking_m,
       target_road_notes: value.road_notes,
+    });
+  } else if (value.verification_type === "room_quality") {
+    mutation = supabase.rpc("save_room_quality_verification", {
+      ...common,
+      target_room_type_id: value.room_type_id,
+      target_physical_room_id: value.physical_room_id,
+      target_cleanliness_score: value.cleanliness_score,
+      target_soundproof_score: value.soundproof_score,
+      target_heating_score: value.heating_score,
+      target_hot_water_score: value.hot_water_score,
+      target_wifi_score: value.wifi_score,
+      target_bathroom_score: value.bathroom_score,
+      target_room_accuracy_score: value.room_accuracy_score,
+      target_comfort_score: value.comfort_score,
+      target_notes_public: value.quality_notes_public,
+      target_notes_internal: value.quality_notes_internal,
     });
   } else {
     mutation = supabase.rpc("save_basic_verification", {
