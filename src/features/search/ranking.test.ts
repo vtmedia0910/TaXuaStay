@@ -42,6 +42,8 @@ function candidate(id: string, maxGuests: number, featured = false, hasImage = f
     },
     roomAmenities: [],
     propertyAmenities: [],
+    cloudView: null,
+    road: null,
     image: hasImage ? {
       id: `image-${id}`,
       property_id: null,
@@ -70,5 +72,26 @@ describe("Phase 3 deterministic ranking", () => {
     const second = rankRoomSearchResults(input, DEFAULT_ROOM_SEARCH_PARAMS).map((item) => item.room.id);
     expect(first).toEqual(["a", "b"]);
     expect(second).toEqual(first);
+  });
+
+  it("prefers actual current Cloud View verification when other fit is equal", () => {
+    const verified = candidate("verified", 2);
+    verified.cloudView = {
+      verification_id: "verification-1",
+      room_type_id: verified.room.id,
+      total_points: 92,
+      score_10: 9.2,
+      view_from_bed: "yes",
+      viewing_position: "private_balcony",
+      view_direction: "SE",
+      horizontal_view_angle_deg: 110,
+      sunrise_orientation: "good",
+      obstruction_notes: null,
+      cloud_view_notes: null,
+      verified_at: "2026-08-29T00:00:00Z",
+      expires_at: "2027-08-29T00:00:00Z",
+    };
+    const ranked = rankRoomSearchResults([candidate("plain", 2), verified], DEFAULT_ROOM_SEARCH_PARAMS);
+    expect(ranked[0].room.id).toBe("verified");
   });
 });

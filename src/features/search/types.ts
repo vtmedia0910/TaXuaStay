@@ -1,6 +1,7 @@
 import type { PublicAmenityDto } from "@/features/amenities/types";
 import type { AccessCertainty, PropertyType } from "@/features/properties/types";
 import type { BathroomType, PublicRoomTypeDto, ViewType } from "@/features/rooms/types";
+import type { PublicCloudViewVerificationDto, PublicRoadVerificationDto } from "@/features/verification/types";
 
 export const SEARCH_PAGE_SIZE = 18;
 
@@ -65,6 +66,8 @@ export interface RoomSearchResult {
   roomAmenities: PublicAmenityDto[];
   propertyAmenities: PublicAmenityDto[];
   image: SearchMediaDto | null;
+  cloudView: PublicCloudViewVerificationDto | null;
+  road: PublicRoadVerificationDto | null;
 }
 
 export interface SearchPreset {

@@ -5,10 +5,15 @@ import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/feedback/empty-state";
 import type { RoomSearchParams, RoomSearchResponse } from "@/features/search/types";
 
-export function SearchResults({ response, params, landingSlug }: {
+function ResultGrid({ items }: { items: RoomSearchResponse["items"] }) {
+  return <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{items.map((result) => <SearchResultCard key={result.room.id} result={result} />)}</div>;
+}
+
+export function SearchResults({ response, params, landingSlug, preferCloudVerified = false }: {
   response: RoomSearchResponse;
   params: RoomSearchParams;
   landingSlug?: string;
+  preferCloudVerified?: boolean;
 }) {
   if (response.status === "unconfigured") {
     return (
@@ -18,6 +23,9 @@ export function SearchResults({ response, params, landingSlug }: {
       />
     );
   }
+
+  const verifiedItems = preferCloudVerified ? response.items.filter((item) => item.cloudView) : [];
+  const describedItems = preferCloudVerified ? response.items.filter((item) => !item.cloudView) : [];
 
   if (response.status === "error") {
     return (
@@ -59,9 +67,12 @@ export function SearchResults({ response, params, landingSlug }: {
         </p>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {response.items.map((result) => <SearchResultCard key={result.room.id} result={result} />)}
-      </div>
+      {preferCloudVerified ? (
+        <div className="grid gap-10">
+          {verifiedItems.length ? <section aria-labelledby="verified-results-title"><h3 id="verified-results-title" className="mb-4 font-display text-2xl font-bold text-pine">Phòng có Cloud View Verified còn hiệu lực</h3><ResultGrid items={verifiedItems} /></section> : null}
+          {describedItems.length ? <section aria-labelledby="described-results-title"><h3 id="described-results-title" className="font-display text-2xl font-bold text-pine">Phòng có thông tin hướng nhìn, chưa được xác minh</h3><p className="mb-4 mt-2 text-sm leading-6 text-muted">Những phòng này khớp mô tả hướng nhìn cơ bản nhưng không mang badge hoặc điểm Cloud View Verified.</p><ResultGrid items={describedItems} /></section> : null}
+        </div>
+      ) : <ResultGrid items={response.items} />}
       <SearchPagination params={params} totalPages={response.totalPages} landingSlug={landingSlug} />
     </section>
   );

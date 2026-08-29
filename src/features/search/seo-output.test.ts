@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { buildPropertyStructuredData } from "@/features/search/structured-data";
-import { buildPublicSitemap } from "@/features/search/sitemap";
+import { buildPublicSitemap, buildStaticSitemapPaths } from "@/features/search/sitemap";
 import type { PublicPropertyDto } from "@/features/properties/types";
 
 describe("Phase 3 SEO output", () => {
@@ -24,6 +24,11 @@ describe("Phase 3 SEO output", () => {
     expect(source).toContain("createPublicSupabaseClient");
     expect(source).not.toContain("createServiceRoleClient");
     expect(source).not.toContain('"publish_status"');
+  });
+
+  it("adds /verified only when brand-domain indexing is enabled", () => {
+    expect(buildStaticSitemapPaths(["homestay-ta-xua"], false)).not.toContain("/verified");
+    expect(buildStaticSitemapPaths(["homestay-ta-xua"], true)).toContain("/verified");
   });
 
   it("emits factual lodging structured data without rating, price, review, or availability", () => {

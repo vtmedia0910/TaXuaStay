@@ -1,15 +1,16 @@
 import type { MetadataRoute } from "next";
-import { getSiteUrl } from "@/config/site";
+import { getSiteDeploymentPolicy } from "@/config/site";
 import { getPublicSitemapData } from "@/features/search/data";
 import { SEO_LANDING_SLUGS } from "@/features/search/seo";
-import { buildPublicSitemap } from "@/features/search/sitemap";
+import { buildPublicSitemap, buildStaticSitemapPaths } from "@/features/search/sitemap";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticPaths = ["/", "/tim-phong", ...SEO_LANDING_SLUGS.map((slug) => `/${slug}`)];
+  const policy = getSiteDeploymentPolicy();
+  const staticPaths = buildStaticSitemapPaths(SEO_LANDING_SLUGS, policy.indexingEnabled);
   try {
     const data = await getPublicSitemapData();
-    return buildPublicSitemap(getSiteUrl(), staticPaths, data);
+    return buildPublicSitemap(policy.siteUrl, staticPaths, data);
   } catch {
-    return buildPublicSitemap(getSiteUrl(), staticPaths, { properties: [], rooms: [] });
+    return buildPublicSitemap(policy.siteUrl, staticPaths, { properties: [], rooms: [] });
   }
 }

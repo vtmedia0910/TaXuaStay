@@ -9,6 +9,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   "room-save": "Không thể lưu loại phòng và amenities. Giao dịch đã được hoàn tác; hãy kiểm tra sức chứa, quantity và trạng thái.",
   "amenity-save": "Không thể lưu amenity. Slug có thể đã tồn tại.",
   "media-save": "Không thể lưu media. Hãy kiểm tra quan hệ, HTTPS URL và metadata.",
+  "verification-save": "Không thể lưu xác minh. Giao dịch đã được hoàn tác; hãy kiểm tra target, bằng chứng, rubric và thời hạn.",
 };
 
 export function FormFeedback({ saved, error }: { saved?: string; error?: string }) {

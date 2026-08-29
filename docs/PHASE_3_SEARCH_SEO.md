@@ -131,6 +131,12 @@ These rules are not persisted as fabricated suitability labels.
 
 The hunting-cloud and view pages use only `view_type = mountain | valley`. They explicitly state that this is not Cloud View Verified, does not include Cloud View Score, and cannot guarantee cloud conditions. Phase 4 can replace this coarse filter with room-linked evidence and the audited scoring rubric without changing the route intent.
 
+### Phase 4 integration note
+
+Phase 4 now enriches the current server-paginated page with current, evidence-backed Cloud View and Road summaries in fixed batch queries. Cloud/view landing pages split the current page into a clearly labeled Verified section followed by rooms that only have basic view descriptions; unverified rooms never receive a score or badge. Verified records gain a deterministic ranking preference within the current page. Pagination and total counts still come from the Phase 3 factual room query, so Phase 4 does not introduce a new Cloud View filter or make a global “all verified first” claim across pages.
+
+The Phase 3 access filters continue to operate on preliminary property facts. Current Road Verified facts override those values on result/property display, without overwriting the preliminary source. A dedicated verified-road search filter remains deferred until its query and pagination semantics are designed explicitly.
+
 ## Canonicals, robots, sitemap, and structured data
 
 - `/tim-phong` has canonical `/tim-phong`.

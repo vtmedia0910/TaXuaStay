@@ -10,6 +10,8 @@ export function getRoomSearchScore(result: RoomSearchResult, params: RoomSearchP
   if (result.room.short_description) score += 3;
   if (result.room.bed_type && result.room.bed_count) score += 3;
   if (result.room.size_m2) score += 2;
+  if (result.cloudView) score += 15;
+  if (result.road) score += 5;
   score += Math.min(4, result.roomAmenities.length + result.propertyAmenities.length);
 
   return score;

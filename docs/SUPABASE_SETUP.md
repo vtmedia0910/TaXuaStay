@@ -6,12 +6,13 @@ Use only the dedicated Tà Xùa Stay Supabase project. Never link this repositor
 
 Verified on 2026-08-29 against the dedicated Supabase project returned by the CLI as `TaXuaStay`, project ref `kkrtajdgkinybpwermls`. The repository is linked through Supabase CLI metadata under the gitignored `supabase/.temp/` directory; no credentials or tracked `supabase/config.toml` were added.
 
-Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the application dependencies were not changed. Remote migration history is reconciled and contains these three migrations in order:
+Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the application dependencies were not changed. Remote migration history is reconciled and contains these four migrations in order:
 
 ```text
 202608290001
 202608290002
 202608290003
+202608290004
 ```
 
 The final remote dry-run reported the database up to date. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
@@ -24,9 +25,10 @@ Apply only missing Stay migrations in filename order:
 supabase/migrations/202608290001_stay_foundation.sql
 supabase/migrations/202608290002_properties_rooms_amenities_media.sql
 supabase/migrations/202608290003_harden_phase2_accommodation.sql
+supabase/migrations/202608290004_verified_standard.sql
 ```
 
-Never reapply or edit a migration already present remotely. Migration `202608290003` is the additive corrective migration that preserves immutable migration `202608290002`.
+Never reapply or edit a migration already present remotely. Migration `202608290003` is the additive corrective migration that preserves immutable migration `202608290002`; migration `202608290004` adds the normalized Verified Standard without seeding verification data.
 
 After `202608290003`, review every property whose access values became `unknown`. The migration deliberately converts legacy `true` to `yes` and legacy `false` to `unknown`; an old false value is not sufficient evidence for a customer-facing `no`.
 
@@ -39,6 +41,16 @@ After applying Phase 2, verify with separate anonymous, staff, and admin session
 5. Public queries cannot request `updated_by`, `captured_by_user_id`, or `verified_by_user_id`.
 6. Anonymous cannot select physical `room_types.quantity`.
 7. A failed property/room amenity assignment rolls back the corresponding content insert/update.
+
+After applying Phase 4, verify additionally:
+
+1. `public_verification_badges`, `public_cloud_view_verifications`, `public_road_verifications`, and `public_verification_evidence` return HTTP 200 to the anonymous REST role.
+2. Anonymous selection of lifecycle `method`, internal `notes`, or `verified_by_user_id` is denied.
+3. Anonymous has no insert/update/delete grant on verification tables.
+4. A public badge requires a current verified record, a public target, and approved public evidence for the exact target.
+5. Cloud/Road Admin saves commit lifecycle, specialized facts, and evidence together through the corresponding transaction RPC.
+
+The 2026-08-29 remote smoke test returned HTTP 200 for all four public views and HTTP 401 for an anonymous request for lifecycle internal columns. `supabase db lint --linked` reported no schema errors. No test rows were inserted.
 
 ## Environment configuration
 
@@ -55,7 +67,7 @@ No current application call site uses a service-role client, and the unused clie
 
 ## Storage architecture
 
-Phase 2 supports validated HTTPS media URLs and does not require live Storage or upload UX. No bucket was created by this task.
+Phase 2 and Phase 4 use validated HTTPS media URLs and do not require live Storage or upload UX. Phase 4 links exact-target evidence to existing `media_assets`; no bucket was created by this task.
 
 Future Stay-owned buckets documented by the Master Plan are:
 

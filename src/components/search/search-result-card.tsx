@@ -3,6 +3,7 @@ import { Bath, BedDouble, Car, ImageIcon, MapPin, Mountain, Users } from "lucide
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { formatAccessCertainty } from "@/features/properties/access";
 import {
   ACCESS_FILTER_LABELS,
   ACCESS_FILTER_MARKS,
@@ -10,12 +11,14 @@ import {
   VIEW_TYPE_LABELS,
 } from "@/features/search/labels";
 import type { RoomSearchResult } from "@/features/search/types";
+import { CLOUD_VIEW_FROM_BED_LABELS, getCloudViewLabel, ROAD_GRADE_LABELS } from "@/features/verification/policy";
 
 export function SearchResultCard({ result }: { result: RoomSearchResult }) {
   const { room, property, image } = result;
   const amenities = [...result.roomAmenities, ...result.propertyAmenities]
     .filter((amenity, index, values) => values.findIndex((item) => item.id === amenity.id) === index)
     .slice(0, 4);
+  const carAccess = result.road?.car_access ?? property.car_access;
 
   return (
     <article>
@@ -42,14 +45,20 @@ export function SearchResultCard({ result }: { result: RoomSearchResult }) {
             </p>
             <h2 className="mt-2 font-display text-2xl font-bold text-pine">{room.name}</h2>
             {room.short_description ? <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted">{room.short_description}</p> : null}
+            <div className="mt-3 flex flex-wrap gap-2">
+              {result.cloudView ? <Badge className="bg-pine text-white">Cloud View Verified · {Number(result.cloudView.score_10).toFixed(1)} · {getCloudViewLabel(Number(result.cloudView.score_10))}</Badge> : null}
+              {result.road ? <Badge className="text-success">Road Verified · {ROAD_GRADE_LABELS[result.road.grade]}</Badge> : null}
+            </div>
           </div>
 
           <dl className="grid grid-cols-2 gap-3 text-sm">
             <div><dt className="flex items-center gap-1 font-bold"><Users size={16} aria-hidden="true" />Sức chứa</dt><dd className="mt-1 text-muted">Tối đa {room.max_guests} khách</dd></div>
             <div><dt className="flex items-center gap-1 font-bold"><Bath size={16} aria-hidden="true" />Phòng tắm</dt><dd className="mt-1 text-muted">{BATHROOM_TYPE_LABELS[room.bathroom_type]}</dd></div>
             <div><dt className="flex items-center gap-1 font-bold"><Mountain size={16} aria-hidden="true" />Hướng nhìn</dt><dd className="mt-1 text-muted">{VIEW_TYPE_LABELS[room.view_type]}</dd></div>
-            <div><dt className="flex items-center gap-1 font-bold"><Car size={16} aria-hidden="true" />Ô tô</dt><dd className="mt-1 text-muted"><span aria-hidden="true">{ACCESS_FILTER_MARKS[property.car_access]}</span> {ACCESS_FILTER_LABELS[property.car_access]}</dd></div>
+            <div><dt className="flex items-center gap-1 font-bold"><Car size={16} aria-hidden="true" />Ô tô</dt><dd className="mt-1 text-muted">{result.road ? formatAccessCertainty(carAccess) : <><span aria-hidden="true">{ACCESS_FILTER_MARKS[carAccess]}</span> {ACCESS_FILTER_LABELS[carAccess]}</>}</dd></div>
           </dl>
+
+          {result.cloudView ? <p className="rounded-2xl bg-mist p-3 text-sm text-muted">Ngắm từ giường: <strong className="text-ink">{CLOUD_VIEW_FROM_BED_LABELS[result.cloudView.view_from_bed]}</strong> · Xác minh {new Date(result.cloudView.verified_at).toLocaleDateString("vi-VN")}</p> : null}
 
           <div className="flex flex-wrap gap-2">
             {room.has_private_balcony ? <Badge>Ban công riêng</Badge> : null}

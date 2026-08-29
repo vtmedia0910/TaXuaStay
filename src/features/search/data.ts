@@ -23,6 +23,7 @@ import type {
 } from "@/features/search/types";
 import { SEARCH_PAGE_SIZE } from "@/features/search/types";
 import type { PublicRoomTypeDto } from "@/features/rooms/types";
+import { getPublicSearchVerificationSummaries } from "@/features/verification/data";
 import { createPublicSupabaseClient } from "@/lib/supabase/public";
 
 type SearchRoomRow = PublicRoomTypeDto & { property: SearchPropertyDto | null };
@@ -64,7 +65,7 @@ async function enrichSearchRows(rows: SearchRoomRow[]) {
   const roomIds = rows.map((row) => row.id);
   const propertyIds = [...new Set(rows.map((row) => row.property?.id).filter(Boolean))] as string[];
 
-  const [roomAmenitiesResult, propertyAmenitiesResult, roomMediaResult, propertyMediaResult] =
+  const [roomAmenitiesResult, propertyAmenitiesResult, roomMediaResult, propertyMediaResult, verification] =
     await Promise.all([
       supabase
         .from("room_amenities")
@@ -88,12 +89,15 @@ async function enrichSearchRows(rows: SearchRoomRow[]) {
         .in("property_id", propertyIds)
         .order("sort_order")
         .overrideTypes<SearchMediaDto[], { merge: false }>(),
+      getPublicSearchVerificationSummaries(roomIds, propertyIds),
     ]);
 
   const roomAmenities = roomAmenitiesResult.data ?? [];
   const propertyAmenities = propertyAmenitiesResult.data ?? [];
   const roomMedia = roomMediaResult.data ?? [];
   const propertyMedia = propertyMediaResult.data ?? [];
+  const cloudViewMap = new Map(verification.cloudViews.map((item) => [item.room_type_id, item]));
+  const roadMap = new Map(verification.roads.map((item) => [item.property_id, item]));
 
   return rows.flatMap<RoomSearchResult>((row) => {
     if (!row.property) return [];
@@ -132,6 +136,8 @@ async function enrichSearchRows(rows: SearchRoomRow[]) {
         roomMedia.filter((asset) => asset.room_type_id === row.id),
         propertyMedia.filter((asset) => asset.property_id === row.property?.id),
       ),
+      cloudView: cloudViewMap.get(row.id) ?? null,
+      road: roadMap.get(row.property.id) ?? null,
     }];
   });
 }

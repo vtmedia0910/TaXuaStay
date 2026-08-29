@@ -1,7 +1,15 @@
 import { Badge } from "@/components/ui/badge";
+import { PanoramaViewer } from "@/components/media/panorama-viewer";
 import type { MediaAssetDto } from "@/features/media/types";
 
 function MediaFrame({ asset }: { asset: MediaAssetDto }) {
+  if (asset.media_type === "panorama_360") {
+    const positionLabel = ["view_from_room", "view_from_bed", "balcony", "sunrise"].includes(asset.evidence_type)
+      ? "Vị trí ngắm view"
+      : asset.room_type_id ? "Phòng" : "Không gian";
+    return <PanoramaViewer mediaType={asset.media_type} url={asset.url} thumbnailUrl={asset.thumbnail_url} alt={asset.alt_text} positionLabel={positionLabel} />;
+  }
+
   if (asset.media_type === "video") {
     return (
       <video
@@ -40,17 +48,15 @@ export function MediaGallery({ assets }: { assets: MediaAssetDto[] }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {assets.map((asset, index) => (
-        <figure key={asset.id} className={index === 0 ? "sm:col-span-2" : undefined}>
+        <div key={asset.id} className={index === 0 ? "sm:col-span-2" : undefined}>
           <div className="relative">
             <MediaFrame asset={asset} />
-            {asset.media_type === "panorama_360" ? (
-              <Badge className="absolute left-3 top-3 bg-pine text-white">Ảnh toàn cảnh 360°</Badge>
-            ) : null}
+            {asset.media_type === "panorama_360" ? <Badge className="absolute left-3 top-3 bg-pine text-white">Ảnh toàn cảnh 360°</Badge> : null}
           </div>
           {asset.caption ? (
-            <figcaption className="mt-2 px-2 text-sm leading-6 text-muted">{asset.caption}</figcaption>
+            <p className="mt-2 px-2 text-sm leading-6 text-muted">{asset.caption}</p>
           ) : null}
-        </figure>
+        </div>
       ))}
     </div>
   );

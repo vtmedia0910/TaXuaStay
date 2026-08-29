@@ -15,6 +15,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           </Link>
           <nav className="flex items-center gap-1" aria-label="Điều hướng chính">
             <Link href="/tim-phong" className="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-bold text-pine hover:bg-pine-soft">Tìm phòng</Link>
+            <Link href="/verified" className="hidden min-h-11 items-center rounded-full px-4 text-sm font-bold text-pine hover:bg-pine-soft md:inline-flex">Verified Standard</Link>
             <Link href="/homestay-ta-xua" className="hidden min-h-11 items-center rounded-full px-4 text-sm font-bold text-pine hover:bg-pine-soft sm:inline-flex">Khám phá</Link>
             <Link href="/admin/login" className="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-bold text-muted hover:bg-pine-soft hover:text-pine">Quản trị</Link>
           </nav>
@@ -28,6 +29,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <Link href="/tim-phong" className="hover:text-white">Tìm phòng</Link>
             <Link href="/homestay-ta-xua" className="hover:text-white">Homestay Tà Xùa</Link>
             <Link href="/khach-san-ta-xua" className="hover:text-white">Khách sạn Tà Xùa</Link>
+            <Link href="/verified" className="hover:text-white">Verified Standard</Link>
           </nav>
         </div>
       </footer>

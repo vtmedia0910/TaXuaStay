@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Bath, BedDouble, Maximize2, Mountain, Users } from "lucide-react";
 import { MediaGallery } from "@/components/media/media-gallery";
+import { RoomVerifiedSection } from "@/components/verification/room-verified-section";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { getPublicRoomAmenities } from "@/features/amenities/data";
@@ -11,6 +12,7 @@ import { getPublicPropertyBySlug } from "@/features/properties/data";
 import { getPublicRoom } from "@/features/rooms/data";
 import { BATHROOM_TYPE_LABELS, VIEW_TYPE_LABELS } from "@/features/search/labels";
 import { buildRoomSearchUrl, DEFAULT_ROOM_SEARCH_PARAMS } from "@/features/search/params";
+import { getPublicRoomVerificationBundle } from "@/features/verification/data";
 
 type RoomParams = Promise<{ slug: string; roomSlug: string }>;
 
@@ -35,9 +37,10 @@ export default async function RoomPage({ params }: { params: RoomParams }) {
   const room = await getPublicRoom(property.id, roomSlug);
   if (!room) notFound();
 
-  const [amenities, media] = await Promise.all([
+  const [amenities, media, verification] = await Promise.all([
     getPublicRoomAmenities(room.id),
     getPublicRoomMedia(room.id),
+    getPublicRoomVerificationBundle(room.id),
   ]);
   const relatedSearchUrl = buildRoomSearchUrl({
     ...DEFAULT_ROOM_SEARCH_PARAMS,
@@ -61,10 +64,8 @@ export default async function RoomPage({ params }: { params: RoomParams }) {
           <section>
             <h2 className="mb-5 font-display text-3xl font-bold text-pine">Hình ảnh của loại phòng</h2>
             <MediaGallery assets={media} />
-            {media.some((asset) => asset.media_type === "panorama_360") ? (
-              <p className="mt-3 text-sm leading-6 text-muted">Ảnh toàn cảnh hiện được mở dưới dạng ảnh hoặc liên kết cơ bản; chế độ xem tương tác chưa được cung cấp.</p>
-            ) : null}
           </section>
+          <RoomVerifiedSection bundle={verification} />
           {room.description ? (
             <section><h2 className="font-display text-3xl font-bold text-pine">Chi tiết phòng</h2><p className="mt-4 whitespace-pre-line leading-8 text-muted">{room.description}</p></section>
           ) : null}
@@ -78,7 +79,7 @@ export default async function RoomPage({ params }: { params: RoomParams }) {
               <div className="flex gap-3"><BedDouble className="text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Giường</dt><dd className="text-muted">{room.bed_count ? `${room.bed_count} · ${room.bed_type ?? "chưa ghi loại"}` : "Chưa có dữ liệu"}</dd></div></div>
               <div className="flex gap-3"><Bath className="text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Phòng tắm</dt><dd className="text-muted">{BATHROOM_TYPE_LABELS[room.bathroom_type]}</dd></div></div>
               {room.size_m2 ? <div className="flex gap-3"><Maximize2 className="text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Diện tích</dt><dd className="text-muted">{room.size_m2} m²</dd></div></div> : null}
-              <div className="flex gap-3"><Mountain className="text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Hướng nhìn đã ghi nhận</dt><dd className="text-muted">{VIEW_TYPE_LABELS[room.view_type]} · chưa được kiểm chứng theo tiêu chuẩn Cloud View Verified</dd></div></div>
+              <div className="flex gap-3"><Mountain className="text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Hướng nhìn đã ghi nhận</dt><dd className="text-muted">{VIEW_TYPE_LABELS[room.view_type]}</dd></div></div>
             </dl>
           </Card>
           <Card className="p-5">

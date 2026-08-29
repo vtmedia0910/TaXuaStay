@@ -73,7 +73,7 @@ export default async function SeoLandingPage({ params, searchParams }: SeoPagePr
           </Card>
         </div>
 
-        <SearchResults response={response} params={search} landingSlug={config.slug} />
+        <SearchResults response={response} params={search} landingSlug={config.slug} preferCloudVerified={["homestay-san-may-ta-xua", "homestay-ta-xua-view-dep"].includes(config.slug)} />
 
         <nav className="mt-14 border-t border-line pt-8" aria-label="Trang khám phá liên quan">
           <h2 className="font-display text-2xl font-bold text-pine">Khám phá liên quan</h2>

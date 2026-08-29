@@ -7,6 +7,7 @@ import {
   ImageIcon,
   MountainSnow,
   Settings,
+  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 import { logoutAction } from "@/features/admin/auth-actions";
@@ -18,6 +19,7 @@ const contentLinks = [
   { label: "Phòng", href: "/admin/rooms", icon: BedDouble },
   { label: "Amenities", href: "/admin/amenities", icon: Sparkles },
   { label: "Media", href: "/admin/media", icon: ImageIcon },
+  { label: "Verification", href: "/admin/verification", icon: ShieldCheck },
 ] as const;
 
 const adminLinks = [{ label: "Cấu hình", href: "/admin/settings", icon: Settings }] as const;

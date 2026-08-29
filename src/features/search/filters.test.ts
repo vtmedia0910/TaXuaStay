@@ -43,6 +43,8 @@ function makeResult(): RoomSearchResult {
     roomAmenities: [],
     propertyAmenities: [],
     image: null,
+    cloudView: null,
+    road: null,
   };
 }
 

@@ -40,8 +40,8 @@ export default async function HomePage() {
           <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               [BedDouble, "Loại phòng", "Sức chứa, giường, phòng tắm và ban công của đúng loại phòng."],
-              [Eye, "Hướng nhìn đã ghi nhận", "Dựa trên thông tin hiện có; chưa được kiểm chứng theo tiêu chuẩn Cloud View Verified."],
-              [Car, "Thông tin đường vào", "Có, Không và Chưa xác nhận luôn được tách biệt."],
+              [Eye, "Cloud View và View Thật", "Chỉ phòng có hồ sơ, bằng chứng đúng phòng và thời hạn còn hiệu lực mới hiện badge."],
+              [Car, "Thông tin đường vào", "Road Verified được tách rõ khỏi thông tin sơ bộ; Có, Không và Chưa xác nhận không bị trộn lẫn."],
               [ListFilter, "Lưu lựa chọn trong đường dẫn", "Ngày, khách và bộ lọc được giữ trong đường dẫn tìm kiếm."],
             ].map(([Icon, title, description]) => (
               <Card key={String(title)} className="p-5">
@@ -51,6 +51,7 @@ export default async function HomePage() {
               </Card>
             ))}
           </div>
+          <Link href="/verified" className="mt-7 inline-flex min-h-11 items-center font-bold text-copper-strong hover:text-pine">Xem cách Tà Xùa Stay xác minh →</Link>
         </div>
       </section>
 

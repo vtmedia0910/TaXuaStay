@@ -67,20 +67,35 @@ Indexing is environment-aware. A valid explicit HTTPS brand domain in `NEXT_PUBL
 
 No runtime call site requires a service-role client. The tracked environment template contains only the final canonical URL and the two public Supabase variables. Any existing `SUPABASE_SERVICE_ROLE_KEY` in Vercel is unnecessary for the current application and should be removed by the owner.
 
+## Phase 4 Verified Standard
+
+Phase 4 adds an evidence-backed trust domain without marking any existing content verified automatically. `verification_records` owns lifecycle, target, method, internal notes, staff audit references, verification time, and expiry. Type-specific facts live in `cloud_view_verifications` and `road_verifications`; `verification_evidence` links each lifecycle record to existing exact-target `media_assets` through foreign keys.
+
+Cloud View is authoritative only at room-type level. Seven constrained integer components total 100 points; generated PostgreSQL columns derive `total_points` and `score_10`, so Admin cannot enter a final marketing score. The score measures physical viewing-position characteristics, not clouds or weather probability. Current public Cloud records include direct view facts, selected approved evidence, verification date, and expiry.
+
+Road Verified is property-level and uses A–D grades plus tri-state access, surface, difficult-section, rain, parking, and walking facts. A current, evidence-backed Road record takes display precedence over Phase 2 preliminary access facts. It does not overwrite those preliminary facts, so expiry cleanly restores the original fallback instead of presenting a stale verified snapshot as preliminary data.
+
+Public reads go through explicit current-only views and field allowlists. A badge requires `status = verified`, a future expiry, a public property/room, and at least one approved public evidence link. Anonymous users cannot see lifecycle method, internal notes, staff IDs, pending/rejected records, or private evidence and cannot mutate verification tables. Staff/admin writes use RLS plus atomic transaction RPCs. The sole new `SECURITY DEFINER` helper is a fixed-search-path boolean used to avoid recursive RLS while evaluating public eligibility; its execute grant is limited to the roles that query public verification data.
+
+Public Phase 4 surfaces are the room and property pages, search cards, the two cloud/view intent landings, and `/verified`. Search loads current Cloud/Road summaries in fixed batches for the current result page. Approved Phase 2 media remains distinct from Verified Standard evidence: approval allows public use, but a current verification record and explicit evidence link are still required for any verification badge.
+
+Approved `panorama_360` media now uses a small client component that requests the large panorama only after activation and supports touch/drag, keyboard panning, an original-image link, and failure/no-JavaScript fallback. It deliberately avoids a new heavy rendering dependency; this Phase 4 implementation is a horizontally pannable equirectangular presentation rather than a WebGL spherical projection.
+
+Indexing safety remains unchanged. `/verified` is emitted in the sitemap only when the existing explicit final-brand-domain policy enables indexing. Temporary `*.vercel.app` deployments remain usable but `noindex,nofollow` with crawling blocked.
+
 ## Planned domains
 
 Later phases may introduce these independent Stay domains, one reviewed phase at a time:
 
 - properties
 - rooms
-- verification
 - rates
 - availability
 - stay bookings
 - weather and cloud forecast
 - imports
 
-These names document direction only. Phase 3 adds discovery and SEO over the Phase 2 content domain; verification, rates, availability, bookings, weather, imports, and referrals remain deferred.
+These names document direction only. Phase 4 adds verification over the Phase 2 content and Phase 3 discovery domains; rates, availability, bookings, weather, imports, and referrals remain deferred.
 
 ## Future Biker relationship
 

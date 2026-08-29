@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BedDouble, Bike, Car, Clock3, MapPin, Mountain, ParkingCircle, Wifi } from "lucide-react";
 import { MediaGallery } from "@/components/media/media-gallery";
+import { PropertyVerifiedSection } from "@/components/verification/property-verified-section";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { getSiteUrl } from "@/config/site";
@@ -14,6 +15,8 @@ import { getPublicRoomsByProperty } from "@/features/rooms/data";
 import { buildRoomSearchUrl, DEFAULT_ROOM_SEARCH_PARAMS } from "@/features/search/params";
 import { PROPERTY_TYPE_LABELS, ROAD_ACCESS_GRADE_LABELS } from "@/features/search/labels";
 import { buildPropertyStructuredData, serializeStructuredData } from "@/features/search/structured-data";
+import { getEffectiveRoadFacts, isPropertyVerified } from "@/features/verification/policy";
+import { getPublicPropertyVerificationBundle } from "@/features/verification/data";
 
 export async function generateMetadata({
   params,
@@ -41,16 +44,25 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
     getPublicPropertyAmenities(property.id),
     getPublicPropertyMedia(property.id),
   ]);
+  const verification = await getPublicPropertyVerificationBundle(property.id, rooms.map((room) => room.id));
+  const roadFacts = getEffectiveRoadFacts(property, verification.road);
+  const propertyVerified = isPropertyVerified(verification.badges);
 
   const facilities = [
     property.wifi && "Wi-Fi",
-    property.parking === "yes" && "Chỗ đỗ xe",
+    roadFacts.parking === "yes" && "Chỗ đỗ xe",
     property.breakfast && "Bữa sáng",
     property.restaurant && "Nhà hàng",
     property.bbq && "BBQ",
   ].filter((value): value is string => Boolean(value));
   const canonicalUrl = new URL(`/homestay/${property.slug}`, getSiteUrl()).toString();
-  const structuredData = buildPropertyStructuredData(property, media, canonicalUrl);
+  const structuredData = buildPropertyStructuredData({
+    ...property,
+    road_access_grade: roadFacts.grade,
+    car_access: roadFacts.carAccess,
+    motorbike_access: roadFacts.motorbikeAccess,
+    parking: roadFacts.parking,
+  }, media, canonicalUrl);
   const areaSearchUrl = buildRoomSearchUrl({
     ...DEFAULT_ROOM_SEARCH_PARAMS,
     area: property.area_name,
@@ -67,6 +79,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
           <div className="flex flex-wrap gap-2">
             <Badge className="bg-white/15 text-white">{PROPERTY_TYPE_LABELS[property.property_type]}</Badge>
             {property.is_featured ? <Badge className="bg-copper text-white">Nổi bật</Badge> : null}
+            {propertyVerified ? <Badge className="bg-white text-pine">Property Verified</Badge> : null}
           </div>
           <h1 className="mt-5 max-w-4xl font-display text-4xl font-bold sm:text-6xl">{property.name}</h1>
           <p className="mt-4 flex items-center gap-2 text-white/75"><MapPin size={18} aria-hidden="true" />{property.area_name}{property.address ? ` · ${property.address}` : ""}</p>
@@ -77,7 +90,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[1.25fr_0.75fr]">
         <div className="grid gap-10">
           <section aria-labelledby="gallery-title">
-            <h2 id="gallery-title" className="mb-5 font-display text-3xl font-bold text-pine">Hình ảnh đã duyệt</h2>
+            <h2 id="gallery-title" className="mb-5 font-display text-3xl font-bold text-pine">Hình ảnh nơi lưu trú</h2>
             <MediaGallery assets={media} />
           </section>
 
@@ -87,6 +100,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
               <p className="mt-4 whitespace-pre-line text-base leading-8 text-muted">{property.description}</p>
             </section>
           ) : null}
+
+          <PropertyVerifiedSection bundle={verification} />
 
           <section aria-labelledby="rooms-title">
             <div className="flex flex-wrap items-end justify-between gap-3">
@@ -114,10 +129,10 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
             <h2 className="font-display text-2xl font-bold text-pine">Thông tin nhanh</h2>
             <dl className="mt-5 grid gap-4 text-sm">
               <div className="flex gap-3"><Clock3 className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Nhận / trả phòng</dt><dd className="mt-1 text-muted">{property.check_in_time.slice(0, 5)} / {property.check_out_time.slice(0, 5)}</dd></div></div>
-              <div className="flex gap-3"><Car className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Ô tô tiếp cận</dt><dd className="mt-1 text-muted">{formatAccessCertainty(property.car_access)}</dd></div></div>
-              <div className="flex gap-3"><Bike className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Xe máy tiếp cận</dt><dd className="mt-1 text-muted">{formatAccessCertainty(property.motorbike_access)}</dd></div></div>
-              <div className="flex gap-3"><ParkingCircle className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Chỗ đỗ xe</dt><dd className="mt-1 text-muted">{formatAccessCertainty(property.parking)}</dd></div></div>
-              <div className="flex gap-3"><Mountain className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Đường vào sơ bộ</dt><dd className="mt-1 text-muted">{ROAD_ACCESS_GRADE_LABELS[property.road_access_grade]} · chưa được kiểm chứng đầy đủ</dd></div></div>
+              <div className="flex gap-3"><Car className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Ô tô tiếp cận</dt><dd className="mt-1 text-muted">{formatAccessCertainty(roadFacts.carAccess)}</dd></div></div>
+              <div className="flex gap-3"><Bike className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Xe máy tiếp cận</dt><dd className="mt-1 text-muted">{formatAccessCertainty(roadFacts.motorbikeAccess)}</dd></div></div>
+              <div className="flex gap-3"><ParkingCircle className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Chỗ đỗ xe</dt><dd className="mt-1 text-muted">{formatAccessCertainty(roadFacts.parking)}</dd></div></div>
+              <div className="flex gap-3"><Mountain className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Đường vào</dt><dd className="mt-1 text-muted">{ROAD_ACCESS_GRADE_LABELS[roadFacts.grade]} · {roadFacts.source === "verified" ? "Road Verified còn hiệu lực" : "thông tin sơ bộ"}</dd></div></div>
               {property.wifi ? <div className="flex gap-3"><Wifi className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Wi-Fi</dt><dd className="mt-1 text-muted">Có</dd></div></div> : null}
             </dl>
           </Card>
