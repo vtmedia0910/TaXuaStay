@@ -84,13 +84,34 @@ export function VerificationForm({
   evidence: VerificationEvidenceOption[];
 }) {
   const [type, setType] = useState<VerificationType>(record?.verification_type ?? "property_identity");
+  const [status, setStatus] = useState(record?.status ?? "pending");
   const [propertyId, setPropertyId] = useState(record?.property_id ?? "");
   const [roomTypeId, setRoomTypeId] = useState(record?.room_type_id ?? "");
   const [components, setComponents] = useState(() => initialComponents(record));
+  const previouslyCurrent = record?.resolved_state === "current";
+  const initiallyStartsFreshCycle = record?.status === "verified" && !previouslyCurrent;
+  const originalVerifiedAt = toVietnamLocalInput(record?.verified_at);
+  const originalExpiresAt = toVietnamLocalInput(record?.expires_at);
+  const [verifiedAt, setVerifiedAt] = useState(initiallyStartsFreshCycle ? "" : originalVerifiedAt);
+  const [expiresAt, setExpiresAt] = useState(initiallyStartsFreshCycle ? "" : originalExpiresAt);
+  const [useCustomDates, setUseCustomDates] = useState(false);
   const existingEvidence = new Set(record?.evidence_ids ?? []);
   const propertyMap = new Map(properties.map((property) => [property.id, property.name]));
   const editing = Boolean(record);
   const propertyTarget = isPropertyVerification(type);
+  const startsFreshCycle = status === "verified" && !previouslyCurrent;
+
+  function changeStatus(nextStatus: AdminVerificationRecord["status"]) {
+    setStatus(nextStatus);
+    setUseCustomDates(false);
+    if (nextStatus === "verified" && !previouslyCurrent) {
+      setVerifiedAt("");
+      setExpiresAt("");
+    } else if (!previouslyCurrent) {
+      setVerifiedAt(originalVerifiedAt);
+      setExpiresAt(originalExpiresAt);
+    }
+  }
 
   const eligibleEvidence = useMemo(() => evidence.filter((asset) => {
     if (propertyTarget) {
@@ -167,20 +188,30 @@ export function VerificationForm({
         </div>
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Trạng thái" htmlFor="status">
-            <Select id="status" name="status" defaultValue={record?.status ?? "pending"}>
+            <Select id="status" name="status" value={status} onChange={(event) => changeStatus(event.target.value as AdminVerificationRecord["status"])}>
               {VERIFICATION_STATUSES.map((value) => <option key={value} value={value}>{value}</option>)}
             </Select>
           </Field>
           <Field label="Phương pháp" htmlFor="method">
             <Input id="method" name="method" defaultValue={record?.method ?? "Kiểm tra trực tiếp"} maxLength={200} required />
           </Field>
-          <Field label="Xác minh lúc" htmlFor="verified_at" hint="Múi giờ Việt Nam; có thể để trống khi chuyển sang verified lần đầu.">
-            <Input id="verified_at" name="verified_at" type="datetime-local" defaultValue={toVietnamLocalInput(record?.verified_at)} />
+          <Field label="Xác minh lúc" htmlFor="verified_at" hint={startsFreshCycle ? "Mặc định hệ thống ghi thời điểm lưu hiện tại." : "Múi giờ Việt Nam; không được chọn thời điểm tương lai."}>
+            <Input id="verified_at" name="verified_at" type="datetime-local" value={verifiedAt} disabled={startsFreshCycle && !useCustomDates} required={startsFreshCycle && useCustomDates} onChange={(event) => setVerifiedAt(event.target.value)} />
           </Field>
-          <Field label="Hết hạn lúc" htmlFor="expires_at" hint="Để trống để dùng thời hạn mặc định; có thể điều chỉnh khi có lý do nghiệp vụ.">
-            <Input id="expires_at" name="expires_at" type="datetime-local" defaultValue={toVietnamLocalInput(record?.expires_at)} />
+          <Field label="Hết hạn lúc" htmlFor="expires_at" hint={startsFreshCycle ? `Mặc định là ${VERIFICATION_FRESHNESS_MONTHS[type]} tháng từ lần xác minh mới.` : "Có thể điều chỉnh khi có lý do nghiệp vụ; phải còn ở tương lai khi lưu verified."}>
+            <Input id="expires_at" name="expires_at" type="datetime-local" value={expiresAt} disabled={startsFreshCycle && !useCustomDates} required={startsFreshCycle && useCustomDates} onChange={(event) => setExpiresAt(event.target.value)} />
           </Field>
         </div>
+        {startsFreshCycle ? (
+          <div className="grid gap-3 rounded-2xl bg-pine-soft p-4 text-sm text-pine">
+            <p className="font-bold">Chu kỳ xác minh mới</p>
+            <p className="leading-6 text-muted">Khi lưu, hệ thống mặc định lấy thời điểm hiện tại và tạo hạn mới theo chính sách {VERIFICATION_FRESHNESS_MONTHS[type]} tháng. Ngày của chu kỳ cũ không được tự động giữ lại.</p>
+            <label className="flex min-h-12 cursor-pointer items-start gap-3 rounded-2xl border border-line bg-surface px-4 py-3">
+              <input name="use_custom_verification_dates" type="checkbox" checked={useCustomDates} onChange={(event) => setUseCustomDates(event.target.checked)} className="mt-0.5 size-5 shrink-0 accent-pine" />
+              <span><span className="font-bold">Dùng ngày tùy chỉnh</span><span className="mt-1 block leading-5 text-muted">Chỉ bật khi chủ động ghi nhận một lần kiểm tra đã diễn ra trước đây; cần nhập cả ngày xác minh hợp lệ và hạn còn ở tương lai.</span></span>
+            </label>
+          </div>
+        ) : null}
         <Field label="Ghi chú nội bộ" htmlFor="notes" hint="Không được trả về public DTO.">
           <Textarea id="notes" name="notes" defaultValue={record?.notes ?? ""} maxLength={5000} />
         </Field>

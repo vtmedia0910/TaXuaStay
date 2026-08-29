@@ -168,7 +168,7 @@ export async function getAdminVerificationRecords(
       property_name: record.property_id
         ? (propertyMap.get(record.property_id) ?? null)
         : (room ? (propertyMap.get(room.property_id) ?? null) : null),
-      resolved_state: resolveVerificationState(record.status, record.expires_at),
+      resolved_state: resolveVerificationState(record.status, record.verified_at, record.expires_at),
     };
   });
 }
@@ -210,6 +210,11 @@ export async function getAdminVerificationRecord(id: string): Promise<AdminVerif
     cloud_view: cloudResult.error ? null : cloudResult.data,
     road: roadResult.error ? null : roadResult.data,
     evidence_ids: evidenceResult.error ? [] : (evidenceResult.data ?? []).map((item) => item.media_asset_id),
+    resolved_state: resolveVerificationState(
+      recordResult.data.status,
+      recordResult.data.verified_at,
+      recordResult.data.expires_at,
+    ),
   };
 }
 

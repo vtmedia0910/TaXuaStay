@@ -6,8 +6,9 @@ const base = {
   status: "verified",
   method: "Kiểm tra trực tiếp",
   notes: "",
-  verified_at: "2026-08-29T09:00",
+  verified_at: "2025-08-29T09:00",
   expires_at: "2027-08-29T09:00",
+  use_custom_verification_dates: false,
   evidence_ids: ["11111111-1111-4111-8111-111111111111"],
   direct_valley_points: "",
   view_width_points: "",
@@ -149,5 +150,51 @@ describe("verification form validation", () => {
       walk_from_parking_m: -1,
     });
     expect(result.success).toBe(false);
+  });
+
+  it("rejects a future verified_at in the normal Admin workflow", () => {
+    const result = verificationSchema.safeParse({
+      ...base,
+      verification_type: "property_identity",
+      property_id: "33333333-3333-4333-8333-333333333333",
+      room_type_id: "",
+      verified_at: "2999-08-29T09:00",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts intentional historical backdating with a valid future custom expiry", () => {
+    const result = verificationSchema.safeParse({
+      ...base,
+      verification_type: "property_identity",
+      property_id: "33333333-3333-4333-8333-333333333333",
+      room_type_id: "",
+      verified_at: "2025-08-29T09:00",
+      expires_at: "2027-08-29T09:00",
+      use_custom_verification_dates: true,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects incomplete or already-expired custom re-verification dates", () => {
+    const missingExpiry = verificationSchema.safeParse({
+      ...base,
+      verification_type: "property_identity",
+      property_id: "33333333-3333-4333-8333-333333333333",
+      room_type_id: "",
+      expires_at: "",
+      use_custom_verification_dates: true,
+    });
+    const expired = verificationSchema.safeParse({
+      ...base,
+      verification_type: "property_identity",
+      property_id: "33333333-3333-4333-8333-333333333333",
+      room_type_id: "",
+      verified_at: "2024-08-29T09:00",
+      expires_at: "2025-08-29T09:00",
+      use_custom_verification_dates: true,
+    });
+    expect(missingExpiry.success).toBe(false);
+    expect(expired.success).toBe(false);
   });
 });

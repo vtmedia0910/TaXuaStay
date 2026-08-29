@@ -6,6 +6,7 @@ import {
   getEffectiveRoadFacts,
   isVerificationExpiringSoon,
   isPropertyVerified,
+  resolveVerificationDateSubmission,
   resolveVerificationState,
 } from "@/features/verification/policy";
 import type { CloudViewComponents } from "@/features/verification/types";
@@ -79,19 +80,89 @@ describe("Cloud View scoring", () => {
 describe("verification freshness", () => {
   const now = new Date("2026-08-29T00:00:00.000Z");
   it.each(["pending", "rejected", "needs_review"] as const)("does not expose %s as current", (status) => {
-    expect(resolveVerificationState(status, "2027-01-01T00:00:00.000Z", now)).toBe(status);
+    expect(resolveVerificationState(status, "2026-08-28T00:00:00.000Z", "2027-01-01T00:00:00.000Z", now)).toBe(status);
   });
-  it("treats future expiry as current", () => {
-    expect(resolveVerificationState("verified", "2026-08-29T00:00:00.001Z", now)).toBe("current");
+  it("treats a started verification with future expiry as current", () => {
+    expect(resolveVerificationState("verified", "2026-08-29T00:00:00.000Z", "2026-08-29T00:00:00.001Z", now)).toBe("current");
+  });
+  it("does not treat a future verified_at as current", () => {
+    expect(resolveVerificationState("verified", "2026-08-29T00:00:00.001Z", "2027-01-01T00:00:00.000Z", now)).toBe("not_yet_valid");
   });
   it("treats the exact boundary and past as expired", () => {
-    expect(resolveVerificationState("verified", "2026-08-29T00:00:00.000Z", now)).toBe("expired");
-    expect(resolveVerificationState("verified", "2026-08-28T23:59:59.999Z", now)).toBe("expired");
+    expect(resolveVerificationState("verified", "2026-08-28T00:00:00.000Z", "2026-08-29T00:00:00.000Z", now)).toBe("expired");
+    expect(resolveVerificationState("verified", "2026-08-28T00:00:00.000Z", "2026-08-28T23:59:59.999Z", now)).toBe("expired");
   });
   it("flags only future expiry inside the review window", () => {
     expect(isVerificationExpiringSoon("2026-09-28T00:00:00.000Z", now)).toBe(true);
     expect(isVerificationExpiringSoon("2026-09-29T00:00:00.001Z", now)).toBe(false);
     expect(isVerificationExpiringSoon("2026-08-29T00:00:00.000Z", now)).toBe(false);
+  });
+});
+
+describe("re-verification date submission", () => {
+  const now = new Date("2026-08-29T00:00:00.000Z");
+  const staleDates = {
+    submittedVerifiedAt: "2025-08-29T09:00",
+    submittedExpiresAt: "2026-08-28T09:00",
+  };
+
+  it.each([
+    {
+      status: "needs_review" as const,
+      verified_at: "2025-08-29T02:00:00.000Z",
+      expires_at: "2026-08-28T02:00:00.000Z",
+    },
+    {
+      status: "verified" as const,
+      verified_at: "2025-08-29T02:00:00.000Z",
+      expires_at: "2026-08-28T02:00:00.000Z",
+    },
+  ])("starts a fresh default cycle from $status rather than resubmitting stale dates", (existing) => {
+    expect(resolveVerificationDateSubmission({
+      status: "verified",
+      existing,
+      ...staleDates,
+      useCustomDates: false,
+      now,
+    })).toEqual({ verifiedAt: null, expiresAt: null, startsFreshCycle: true });
+  });
+
+  it("preserves deliberately supplied valid custom backdating", () => {
+    expect(resolveVerificationDateSubmission({
+      status: "verified",
+      existing: {
+        status: "needs_review",
+        verified_at: "2025-08-29T02:00:00.000Z",
+        expires_at: "2026-08-28T02:00:00.000Z",
+      },
+      submittedVerifiedAt: "2026-08-20T09:00",
+      submittedExpiresAt: "2027-08-20T09:00",
+      useCustomDates: true,
+      now,
+    })).toEqual({
+      verifiedAt: "2026-08-20T09:00",
+      expiresAt: "2027-08-20T09:00",
+      startsFreshCycle: true,
+    });
+  });
+
+  it("does not reset a still-current verification during an ordinary edit", () => {
+    expect(resolveVerificationDateSubmission({
+      status: "verified",
+      existing: {
+        status: "verified",
+        verified_at: "2026-08-20T02:00:00.000Z",
+        expires_at: "2027-08-20T02:00:00.000Z",
+      },
+      submittedVerifiedAt: "2026-08-20T09:00",
+      submittedExpiresAt: "2027-08-20T09:00",
+      useCustomDates: false,
+      now,
+    })).toEqual({
+      verifiedAt: "2026-08-20T09:00",
+      expiresAt: "2027-08-20T09:00",
+      startsFreshCycle: false,
+    });
   });
 });
 

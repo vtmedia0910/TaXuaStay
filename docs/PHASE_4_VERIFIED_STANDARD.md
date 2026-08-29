@@ -17,7 +17,7 @@ No migration or application path automatically verifies Phase 2 content. Existin
 
 ## Normalized architecture
 
-Migration `202608290004_verified_standard.sql` adds four tables:
+Migration `202608290004_verified_standard.sql` adds four tables. Applied migration 004 remains immutable; additive corrective migration `202608290005_harden_phase4_verification.sql` tightens lifecycle timing and anonymous column grants without changing the rubric or product model:
 
 - `verification_records`: lifecycle, immutable target/type, status, verification/expiry times, method, internal notes, and staff audit references;
 - `cloud_view_verifications`: one structured Cloud assessment per matching lifecycle record;
@@ -45,9 +45,11 @@ Reusable application and database policy uses these defaults:
 | Road access | 6 months |
 | 360° evidence | 12 months |
 
-The database supplies `verified_at` and a default `expires_at` when a record first enters `verified`. Admin may provide an earlier/later expiry when a documented business reason permits, but an expiry must be after verification. Construction, room renovation, obstruction changes, or major road/weather events should move a record to `needs_review` immediately rather than waiting for the scheduled expiry.
+The database supplies `verified_at = now()` and a fresh default `expires_at` when a record first enters `verified`. The same default applies when a non-current record—stored as `needs_review`/`expired`, naturally expired by time, or carrying a future start—is deliberately re-verified. The Admin form clears the old cycle and explains this behavior instead of silently resubmitting its dates.
 
-Public “current” resolution always requires both `status = verified` and `expires_at > now()`. The exact expiry instant is stale. Pending, rejected, review, missing-expiry, and expired records never produce public badges.
+Staff may deliberately enable custom dates to record a valid historical inspection. That path requires both an explicit `verified_at` no later than the current time and an `expires_at` that is later than verification and still in the future. Historical backdating therefore remains supported, while accidental future starts and already-expired verified saves are rejected by both Admin validation and the database trigger. Construction, room renovation, obstruction changes, or major road/weather events should move a record to `needs_review` immediately rather than waiting for the scheduled expiry.
+
+Public “current” resolution always requires `status = verified`, `verified_at <= now()`, and `expires_at > now()`. The exact verification instant is eligible; the exact expiry instant is stale. Future-start, pending, rejected, review, missing-date, and expired records never produce public badges, Cloud View, Road Verified, or public evidence. Admin lists a stored verified record with a future start as “Ngày xác minh chưa có hiệu lực” so legacy or externally written bad data is visible without becoming public.
 
 ## Cloud View component rubric
 
@@ -134,7 +136,7 @@ Protected routes are:
 - `/admin/verification/new`
 - `/admin/verification/[id]/edit`
 
-Admin/staff can list and filter lifecycle records by state, property, or room; create each supported verification; enter Cloud components or Road facts; select only target-compatible existing media; review expiry; and move records among pending, verified, rejected, and review states. Type/target lock after creation preserves audit history.
+Admin/staff can list and filter lifecycle records by state (including a future-start warning), property, or room; create each supported verification; enter Cloud components or Road facts; select only target-compatible existing media; review expiry; and move records among pending, verified, rejected, and review states. Re-verifying a non-current record starts a fresh timestamp/default expiry unless staff explicitly selects valid custom dates. Type/target lock after creation preserves audit history.
 
 Cloud total, score, and label are previews calculated from the component inputs; there is no final-score field. Zod validates on the server and PostgreSQL is the final constraint backstop. All saves use one security-invoker RPC transaction, so lifecycle, specialized facts, evidence replacement, and prior-record expiry commit or roll back together.
 
@@ -142,7 +144,7 @@ Unapproved media may be linked while preparing a pending/review record, but the 
 
 ## RLS and public DTOs
 
-RLS is enabled on every Phase 4 table. Anonymous base-table select grants are column-limited, policies require the current-public resolver, and public application queries use explicit views/allowlists—never `select("*")`.
+RLS is enabled on every Phase 4 table. Anonymous base-table select grants are column-limited, policies require the current-public resolver, and public application queries use explicit views/allowlists—never `select("*")`. Corrective migration 005 revokes the original table-wide anonymous SELECT on Cloud/Road detail tables and grants only the exact columns consumed by the current public views. Authenticated staff retains its existing table grants and RLS checks; future internal columns do not become anonymously readable by default.
 
 Anonymous output excludes lifecycle method, lifecycle/internal notes, creator/updater/verifier user IDs, pending/rejected/review history, and private evidence. Anonymous roles have no mutation grant. Authenticated mutations still require `app_metadata.role` of `admin` or `staff` in RLS and inside the RPC path.
 

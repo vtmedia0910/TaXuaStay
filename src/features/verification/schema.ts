@@ -10,7 +10,7 @@ import {
   VIEW_FROM_BED_VALUES,
   VIEWING_POSITIONS,
 } from "@/features/verification/types";
-import { blankToNull, optionalLocalDateTime, optionalNumber, optionalText } from "@/lib/validation";
+import { blankToNull, formCheckbox, optionalLocalDateTime, optionalNumber, optionalText } from "@/lib/validation";
 
 const optionalUuid = z.preprocess(blankToNull, z.uuid().nullable());
 const optionalEnum = <T extends readonly [string, ...string[]]>(values: T) =>
@@ -28,6 +28,7 @@ export const verificationSchema = z
     notes: optionalText(5000),
     verified_at: optionalLocalDateTime,
     expires_at: optionalLocalDateTime,
+    use_custom_verification_dates: formCheckbox,
     evidence_ids: z.array(z.uuid()).max(100),
     direct_valley_points: optionalInteger(30),
     view_width_points: optionalInteger(20),
@@ -57,6 +58,13 @@ export const verificationSchema = z
     road_notes: optionalText(3000),
   })
   .superRefine((value, context) => {
+    const now = Date.now();
+    const verifiedAt = value.verified_at
+      ? new Date(`${value.verified_at}:00+07:00`).getTime()
+      : null;
+    const expiresAt = value.expires_at
+      ? new Date(`${value.expires_at}:00+07:00`).getTime()
+      : null;
     const propertyTarget = ["property_identity", "property_location", "road_access"].includes(value.verification_type);
     if (propertyTarget && (!value.property_id || value.room_type_id)) {
       context.addIssue({ code: "custom", path: ["property_id"], message: "Loại xác minh này phải gắn đúng một nơi lưu trú." });
@@ -69,11 +77,27 @@ export const verificationSchema = z
       context.addIssue({ code: "custom", path: ["evidence_ids"], message: "Trạng thái đã xác minh cần ít nhất một bằng chứng." });
     }
 
-    if (value.verified_at && value.expires_at) {
-      const verifiedAt = new Date(`${value.verified_at}:00+07:00`).getTime();
-      const expiresAt = new Date(`${value.expires_at}:00+07:00`).getTime();
+    if (verifiedAt !== null && verifiedAt > now) {
+      context.addIssue({ code: "custom", path: ["verified_at"], message: "Ngày xác minh không được ở tương lai." });
+    }
+
+    if (verifiedAt !== null && expiresAt !== null) {
       if (expiresAt <= verifiedAt) {
         context.addIssue({ code: "custom", path: ["expires_at"], message: "Ngày hết hạn phải sau ngày xác minh." });
+      }
+    }
+
+    if (value.use_custom_verification_dates) {
+      if (value.status !== "verified") {
+        context.addIssue({ code: "custom", path: ["use_custom_verification_dates"], message: "Ngày tùy chỉnh chỉ dùng khi xác minh hồ sơ." });
+      }
+      if (verifiedAt === null) {
+        context.addIssue({ code: "custom", path: ["verified_at"], message: "Hãy nhập ngày xác minh tùy chỉnh." });
+      }
+      if (expiresAt === null) {
+        context.addIssue({ code: "custom", path: ["expires_at"], message: "Hãy nhập ngày hết hạn tùy chỉnh." });
+      } else if (expiresAt <= now) {
+        context.addIssue({ code: "custom", path: ["expires_at"], message: "Hồ sơ verified phải có ngày hết hạn trong tương lai." });
       }
     }
 

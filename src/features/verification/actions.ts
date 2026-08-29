@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdminUser } from "@/features/admin/auth";
+import { resolveVerificationDateSubmission } from "@/features/verification/policy";
 import { verificationSchema } from "@/features/verification/schema";
+import type { VerificationLifecycleSnapshot } from "@/features/verification/policy";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 function vietnamLocalDateTime(value: string | null) {
@@ -24,6 +26,7 @@ export async function saveVerificationAction(formData: FormData) {
     notes: formData.get("notes"),
     verified_at: formData.get("verified_at"),
     expires_at: formData.get("expires_at"),
+    use_custom_verification_dates: formData.get("use_custom_verification_dates"),
     evidence_ids: [...new Set(formData.getAll("evidence_ids"))],
     direct_valley_points: formData.get("direct_valley_points"),
     view_width_points: formData.get("view_width_points"),
@@ -58,13 +61,32 @@ export async function saveVerificationAction(formData: FormData) {
   if (!supabase) redirect("/admin/verification?error=config");
 
   const value = parsed.data;
+  let existingLifecycle: VerificationLifecycleSnapshot | null = null;
+  if (value.id) {
+    const { data, error } = await supabase
+      .from("verification_records")
+      .select("status,verified_at,expires_at")
+      .eq("id", value.id)
+      .maybeSingle()
+      .overrideTypes<VerificationLifecycleSnapshot, { merge: false }>();
+    if (error || !data) redirect("/admin/verification?error=verification-save");
+    existingLifecycle = data;
+  }
+
+  const lifecycleDates = resolveVerificationDateSubmission({
+    status: value.status,
+    existing: existingLifecycle,
+    submittedVerifiedAt: value.verified_at,
+    submittedExpiresAt: value.expires_at,
+    useCustomDates: value.use_custom_verification_dates,
+  });
   const common = {
     target_verification_id: value.id ?? null,
     target_status: value.status,
     target_method: value.method,
     target_notes: value.notes,
-    target_verified_at: vietnamLocalDateTime(value.verified_at),
-    target_expires_at: vietnamLocalDateTime(value.expires_at),
+    target_verified_at: vietnamLocalDateTime(lifecycleDates.verifiedAt),
+    target_expires_at: vietnamLocalDateTime(lifecycleDates.expiresAt),
     selected_media_ids: value.evidence_ids,
   };
 

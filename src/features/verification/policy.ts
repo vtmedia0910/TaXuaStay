@@ -38,6 +38,7 @@ export const VERIFICATION_TYPE_LABELS: Record<VerificationType, string> = {
 
 export const VERIFICATION_STATE_LABELS: Record<VerificationResolvedState, string> = {
   current: "Còn hiệu lực",
+  not_yet_valid: "Ngày xác minh chưa có hiệu lực",
   pending: "Chờ kiểm tra",
   verified: "Đã xác minh",
   expired: "Đã hết hạn / cần kiểm tra lại",
@@ -118,12 +119,54 @@ export function getCloudViewLabel(score: number) {
 
 export function resolveVerificationState(
   status: VerificationStatus,
+  verifiedAt: string | null,
   expiresAt: string | null,
   now = new Date(),
 ): VerificationResolvedState {
   if (status !== "verified") return status;
-  if (!expiresAt || new Date(expiresAt).getTime() <= now.getTime()) return "expired";
+  const verifiedTime = verifiedAt ? new Date(verifiedAt).getTime() : Number.NaN;
+  const expiryTime = expiresAt ? new Date(expiresAt).getTime() : Number.NaN;
+  if (!Number.isFinite(verifiedTime) || !Number.isFinite(expiryTime)) return "expired";
+  if (verifiedTime > now.getTime()) return "not_yet_valid";
+  if (expiryTime <= now.getTime()) return "expired";
   return "current";
+}
+
+export interface VerificationLifecycleSnapshot {
+  status: VerificationStatus;
+  verified_at: string | null;
+  expires_at: string | null;
+}
+
+export function resolveVerificationDateSubmission({
+  status,
+  existing,
+  submittedVerifiedAt,
+  submittedExpiresAt,
+  useCustomDates,
+  now = new Date(),
+}: {
+  status: VerificationStatus;
+  existing: VerificationLifecycleSnapshot | null;
+  submittedVerifiedAt: string | null;
+  submittedExpiresAt: string | null;
+  useCustomDates: boolean;
+  now?: Date;
+}) {
+  const existingState = existing
+    ? resolveVerificationState(existing.status, existing.verified_at, existing.expires_at, now)
+    : null;
+  const startsFreshCycle = status === "verified" && existingState !== "current";
+
+  if (startsFreshCycle && !useCustomDates) {
+    return { verifiedAt: null, expiresAt: null, startsFreshCycle };
+  }
+
+  return {
+    verifiedAt: submittedVerifiedAt,
+    expiresAt: submittedExpiresAt,
+    startsFreshCycle,
+  };
 }
 
 export function getDefaultVerificationExpiry(type: VerificationType, verifiedAt: Date) {

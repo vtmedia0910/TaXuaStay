@@ -6,13 +6,14 @@ Use only the dedicated Tà Xùa Stay Supabase project. Never link this repositor
 
 Verified on 2026-08-29 against the dedicated Supabase project returned by the CLI as `TaXuaStay`, project ref `kkrtajdgkinybpwermls`. The repository is linked through Supabase CLI metadata under the gitignored `supabase/.temp/` directory; no credentials or tracked `supabase/config.toml` were added.
 
-Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the application dependencies were not changed. Remote migration history is reconciled and contains these four migrations in order:
+Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the application dependencies were not changed. Remote migration history is reconciled and contains these five migrations in order:
 
 ```text
 202608290001
 202608290002
 202608290003
 202608290004
+202608290005
 ```
 
 The final remote dry-run reported the database up to date. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
@@ -26,9 +27,10 @@ supabase/migrations/202608290001_stay_foundation.sql
 supabase/migrations/202608290002_properties_rooms_amenities_media.sql
 supabase/migrations/202608290003_harden_phase2_accommodation.sql
 supabase/migrations/202608290004_verified_standard.sql
+supabase/migrations/202608290005_harden_phase4_verification.sql
 ```
 
-Never reapply or edit a migration already present remotely. Migration `202608290003` is the additive corrective migration that preserves immutable migration `202608290002`; migration `202608290004` adds the normalized Verified Standard without seeding verification data.
+Never reapply or edit a migration already present remotely. Migration `202608290003` is the additive corrective migration that preserves immutable migration `202608290002`; migration `202608290004` adds the normalized Verified Standard without seeding verification data; migration `202608290005` preserves immutable 004 while rejecting future/expired verified cycles, refreshing normal re-verification dates, and limiting anonymous Cloud/Road reads to public-view columns.
 
 After `202608290003`, review every property whose access values became `unknown`. The migration deliberately converts legacy `true` to `yes` and legacy `false` to `unknown`; an old false value is not sufficient evidence for a customer-facing `no`.
 
@@ -49,8 +51,11 @@ After applying Phase 4, verify additionally:
 3. Anonymous has no insert/update/delete grant on verification tables.
 4. A public badge requires a current verified record, a public target, and approved public evidence for the exact target.
 5. Cloud/Road Admin saves commit lifecycle, specialized facts, and evidence together through the corresponding transaction RPC.
+6. A future `verified_at` produces no public badge, Cloud View, Road Verified, or evidence; the exact start instant is eligible and the exact expiry instant is stale.
+7. Anonymous reads of the Cloud/Road columns used by public views succeed, while internal columns such as `created_at`/`updated_at` are denied.
+8. Re-verifying a review/expired record without custom dates creates a new timestamp and type-default expiry; intentional custom backdating requires a non-future start and future expiry.
 
-The 2026-08-29 remote smoke test returned HTTP 200 for all four public views and HTTP 401 for an anonymous request for lifecycle internal columns. `supabase db lint --linked` reported no schema errors. No test rows were inserted.
+The 2026-08-29 post-005 remote smoke test returned HTTP 200 for all four public views and for each allowed Cloud/Road base-table column. Anonymous requests for Cloud `created_at`, Road `updated_at`, lifecycle `method`, and a verification insert each returned HTTP 401. `supabase db lint --linked` reported no schema errors. No test rows were inserted.
 
 ## Environment configuration
 

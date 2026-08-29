@@ -34,7 +34,7 @@ export const ROAD_SURFACES = ["asphalt", "concrete", "gravel", "dirt", "mixed", 
 
 export type VerificationType = (typeof VERIFICATION_TYPES)[number];
 export type VerificationStatus = (typeof VERIFICATION_STATUSES)[number];
-export type VerificationResolvedState = VerificationStatus | "current";
+export type VerificationResolvedState = VerificationStatus | "current" | "not_yet_valid";
 export type ViewFromBed = (typeof VIEW_FROM_BED_VALUES)[number];
 export type ViewingPosition = (typeof VIEWING_POSITIONS)[number];
 export type ViewDirection = (typeof VIEW_DIRECTIONS)[number];
@@ -145,6 +145,7 @@ export interface AdminVerificationRecord extends VerificationRecordDto {
   cloud_view: CloudViewVerificationDto | null;
   road: RoadVerificationDto | null;
   evidence_ids: string[];
+  resolved_state: VerificationResolvedState;
 }
 
 export interface AdminVerificationListItem extends VerificationRecordDto {

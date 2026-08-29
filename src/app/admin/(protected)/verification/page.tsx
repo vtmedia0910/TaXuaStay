@@ -20,7 +20,8 @@ export default async function AdminVerificationPage({ searchParams }: { searchPa
   const filtered = records.filter((record) => {
     if (params.status === "current" && record.resolved_state !== "current") return false;
     if (params.status === "expired" && record.resolved_state !== "expired") return false;
-    if (params.status && !["current", "expired"].includes(params.status) && record.status !== params.status) return false;
+    if (params.status === "not_yet_valid" && record.resolved_state !== "not_yet_valid") return false;
+    if (params.status && !["current", "expired", "not_yet_valid"].includes(params.status) && record.status !== params.status) return false;
     if (params.property_id && record.property_id !== params.property_id && !rooms.some((room) => room.id === record.room_type_id && room.property_id === params.property_id)) return false;
     if (params.room_type_id && record.room_type_id !== params.room_type_id) return false;
     return true;
@@ -31,7 +32,7 @@ export default async function AdminVerificationPage({ searchParams }: { searchPa
       <AdminPageHeader title="Verification" description="Lifecycle, bằng chứng và độ mới cho Tà Xùa Stay Verified Standard." action={<Link href="/admin/verification/new" className={buttonVariants()}><Plus size={18} />Tạo xác minh</Link>} />
       <FormFeedback saved={params.saved} error={params.error} />
       <form className="mb-6 grid gap-3 rounded-3xl border border-line bg-surface p-4 sm:grid-cols-4" method="get">
-        <Select name="status" defaultValue={params.status ?? ""}><option value="">Tất cả trạng thái</option><option value="current">Còn hiệu lực</option><option value="expired">Đã hết hạn</option>{VERIFICATION_STATUSES.filter((value) => !["verified", "expired"].includes(value)).map((value) => <option key={value}>{value}</option>)}</Select>
+        <Select name="status" defaultValue={params.status ?? ""}><option value="">Tất cả trạng thái</option><option value="current">Còn hiệu lực</option><option value="not_yet_valid">Ngày xác minh chưa có hiệu lực</option><option value="expired">Đã hết hạn</option>{VERIFICATION_STATUSES.filter((value) => !["verified", "expired"].includes(value)).map((value) => <option key={value}>{value}</option>)}</Select>
         <Select name="property_id" defaultValue={params.property_id ?? ""}><option value="">Tất cả nơi lưu trú</option>{properties.map((property) => <option key={property.id} value={property.id}>{property.name}</option>)}</Select>
         <Select name="room_type_id" defaultValue={params.room_type_id ?? ""}><option value="">Tất cả loại phòng</option>{rooms.map((room) => <option key={room.id} value={room.id}>{room.name}</option>)}</Select>
         <button className={buttonVariants({ variant: "secondary" })} type="submit">Lọc</button>
