@@ -58,7 +58,7 @@ describe("Phase 3 search params", () => {
       wifi: "1",
     });
     expect(buildRoomSearchUrl(parsed.params)).toBe(
-      "/tim-phong?check_in=2026-11-15&check_out=2026-11-17&adults=2&children=0&rooms=1&area=T%C3%A0+X%C3%B9a&parking=yes&wifi=1",
+      "/stay?check_in=2026-11-15&check_out=2026-11-17&adults=2&children=0&rooms=1&area=T%C3%A0+X%C3%B9a&parking=yes&wifi=1",
     );
   });
 

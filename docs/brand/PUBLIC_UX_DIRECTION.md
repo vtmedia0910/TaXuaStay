@@ -2,9 +2,9 @@
 
 ## Status
 
-This is target architecture for **V2 Phase 2.5 — Master Brand + Public UX Migration**. It is not a description of the current production shell. No route, redirect, navigation, homepage, metadata, canonical, logo, or theme change is authorized merely by this document.
+This direction was implemented by **V2 Phase 2.5 — Master Brand + Public UX Migration**. See `docs/V2_PHASE_2_5_MASTER_BRAND_PUBLIC_UX.md` for the exact route and truthfulness contract.
 
-The current implementation remains accommodation-first until Phase 2.5 is separately requested, implemented, visually reviewed, and accepted.
+The current public implementation uses the Tà Xùa Trip shell and canonical `/stay` accommodation vertical. Future services remain explicitly marked and non-bookable.
 
 ## Target information architecture
 

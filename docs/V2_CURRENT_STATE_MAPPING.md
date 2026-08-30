@@ -1,12 +1,12 @@
 # V2 current-state mapping
 
-This document bridges the **Legacy Foundation Completed** (migrations 001–008) and completed V2 Phases 1–2 to the target architecture in Master Plan V2.1. “Target” means planned future capability, not current application behavior.
+This document bridges the **Legacy Foundation Completed** (migrations 001–008) and completed V2 Phases 1–2.5 to the target architecture in Master Plan V2.1. “Target” means planned future capability, not current application behavior.
 
 ## Current implementation → V2 target
 
 | Current implementation | V2 target | Bridge status |
 | --- | --- | --- |
-| Public shell is accommodation-first and uses the current Stay routes, navigation, visual system, and metadata | Tà Xùa Trip master homepage with `Lưu trú` as the consumer vertical, `Homestay Tà Xùa` as SEO language, and Stay under `/stay` | Not implemented. This is V2 Phase 2.5 and requires a separately authorized application/UX migration plus URL compatibility review. |
+| Public shell uses Tà Xùa Trip, `Lưu trú`, `Homestay Tà Xùa`, and canonical `/stay` routes | Tà Xùa Trip master homepage with truthful accommodation discovery and room-level evidence | Implemented in V2 Phase 2.5. Historical `/tim-phong` and `/homestay/...` URLs remain compatibility pages with `/stay` canonicals. |
 | `destinations` owns destination identity; every property has `destination_id` | `Destination → Property` with reusable destination ownership | Implemented in V2 Phase 1. The only seeded identity is Tà Xùa; no fake geo facts are seeded. |
 | `properties` is the current lodging/business entity | Property belongs to a Destination; private commercial Partner/Supplier data stays separate | Destination ownership is implemented; commercial Partner/Supplier relationships are not. |
 | `room_types` represents the commercial category and pooled physical quantity | Room Type remains the commercial/pooled category beneath Property | Already compatible in concept; documentation and future relationships must preserve this meaning. |
@@ -34,7 +34,7 @@ This document bridges the **Legacy Foundation Completed** (migrations 001–008)
 
 ## Explicitly not implemented
 
-The Tà Xùa Trip public shell, `/stay` namespace, Trip navigation, brand visual system, and route migration are not implemented yet. Suppliers, Partners, private supplier economics, generic Services, motorbike service integration, Bus, Packages, Trip Finder, unified Booking, Booking Items, Supplier Confirmation, supplier tasks, Payment, Trip Operations, and Trip Dashboard do not exist either. V2 Phase 2 adds trust/profile data only; it does not create booking, assignment, exact-unit availability, or a guarantee from `exact_room_bookable`.
+Suppliers, Partners, private supplier economics, generic Services, motorbike service integration, Bus, Packages, Trip Finder, unified Booking, Booking Items, Supplier Confirmation, supplier tasks, Payment, Trip Operations, and Trip Dashboard do not exist. Transport and Combo appear only as clearly marked future services; there is no booking simulation. V2 Phase 2 adds trust/profile data only; it does not create booking, assignment, exact-unit availability, or a guarantee from `exact_room_bookable`.
 
 ## Numbering and next step
 
@@ -46,6 +46,6 @@ The completed V2 implementation is:
 
 **V2 Phase 2 — Verified Room Profile V2: Room Type/Exact Room trust scopes + Room Quality + factual strengths/caveats.**
 
-The next separately authorized step is **V2 Phase 2.5 — Master Brand + Public UX Migration**. It has not been implemented. Current rates, pooled availability, room-first search, SEO, Verified Standard, public routes, and migrations 001–010 must remain preserved through that migration.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete. It changed public brand, navigation, canonical paths and presentation only; migrations remain 001–010 and rates, pooled availability, room-first search, SEO, and verification truth remain preserved.
 
-**V2 Phase 3 — Supplier + Partner Foundation** has not started and must not start before the Phase 2.5 public migration has been implemented, visually reviewed, and accepted.
+**V2 Phase 3 — Supplier + Partner Foundation** has not started and requires a separately authorized task.

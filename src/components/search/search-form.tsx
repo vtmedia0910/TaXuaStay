@@ -64,7 +64,7 @@ export function SearchForm({ params, options }: {
         </span>
       </summary>
 
-      <form action="/tim-phong" method="get" className="grid gap-6 border-t border-line p-5">
+      <form action="/stay" method="get" className="grid gap-6 border-t border-line p-5">
         <fieldset className="grid gap-4 sm:grid-cols-2">
           <legend className="mb-3 font-display text-xl font-bold text-pine">Lịch trình và khách</legend>
           <FormField label="Nhận phòng" htmlFor="search-check-in">
@@ -155,7 +155,7 @@ export function SearchForm({ params, options }: {
 
         <div className="flex flex-wrap gap-3">
           <Button type="submit" variant="accent">ÁP DỤNG BỘ LỌC</Button>
-          <Link href="/tim-phong" className={buttonVariants({ variant: "secondary" })}>Xóa tất cả</Link>
+          <Link href="/stay" className={buttonVariants({ variant: "secondary" })}>Xóa tất cả</Link>
         </div>
       </form>
     </details>

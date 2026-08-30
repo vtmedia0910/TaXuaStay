@@ -45,7 +45,7 @@ export function SearchResults({ response, params, landingSlug, preferCloudVerifi
           ? "Hãy trở về trang kết quả đầu tiên."
           : "Thử xóa bớt bộ lọc, giảm yêu cầu khách hoặc xem tất cả khu vực. Đây không có nghĩa là các phòng đã bán hết."}
         action={
-          <Link href={landingSlug ? `/${landingSlug}` : "/tim-phong"} className={buttonVariants({ variant: "secondary" })}>
+          <Link href={landingSlug ? `/${landingSlug}` : "/stay"} className={buttonVariants({ variant: "secondary" })}>
             {landingSlug ? "Về trang đầu" : "Xóa bộ lọc"}
           </Link>
         }
@@ -69,8 +69,8 @@ export function SearchResults({ response, params, landingSlug, preferCloudVerifi
 
       {preferCloudVerified ? (
         <div className="grid gap-10">
-          {verifiedItems.length ? <section aria-labelledby="verified-results-title"><h3 id="verified-results-title" className="mb-4 font-display text-2xl font-bold text-pine">Phòng có Cloud View Verified còn hiệu lực</h3><ResultGrid items={verifiedItems} params={params} /></section> : null}
-          {describedItems.length ? <section aria-labelledby="described-results-title"><h3 id="described-results-title" className="font-display text-2xl font-bold text-pine">Phòng có thông tin hướng nhìn, chưa được xác minh</h3><p className="mb-4 mt-2 text-sm leading-6 text-muted">Những phòng này khớp mô tả hướng nhìn cơ bản nhưng không mang badge hoặc điểm Cloud View Verified.</p><ResultGrid items={describedItems} params={params} /></section> : null}
+          {verifiedItems.length ? <section aria-labelledby="verified-results-title"><h3 id="verified-results-title" className="mb-4 font-display text-2xl font-bold text-pine">Phòng có Cloud View đã thẩm định còn hiệu lực</h3><ResultGrid items={verifiedItems} params={params} /></section> : null}
+          {describedItems.length ? <section aria-labelledby="described-results-title"><h3 id="described-results-title" className="font-display text-2xl font-bold text-pine">Phòng có thông tin hướng nhìn, chưa được xác minh</h3><p className="mb-4 mt-2 text-sm leading-6 text-muted">Những phòng này khớp mô tả hướng nhìn cơ bản nhưng chưa có nhãn hoặc điểm Cloud View đã thẩm định.</p><ResultGrid items={describedItems} params={params} /></section> : null}
         </div>
       ) : <ResultGrid items={response.items} params={params} />}
       <SearchPagination params={params} totalPages={response.totalPages} landingSlug={landingSlug} />

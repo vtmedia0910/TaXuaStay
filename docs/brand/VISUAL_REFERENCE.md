@@ -45,7 +45,7 @@ White         #FFFFFF   cards and clean surfaces
 Ink           #16324A   primary text
 ```
 
-These are Phase 2.5 design-system targets, not permission to change production CSS now. Phase 2.5 should centralize them as semantic tokens rather than scatter hex values across components. Green is a support/status color, not the master canvas.
+These colors are implemented as centralized semantic tokens in `src/app/globals.css`. Green remains a support/status color, not the master canvas.
 
 ## Typography
 
@@ -103,4 +103,4 @@ Future asset production should include verified/360/Cloud badge assets and a coh
 
 ## Current implementation boundary
 
-This document records future direction only. Production colors, logo, homepage, header, footer, UI components, navigation, Admin branding, routes, metadata, and canonical behavior remain unchanged until V2 Phase 2.5 is separately authorized.
+Phase 2.5 implemented the public colors, temporary code-native logo, homepage, header, footer, navigation, Admin cosmetic brand, metadata, and canonical route behavior. The supplied moodboards remain reference direction rather than production assets; a final approved vector logo and licensed photography are still pending.

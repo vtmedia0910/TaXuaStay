@@ -49,5 +49,7 @@ export async function saveRoomTypeAction(formData: FormData) {
   revalidatePath("/admin/rooms");
   revalidatePath("/homestay/[slug]", "page");
   revalidatePath("/homestay/[slug]/phong/[roomSlug]", "page");
+  revalidatePath("/stay/[slug]", "page");
+  revalidatePath("/stay/[slug]/[roomSlug]", "page");
   redirect(`/admin/rooms/${data.room_type_id}/edit?saved=1`);
 }

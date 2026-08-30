@@ -16,8 +16,11 @@ function vietnamLocalDateTime(value: string | null) {
 function revalidatePricing() {
   revalidatePath("/admin/rates");
   revalidatePath("/tim-phong");
+  revalidatePath("/stay");
   revalidatePath("/homestay/[slug]", "page");
   revalidatePath("/homestay/[slug]/phong/[roomSlug]", "page");
+  revalidatePath("/stay/[slug]", "page");
+  revalidatePath("/stay/[slug]/[roomSlug]", "page");
 }
 
 export async function saveRatePlanAction(formData: FormData) {

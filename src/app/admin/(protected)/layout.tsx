@@ -14,7 +14,7 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
           <div className="mx-auto flex min-h-11 max-w-5xl items-center justify-between gap-3">
             <div>
               <p className="font-display text-sm font-bold tracking-[0.08em] text-pine">
-                TÀ XÙA STAY ADMIN
+                TÀ XÙA TRIP ADMIN
               </p>
               <p className="text-xs text-muted">
                 {user.email} · {user.role}

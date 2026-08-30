@@ -122,7 +122,7 @@ export function MediaForm({
           name="is_verified"
           label="Đã kiểm duyệt để hiển thị công khai"
           defaultChecked={asset?.is_verified}
-          hint="Phase 2 chỉ xác nhận asset đã được review; đây không phải badge Tà Xùa Stay Verified Standard."
+          hint="Duyệt media chỉ xác nhận asset đã được xem xét; đây không phải nhãn thẩm định Tà Xùa Trip."
         />
       </Card>
 

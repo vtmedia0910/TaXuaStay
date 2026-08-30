@@ -29,13 +29,13 @@ export default async function LoginPage({
             <House aria-hidden="true" />
           </span>
           <div>
-            <p className="font-display font-bold tracking-[0.08em] text-pine">TÀ XÙA STAY</p>
+            <p className="font-display font-bold tracking-[0.08em] text-pine">TÀ XÙA TRIP</p>
             <p className="text-sm text-muted">Admin / staff</p>
           </div>
         </div>
         <h1 className="mt-7 font-display text-3xl font-bold text-ink">Đăng nhập quản trị</h1>
         <p className="mt-2 text-sm leading-6 text-muted">
-          Dùng tài khoản Supabase Auth của Stay đã được gán role trong app metadata.
+          Dùng tài khoản Supabase Auth của nền tảng đã được gán role trong app metadata.
         </p>
         {error && messages[error] ? (
           <p className="mt-4 rounded-2xl bg-red-50 p-3 text-sm font-bold text-danger" role="alert">

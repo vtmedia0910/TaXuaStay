@@ -60,6 +60,7 @@ export async function savePropertyAction(formData: FormData) {
 
   revalidatePath("/admin/properties");
   revalidatePath(`/homestay/${data.property_slug}`);
+  revalidatePath(`/stay/${data.property_slug}`);
   redirect(`/admin/properties/${data.property_id}/edit?saved=1`);
 }
 
@@ -79,5 +80,6 @@ export async function archivePropertyAction(formData: FormData) {
   if (error) redirect("/admin/properties?error=property-archive");
   revalidatePath("/admin/properties");
   revalidatePath("/homestay/[slug]", "page");
+  revalidatePath("/stay/[slug]", "page");
   redirect("/admin/properties?saved=1");
 }

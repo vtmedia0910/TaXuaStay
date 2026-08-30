@@ -51,7 +51,7 @@ export function RoomVerifiedSection({ bundle, profile }: { bundle: RoomVerificat
   return (
     <section aria-labelledby="verified-room-title" className="rounded-[2rem] bg-pine p-5 text-white sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper">Hồ sơ phòng đã kiểm tra</p><h2 id="verified-room-title" className="mt-2 font-display text-3xl font-bold">TÀ XÙA STAY VERIFIED</h2><p className="mt-2 text-sm leading-6 text-white/70">Áp dụng cho loại phòng. Thông tin này không bảo đảm mọi phòng vật lý trong cùng loại hoàn toàn giống nhau.</p></div>
+        <div><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper">Hồ sơ phòng đã kiểm tra</p><h2 id="verified-room-title" className="mt-2 font-display text-3xl font-bold">TÀ XÙA TRIP · ĐÃ THẨM ĐỊNH</h2><p className="mt-2 text-sm leading-6 text-white/70">Áp dụng cho loại phòng. Thông tin này không bảo đảm mọi phòng vật lý trong cùng loại hoàn toàn giống nhau.</p></div>
         <div className="flex flex-wrap gap-2">{roomVerified ? <Badge className="bg-white text-pine"><ShieldCheck size={15} />{VERIFICATION_TYPE_LABELS.room}</Badge> : null}{panoramaVerified ? <Badge className="bg-white text-pine">{VERIFICATION_TYPE_LABELS.media_360}</Badge> : null}</div>
       </div>
 
@@ -86,12 +86,12 @@ export function RoomVerifiedSection({ bundle, profile }: { bundle: RoomVerificat
             </Card>
           </div>
           <div className="mt-7">
-            <h3 className="flex items-center gap-2 font-display text-2xl font-bold"><Eye className="text-copper" aria-hidden="true" />VIEW THẬT · Tà Xùa Stay đã kiểm tra</h3>
+            <h3 className="flex items-center gap-2 font-display text-2xl font-bold"><Eye className="text-copper" aria-hidden="true" />VIEW THẬT · Tà Xùa Trip đã kiểm tra</h3>
             {cloudEvidence.length ? <div className="mt-4 grid gap-4 sm:grid-cols-2">{cloudEvidence.map((asset) => <VerificationEvidenceAsset key={asset.media_asset_id} asset={asset} positionLabel="View của loại phòng" />)}</div> : <p className="mt-3 text-sm text-white/70">Bằng chứng công khai đang được rà soát lại.</p>}
           </div>
         </>
       ) : (
-        <div className="mt-6 rounded-3xl bg-white/10 p-5"><h3 className="font-bold">Chưa được Tà Xùa Stay xác minh view.</h3><p className="mt-2 text-sm leading-6 text-white/70">Bạn vẫn có thể xem hình ảnh và thông tin phòng hiện có, sau đó xác nhận trực tiếp với nơi lưu trú.</p></div>
+        <div className="mt-6 rounded-3xl bg-white/10 p-5"><h3 className="font-bold">Tà Xùa Trip chưa xác minh view của loại phòng này.</h3><p className="mt-2 text-sm leading-6 text-white/70">Bạn vẫn có thể xem hình ảnh và thông tin phòng hiện có, sau đó xác nhận trực tiếp với nơi lưu trú.</p></div>
       )}
 
       <div className="mt-6 grid gap-4">

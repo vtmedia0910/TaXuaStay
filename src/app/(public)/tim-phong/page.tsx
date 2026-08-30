@@ -16,9 +16,9 @@ export async function generateMetadata({ searchParams }: {
   const raw = await searchParams;
   const hasQuery = Object.values(raw).some((value) => value !== undefined);
   return {
-    title: "Tìm phòng Tà Xùa theo nhu cầu",
-    description: "Tìm phòng tại Tà Xùa theo sức chứa, loại nơi lưu trú, khu vực, phòng tắm, hướng nhìn, đường vào và tiện ích đang được ghi nhận.",
-    alternates: { canonical: "/tim-phong" },
+    title: "Homestay Tà Xùa: Xem phòng, view thật & giá",
+    description: "Khám phá nơi lưu trú Tà Xùa theo đúng loại phòng, sức chứa, view đã ghi nhận, giá theo ngày và tình trạng phòng khi có dữ liệu.",
+    alternates: { canonical: "/stay" },
     robots: getPublicPageRobots(
       hasQuery ? { index: false, follow: true } : { index: true, follow: true },
     ),
@@ -36,17 +36,17 @@ export default async function RoomSearchPage({ searchParams }: {
 
   return (
     <main className="bg-cream pb-20">
-      <section className="bg-pine px-5 py-12 text-white sm:px-8 sm:py-16">
+      <section className="trip-detail-hero px-5 py-12 text-white sm:px-8 sm:py-16">
         <div className="mx-auto max-w-6xl">
-          <Badge className="bg-white/15 text-white">Chọn phòng theo nhu cầu</Badge>
-          <h1 className="mt-5 max-w-4xl font-display text-4xl font-bold sm:text-6xl">Tìm loại phòng phù hợp nhu cầu</h1>
+          <Badge className="bg-white/15 text-white">LƯU TRÚ TÀ XÙA</Badge>
+          <h1 className="mt-5 max-w-4xl font-display text-4xl font-bold sm:text-6xl">Homestay Tà Xùa: xem phòng thật, view thật, giá rõ ràng</h1>
           <p className="mt-4 max-w-3xl text-lg leading-8 text-white/80">
-            Bắt đầu từ loại phòng, sức chứa và những thông tin đã được công khai. Khi chọn ngày, hệ thống đối chiếu tình trạng từng đêm và không xem dữ liệu thiếu là còn phòng.
+            Chọn theo đúng loại phòng, sức chứa và bằng chứng đã công khai. Khi có đủ ngày, hệ thống đối chiếu từng đêm; dữ liệu thiếu không bao giờ được xem là còn phòng.
           </p>
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-7xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[22rem_minmax(0,1fr)]">
+      <div id="stay-search" className="mx-auto grid max-w-7xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[22rem_minmax(0,1fr)]">
         <aside className="lg:sticky lg:top-5 lg:self-start">
           <SearchForm params={parsed.params} options={options} />
         </aside>

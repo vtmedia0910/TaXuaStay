@@ -57,5 +57,7 @@ export async function saveMediaAssetAction(formData: FormData) {
   revalidatePath("/admin/media");
   revalidatePath("/homestay/[slug]", "page");
   revalidatePath("/homestay/[slug]/phong/[roomSlug]", "page");
+  revalidatePath("/stay/[slug]", "page");
+  revalidatePath("/stay/[slug]/[roomSlug]", "page");
   redirect(`/admin/media/${data.id}/edit?saved=1`);
 }

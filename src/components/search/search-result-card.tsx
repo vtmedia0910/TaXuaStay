@@ -15,6 +15,7 @@ import {
 import type { RoomSearchParams, RoomSearchResult } from "@/features/search/types";
 import { buildStayContextQuery } from "@/features/search/params";
 import { CLOUD_VIEW_FROM_BED_LABELS, getCloudViewLabel, ROAD_GRADE_LABELS } from "@/features/verification/policy";
+import { buildPropertyPath, buildRoomPath } from "@/config/routes";
 
 export function SearchResultCard({ result, params }: { result: RoomSearchResult; params: RoomSearchParams }) {
   const { room, property, image } = result;
@@ -50,8 +51,8 @@ export function SearchResultCard({ result, params }: { result: RoomSearchResult;
             <h2 className="mt-2 font-display text-2xl font-bold text-pine">{room.name}</h2>
             {room.short_description ? <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted">{room.short_description}</p> : null}
             <div className="mt-3 flex flex-wrap gap-2">
-              {result.cloudView ? <Badge className="bg-pine text-white">Cloud View Verified · {Number(result.cloudView.score_10).toFixed(1)} · {getCloudViewLabel(Number(result.cloudView.score_10))}</Badge> : null}
-              {result.road ? <Badge className="text-success">Road Verified · {ROAD_GRADE_LABELS[result.road.grade]}</Badge> : null}
+              {result.cloudView ? <Badge className="bg-pine text-white">Cloud View đã thẩm định · {Number(result.cloudView.score_10).toFixed(1)} · {getCloudViewLabel(Number(result.cloudView.score_10))}</Badge> : null}
+              {result.road ? <Badge className="text-success">Đường vào đã thẩm định · {ROAD_GRADE_LABELS[result.road.grade]}</Badge> : null}
             </div>
           </div>
 
@@ -75,12 +76,12 @@ export function SearchResultCard({ result, params }: { result: RoomSearchResult;
 
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href={`/homestay/${property.slug}/phong/${room.slug}?${contextQuery}`}
+              href={`${buildRoomPath(property.slug, room.slug)}?${contextQuery}`}
               className={buttonVariants({ variant: "accent", size: "sm" })}
             >
               XEM PHÒNG
             </Link>
-            <Link href={`/homestay/${property.slug}?${contextQuery}`} className="inline-flex min-h-11 items-center text-sm font-bold text-pine hover:text-copper-strong">
+            <Link href={`${buildPropertyPath(property.slug)}?${contextQuery}`} className="inline-flex min-h-11 items-center text-sm font-bold text-pine hover:text-copper-strong">
               Xem nơi lưu trú →
             </Link>
           </div>

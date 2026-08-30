@@ -43,7 +43,7 @@ export function AdminNav({ role }: { role: AdminRole }) {
       <aside className="hidden w-64 shrink-0 border-r border-white/10 bg-pine p-4 text-white lg:block">
         <Link href="/admin" className="flex min-h-12 items-center gap-3 font-display text-lg font-bold">
           <MountainSnow size={22} aria-hidden="true" />
-          TÀ XÙA STAY
+          TÀ XÙA TRIP
         </Link>
         <nav className="mt-6 grid gap-1" aria-label="Admin">
           {links.map(({ label, href, icon: Icon }) => (

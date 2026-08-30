@@ -21,6 +21,7 @@ import { PROPERTY_TYPE_LABELS, ROAD_ACCESS_GRADE_LABELS } from "@/features/searc
 import { buildPropertyStructuredData, serializeStructuredData } from "@/features/search/structured-data";
 import { getEffectiveRoadFacts, isPropertyVerified } from "@/features/verification/policy";
 import { getPublicPropertyVerificationBundle } from "@/features/verification/data";
+import { buildPropertyPath, buildRoomPath } from "@/config/routes";
 
 export async function generateMetadata({
   params,
@@ -34,7 +35,7 @@ export async function generateMetadata({
   return {
     title: property.name,
     description: property.short_description ?? `Thông tin thực tế về ${property.name} tại ${property.area_name}.`,
-    alternates: { canonical: `/homestay/${property.slug}` },
+    alternates: { canonical: buildPropertyPath(property.slug) },
   };
 }
 
@@ -64,7 +65,7 @@ export default async function PropertyPage({ params, searchParams }: { params: P
     property.restaurant && "Nhà hàng",
     property.bbq && "BBQ",
   ].filter((value): value is string => Boolean(value));
-  const canonicalUrl = new URL(`/homestay/${property.slug}`, getSiteUrl()).toString();
+  const canonicalUrl = new URL(buildPropertyPath(property.slug), getSiteUrl()).toString();
   const structuredData = buildPropertyStructuredData({
     ...property,
     road_access_grade: roadFacts.grade,
@@ -89,12 +90,13 @@ export default async function PropertyPage({ params, searchParams }: { params: P
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeStructuredData(structuredData) }}
       />
-      <section className="bg-pine px-5 py-12 text-white sm:px-8 sm:py-16">
+      <section className="trip-detail-hero px-5 py-12 text-white sm:px-8 sm:py-16">
         <div className="mx-auto max-w-6xl">
+          <nav aria-label="Breadcrumb" className="mb-5 text-sm text-white/70"><Link href="/">Tà Xùa Trip</Link> <span aria-hidden="true">/</span> <Link href="/stay">Lưu trú</Link> <span aria-hidden="true">/</span> <span>{property.name}</span></nav>
           <div className="flex flex-wrap gap-2">
             <Badge className="bg-white/15 text-white">{PROPERTY_TYPE_LABELS[property.property_type]}</Badge>
             {property.is_featured ? <Badge className="bg-copper text-white">Nổi bật</Badge> : null}
-            {propertyVerified ? <Badge className="bg-white text-pine">Property Verified</Badge> : null}
+            {propertyVerified ? <Badge className="bg-white text-pine">Nơi lưu trú đã thẩm định</Badge> : null}
           </div>
           <h1 className="mt-5 max-w-4xl font-display text-4xl font-bold sm:text-6xl">{property.name}</h1>
           <p className="mt-4 flex items-center gap-2 text-white/75"><MapPin size={18} aria-hidden="true" />{property.area_name}{property.address ? ` · ${property.address}` : ""}</p>
@@ -141,7 +143,7 @@ export default async function PropertyPage({ params, searchParams }: { params: P
                     <p className="mt-4 text-sm font-bold text-ink">Tối đa {room.max_guests} khách</p>
                     <div className="mt-4"><PriceSummary quote={priceQuotes.get(room.id)} compact /></div>
                     <div className="mt-3"><AvailabilitySummary quote={availabilityQuotes.get(room.id)} /></div>
-                    <Link href={`/homestay/${property.slug}/phong/${room.slug}?${contextQuery}`} className="mt-5 inline-flex min-h-11 items-center font-bold text-copper-strong hover:text-pine">Xem phòng →</Link>
+                    <Link href={`${buildRoomPath(property.slug, room.slug)}?${contextQuery}`} className="mt-5 inline-flex min-h-11 items-center font-bold text-copper-strong hover:text-pine">Xem phòng →</Link>
                   </Card>
                 ))}
               </div>
@@ -158,7 +160,7 @@ export default async function PropertyPage({ params, searchParams }: { params: P
               <div className="flex gap-3"><Car className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Ô tô tiếp cận</dt><dd className="mt-1 text-muted">{formatAccessCertainty(roadFacts.carAccess)}</dd></div></div>
               <div className="flex gap-3"><Bike className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Xe máy tiếp cận</dt><dd className="mt-1 text-muted">{formatAccessCertainty(roadFacts.motorbikeAccess)}</dd></div></div>
               <div className="flex gap-3"><ParkingCircle className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Chỗ đỗ xe</dt><dd className="mt-1 text-muted">{formatAccessCertainty(roadFacts.parking)}</dd></div></div>
-              <div className="flex gap-3"><Mountain className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Đường vào</dt><dd className="mt-1 text-muted">{ROAD_ACCESS_GRADE_LABELS[roadFacts.grade]} · {roadFacts.source === "verified" ? "Road Verified còn hiệu lực" : "thông tin sơ bộ"}</dd></div></div>
+              <div className="flex gap-3"><Mountain className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Đường vào</dt><dd className="mt-1 text-muted">{ROAD_ACCESS_GRADE_LABELS[roadFacts.grade]} · {roadFacts.source === "verified" ? "đã thẩm định, còn hiệu lực" : "thông tin sơ bộ"}</dd></div></div>
               {property.wifi ? <div className="flex gap-3"><Wifi className="shrink-0 text-copper" size={20} aria-hidden="true" /><div><dt className="font-bold">Wi-Fi</dt><dd className="mt-1 text-muted">Có</dd></div></div> : null}
             </dl>
           </Card>

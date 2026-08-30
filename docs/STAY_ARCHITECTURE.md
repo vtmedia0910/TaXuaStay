@@ -4,7 +4,7 @@
 
 The TaXuaStay repository is the independent technical and infrastructure boundary for the existing verified accommodation application. Under Master Plan V2.1, that foundation becomes the `Stay` domain and future `/stay` accommodation vertical of **Tà Xùa Trip**, the consumer master brand and Verified Local Travel platform.
 
-This is a target product/brand architecture, not a claim about current production UI. The present public shell remains accommodation-first and has not yet been migrated to the Tà Xùa Trip navigation, homepage, visual system, routes, logo, or metadata.
+The public shell is now the Tà Xùa Trip master-brand experience with Lưu trú under canonical `/stay`. The repository and database remain the independent Stay technical boundary.
 
 Stay must have separate infrastructure:
 
@@ -32,7 +32,7 @@ Technical domain      Stay
 Technical namespace   /stay
 ```
 
-The next separately authorized implementation is **V2 Phase 2.5 — Master Brand + Public UX Migration**. It is expected to be primarily application-level and must preserve current URLs through an explicit compatibility plan. It has not been implemented. V2 Phase 3 must not start until Phase 2.5 is implemented and reviewed.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented at application level with no database migration. Historical routes remain compatibility pages with `/stay` canonicals. V2 Phase 3 has not started and requires a separate owner task.
 
 ## Currently implemented — legacy foundation completed
 
@@ -132,17 +132,19 @@ Public Phase 2 routes are:
 - `/homestay/[slug]`
 - `/homestay/[slug]/phong/[roomSlug]`
 
+These historical entity routes remain compatible. Canonical public routes are `/stay`, `/stay/[slug]`, and `/stay/[slug]/[roomSlug]`; internal links and sitemap use the canonical namespace.
+
 Phase 2 media approval means only that an individual asset was reviewed for public display. It does not represent the future Tà Xùa Stay Verified Standard, Cloud View score, Road Verified status, or complete verification workflow.
 
 The Phase 2 corrective migration models `car_access`, `motorbike_access`, and `parking` as explicit `unknown` / `yes` / `no` facts. Existing affirmative values remain `yes`; legacy false values become `unknown` because the old boolean could not prove a negative. Physical room `quantity` remains an Admin fact and is not granted or selected for anonymous pages. Property/room content and amenity replacement now execute in one PostgreSQL RPC transaction so an assignment failure rolls the content mutation back.
 
 ## Legacy Phase 3 room-first search and SEO
 
-Phase 3 adds `/tim-phong` as the primary discovery route. Search begins with public room types and joins only public-safe property facts. URL state preserves dates, adults, children, requested rooms, supported property/room/access/facility filters, and the current page. Dates and requested room count are context only: Phase 3 does not query inventory, compare against physical `quantity`, or claim availability.
+Legacy Phase 3 added `/tim-phong`; V2 Phase 2.5 exposes the same search at canonical `/stay` while keeping `/tim-phong` functional. Search begins with public room types and joins only public-safe property facts. URL state preserves dates, adults, children, requested rooms, supported property/room/access/facility filters, and the current page.
 
 The search data layer uses the anonymous Supabase client and existing RLS. It performs one paginated room/property query followed by a fixed batch of room/property amenity and approved-media queries for the current page, avoiding per-card N+1 requests. Public search DTOs exclude lifecycle fields, audit IDs, physical quantity, verification placeholders, prices, and future booking data.
 
-Seven intent landing pages reuse deterministic current facts for homestay, basic mountain/valley view, two-guest room needs, group capacity, confirmed car access plus parking, and hotel property type. Cloud/view pages explicitly remain pre-Phase 4 and do not claim Cloud View Verified. Search filter combinations canonicalize to `/tim-phong` and are `noindex,follow` once brand-domain indexing is enabled; each landing page has its own canonical.
+Seven intent landing pages reuse deterministic current facts for homestay, view, two-guest room needs, group capacity, confirmed car access plus parking, and hotel property type. Search filter combinations canonicalize to `/stay` and are `noindex,follow` once brand-domain indexing is enabled; each landing page has its own canonical.
 
 Indexing is environment-aware. A valid explicit HTTPS brand domain in `NEXT_PUBLIC_SITE_URL` enables normal public indexing. Local hosts, technical `*.vercel.app` hosts, and deployments that rely only on `VERCEL_PROJECT_PRODUCTION_URL` remain usable but emit public `noindex` metadata; `robots.ts` blocks crawling and does not advertise the sitemap. The sitemap route still builds and contains public static routes plus RLS-visible property and room URLs, falling back to static routes if Supabase is unavailable. Property JSON-LD uses factual `LodgingBusiness`/`Hotel` fields only and omits ratings, reviews, prices, and availability.
 
@@ -194,7 +196,7 @@ Public inventory is read through a `security_invoker` allow-listed view backed b
 
 ## V2 roadmap boundary
 
-The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is implemented by migration 009 and Verified Room Profile by migration 010. Phase 2.5 is next and is not implemented. Only separately authorized later phases may add supplier/partner foundations, private commercial economics, motorbike service integration, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
+The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is implemented by migration 009, Verified Room Profile by migration 010, and application-only brand/UX migration by V2 Phase 2.5. Only separately authorized later phases may add supplier/partner foundations, private commercial economics, motorbike service integration, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
 
 ## Future Biker relationship
 

@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 
 export function SearchEntryForm() {
   return (
-    <form action="/tim-phong" method="get" className="grid gap-4 rounded-[1.75rem] border border-white/60 bg-white/70 p-5 shadow-sm backdrop-blur-sm sm:grid-cols-2 lg:grid-cols-5">
+    <form action="/stay" method="get" className="grid gap-4 rounded-[1.75rem] border border-white/60 bg-white/90 p-5 shadow-sm backdrop-blur-sm sm:grid-cols-2 lg:grid-cols-5">
       <div>
         <label htmlFor="home-check-in" className="mb-2 block text-sm font-bold text-pine">Nhận phòng</label>
         <Input id="home-check-in" name="check_in" type="date" className="bg-white" />
@@ -22,7 +22,7 @@ export function SearchEntryForm() {
         <input type="hidden" name="rooms" value="1" />
       </div>
       <div className="flex items-end">
-        <Button type="submit" variant="accent" className="w-full">TÌM PHÒNG</Button>
+        <Button type="submit" variant="accent" className="w-full">TÌM NƠI LƯU TRÚ</Button>
       </div>
     </form>
   );

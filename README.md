@@ -2,9 +2,9 @@
 
 **Đi thật. Biết trước.**
 
-This repository is the existing Tà Xùa Stay technical foundation and the future `/stay` accommodation vertical of **Tà Xùa Trip**, a Verified Local Travel platform. The master brand, consumer taxonomy, SEO language, and technical domain are intentionally distinct: **Tà Xùa Trip → Lưu trú → Homestay Tà Xùa → Stay `/stay`**.
+This repository is the independent accommodation technical foundation and the live `/stay` vertical of **Tà Xùa Trip**, a Verified Local Travel platform. The master brand, consumer taxonomy, SEO language, and technical domain are intentionally distinct: **Tà Xùa Trip → Lưu trú → Homestay Tà Xùa → Stay `/stay`**.
 
-The current application has not yet received the public brand/UX migration. It already provides a Destination → Property → Room Type → Physical Room identity hierarchy alongside verified evidence, Cloud View, Road Verified, pricing, pooled availability, room-first search, SEO, and authorized operations. Master Plan V2.1 combines four product pillars—**VERIFY, BUNDLE, OPERATE, DISTRIBUTE**—without rewriting that foundation.
+The public application now uses the Tà Xùa Trip brand shell while preserving the Destination → Property → Room Type → Physical Room identity hierarchy, verified evidence, Cloud View, Road Verified, pricing, pooled availability, room-first search, SEO, and authorized operations. Master Plan V2.1 combines four product pillars—**VERIFY, BUNDLE, OPERATE, DISTRIBUTE**—without rewriting that foundation.
 
 Suppliers, partners, services, packages, unified trip booking, payments, bus integration, and the Trip Dashboard remain future architecture only. Tà Xùa Biker remains an independent product and source of truth for motorbike operations.
 
@@ -12,7 +12,7 @@ Suppliers, partners, services, packages, unified trip booking, payments, bus int
 
 Migrations 001–008 and their historical phase documents are the **Legacy Foundation Completed**. Migration 009 implements **V2 Phase 1 — Architecture Alignment**. Migration 010 implements **V2 Phase 2 — Verified Room Profile** with separate Room Type Verified, Exact Room Verified, Room Quality dimensions, and factual strengths/caveats.
 
-The next separately authorized implementation is **V2 Phase 2.5 — Master Brand + Public UX Migration**. It has not been implemented. V2 Phase 3 has not started.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented without a database migration. `/stay` is canonical; `/tim-phong` and the historical `/homestay/...` routes remain compatibility pages. **V2 Phase 3 has not started** and requires a separate owner task.
 
 ## Local development
 
@@ -55,7 +55,7 @@ Project references:
 - `docs/STAY_ARCHITECTURE.md` — current system boundary and implementation state.
 - `docs/brand/BRAND_SYSTEM.md` — durable Tà Xùa Trip brand architecture and naming rules.
 - `docs/brand/CONTENT_VOICE.md` — truthful Vietnamese content voice, evidence language, and claim boundaries.
-- `docs/brand/PUBLIC_UX_DIRECTION.md` — target Phase 2.5 information architecture and public experience.
+- `docs/brand/PUBLIC_UX_DIRECTION.md` — implemented Phase 2.5 information architecture and public experience.
 - `docs/brand/VISUAL_REFERENCE.md` — visual precedence, palette, typography, photography, and asset status.
 - `docs/PHASE_1_DATABASE_AUTH.md` — migration, authorization, and operating notes for Phase 1.
 - `docs/PHASE_2_PROPERTIES_ROOMS.md` — Phase 2 domain, lifecycle, routes, and limitations.
@@ -66,5 +66,6 @@ Project references:
 - `docs/V2_CURRENT_STATE_MAPPING.md` — bridge from the completed accommodation foundation to the V2 target domains.
 - `docs/V2_PHASE_1_ARCHITECTURE_ALIGNMENT.md` — Destination, Physical Room/Room ID, exact-target media and verification contracts.
 - `docs/V2_PHASE_2_VERIFIED_ROOM_PROFILE.md` — Room Type versus Exact Room verification, quality rubrics/freshness, pros/cons, evidence, Admin, and public security.
+- `docs/V2_PHASE_2_5_MASTER_BRAND_PUBLIC_UX.md` — implemented brand shell, route compatibility, truthful service states, design tokens, and QA contract.
 - `docs/LEGACY_ROADMAP_STATUS.md` — concise historical status and phase-numbering boundary.
 - `docs/SUPABASE_SETUP.md` — manual migration and future Storage setup.

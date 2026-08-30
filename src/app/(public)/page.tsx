@@ -1,13 +1,40 @@
 import Link from "next/link";
-import { BedDouble, Car, Eye, ListFilter, Mountain } from "lucide-react";
+import {
+  ArrowRight,
+  BedDouble,
+  Bike,
+  BusFront,
+  CalendarCheck,
+  Camera,
+  CheckCircle2,
+  CloudSun,
+  Compass,
+  Eye,
+  Info,
+  MapPinned,
+  Package,
+  Route,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 import { SearchEntryForm } from "@/components/search/search-entry-form";
+import { VerifiedStayCard } from "@/components/trip/verified-stay-card";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { SEO_LANDING_PAGES, SEO_LANDING_SLUGS } from "@/features/search/seo";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { PUBLIC_ROUTES, buildRoomPath } from "@/config/routes";
+import { searchPublicRooms } from "@/features/search/data";
+import { DEFAULT_ROOM_SEARCH_PARAMS } from "@/features/search/params";
 import { getPublicSiteSettings } from "@/features/settings/data";
+import { CLOUD_VIEW_FROM_BED_LABELS } from "@/features/verification/policy";
 
 export default async function HomePage() {
-  const settings = await getPublicSiteSettings();
+  const [settings, roomResponse] = await Promise.all([
+    getPublicSiteSettings(),
+    searchPublicRooms(DEFAULT_ROOM_SEARCH_PARAMS),
+  ]);
+  const cloudRooms = roomResponse.items.filter((item) => item.cloudView).slice(0, 3);
 
   return (
     <main>
@@ -17,63 +44,125 @@ export default async function HomePage() {
         </div>
       ) : null}
 
-      <section className="stay-backdrop px-5 py-16 sm:px-8 sm:py-24">
-        <div className="mx-auto max-w-6xl">
-          <Badge className="bg-white/65 uppercase tracking-[0.14em]">Tìm phòng theo nhu cầu</Badge>
-          <h1 className="mt-5 max-w-4xl font-display text-5xl font-bold leading-[0.98] tracking-[-0.045em] text-pine sm:text-7xl">
-            Tìm chỗ ở Tà Xùa từ đúng loại phòng
-          </h1>
-          <p className="mt-6 max-w-3xl text-lg font-bold leading-8 text-copper-strong sm:text-xl">
-            {settings.tagline}
-          </p>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-muted">
-            Lọc theo sức chứa, thông tin phòng, khu vực, đường vào và tiện ích đã công khai. Ngày đi giúp lưu lại nhu cầu; tình trạng phòng theo ngày vẫn cần được xác nhận trực tiếp.
-          </p>
-          <div className="mt-8"><SearchEntryForm /></div>
+      <section className="trip-hero px-5 py-16 sm:px-8 sm:py-24">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
+          <div>
+            <Badge className="bg-white/80 uppercase tracking-[0.14em] text-copper-strong">TÀ XÙA • VERIFIED LOCAL TRAVEL</Badge>
+            <h1 className="mt-5 max-w-4xl text-5xl font-bold leading-[0.98] tracking-[-0.045em] text-pine sm:text-7xl">Đi thật. Biết trước.</h1>
+            <p className="mt-6 max-w-3xl text-lg leading-8 text-ink sm:text-xl">Chúng tôi trực tiếp thẩm định nơi ở, quay video 360°, chỉ rõ ưu nhược điểm và giúp bạn chuẩn bị chuyến Tà Xùa rõ ràng hơn trước khi lên đường.</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href={PUBLIC_ROUTES.stay} className={buttonVariants({ size: "lg" })}>Tìm chuyến đi phù hợp<ArrowRight size={18} aria-hidden="true" /></Link>
+              <Link href="/#verified-stays" className={buttonVariants({ variant: "secondary", size: "lg" })}>Xem phòng đã thẩm định</Link>
+            </div>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-muted">Hiện tại luồng tìm kiếm hoạt động cho Lưu trú. Combo, xe khách và xe máy được ghi rõ trạng thái, không giả lập đặt dịch vụ.</p>
+          </div>
+          <Card className="border-white/70 bg-white/88 p-6 shadow-xl shadow-pine/10 backdrop-blur-sm">
+            <p className="text-sm font-bold uppercase tracking-[0.13em] text-copper-strong">Trước khi đặt, bạn biết</p>
+            <div className="mt-5 grid gap-4">
+              {[
+                [BedDouble, "Đúng loại phòng", "Thông tin không bị trộn với phòng khác."],
+                [Eye, "View thực tế", "Bằng chứng có phạm vi và ngày xác minh."],
+                [Route, "Đường vào", "Có, Không và Chưa xác nhận được tách rõ."],
+                [Info, "Điều cần lưu ý", "Điểm chưa tốt không bị giấu đi."],
+              ].map(([Icon, title, copy]) => (
+                <div key={String(title)} className="flex gap-3 rounded-2xl bg-mist/75 p-3">
+                  <Icon className="mt-0.5 shrink-0 text-copper" size={20} aria-hidden="true" />
+                  <div><p className="font-bold text-pine">{String(title)}</p><p className="mt-1 text-sm leading-6 text-muted">{String(copy)}</p></div>
+                </div>
+              ))}
+            </div>
+          </Card>
+          <div className="lg:col-span-2"><SearchEntryForm /></div>
         </div>
       </section>
 
-      <section className="bg-surface px-5 py-16 sm:px-8">
-        <div className="mx-auto max-w-6xl">
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">Thông tin hữu ích</p>
-          <h2 className="mt-2 font-display text-3xl font-bold text-pine sm:text-4xl">Thông tin đang dùng để thu hẹp lựa chọn</h2>
-          <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="border-y border-line bg-white px-5 py-6 sm:px-8" aria-label="Cam kết quy trình">
+        <div className="mx-auto grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            [MapPinned, "Thẩm định tại chỗ"],
+            [Camera, "Video / ảnh 360°"],
+            [Info, "Nói cả ưu & nhược điểm"],
+            [CalendarCheck, "Dữ liệu có ngày xác minh"],
+          ].map(([Icon, label]) => <div key={String(label)} className="flex items-center gap-3 font-semibold text-pine"><span className="grid size-10 place-items-center rounded-2xl bg-pine-soft"><Icon size={19} aria-hidden="true" /></span>{String(label)}</div>)}
+        </div>
+      </section>
+
+      <section id="about" className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
+        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+          <div><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">Vì sao Tà Xùa Trip tồn tại?</p><h2 className="mt-3 text-4xl font-bold text-pine sm:text-5xl">Ảnh đẹp không nói hết một căn phòng.</h2></div>
+          <Card className="p-6 sm:p-8"><p className="text-lg leading-8 text-ink">Một dòng “view núi” chưa cho bạn biết có nhìn thấy cảnh từ giường, góc nhìn có bị che, đường vào có khó, phòng có khớp ảnh hay dữ liệu còn mới không.</p><p className="mt-4 leading-7 text-muted">Chúng tôi kiểm tra và tách từng thông tin đó để bạn tự chọn phương án phù hợp, kể cả khi câu trả lời hiện tại là “Chưa xác minh”.</p></Card>
+        </div>
+      </section>
+
+      <section id="principles" className="bg-white px-5 py-16 sm:px-8 sm:py-20">
+        <div className="mx-auto max-w-7xl">
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">Chúng tôi làm gì khác?</p>
+          <h2 className="mt-3 max-w-3xl text-4xl font-bold text-pine sm:text-5xl">Bắt đầu từ bằng chứng, không bắt đầu từ lời quảng cáo.</h2>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              [BedDouble, "Loại phòng", "Sức chứa, giường, phòng tắm và ban công của đúng loại phòng."],
-              [Eye, "Cloud View và View Thật", "Chỉ phòng có hồ sơ, bằng chứng đúng phòng và thời hạn còn hiệu lực mới hiện badge."],
-              [Car, "Thông tin đường vào", "Road Verified được tách rõ khỏi thông tin sơ bộ; Có, Không và Chưa xác nhận không bị trộn lẫn."],
-              [ListFilter, "Lưu lựa chọn trong đường dẫn", "Ngày, khách và bộ lọc được giữ trong đường dẫn tìm kiếm."],
-            ].map(([Icon, title, description]) => (
-              <Card key={String(title)} className="p-5">
-                <Icon className="text-copper" aria-hidden="true" />
-                <h3 className="mt-4 font-display text-xl font-bold text-pine">{String(title)}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted">{String(description)}</p>
-              </Card>
-            ))}
+              [ShieldCheck, "THẨM ĐỊNH TẠI CHỖ", "Ghi nhận đúng nơi, đúng loại phòng và đúng phạm vi."],
+              [Camera, "XEM TRƯỚC BẰNG 360°", "Ảnh toàn cảnh được gắn nhãn phòng hoặc vị trí ngắm."],
+              [Info, "NÓI CẢ ĐIỂM CHƯA TỐT", "Ưu điểm và điều cần lưu ý cùng xuất hiện khi có dữ liệu."],
+              [Compass, "CHUẨN BỊ CẢ CHUYẾN ĐI", "Hệ thống đang mở rộng từng bước; hiện Lưu trú là luồng hoạt động đầy đủ."],
+            ].map(([Icon, title, description]) => <Card key={String(title)} className="p-5"><Icon className="text-copper" aria-hidden="true" /><h3 className="mt-4 text-lg font-bold text-pine">{String(title)}</h3><p className="mt-2 text-sm leading-6 text-muted">{String(description)}</p></Card>)}
           </div>
-          <Link href="/verified" className="mt-7 inline-flex min-h-11 items-center font-bold text-copper-strong hover:text-pine">Xem cách Tà Xùa Stay xác minh →</Link>
         </div>
       </section>
 
-      <section className="bg-cream px-5 py-16 sm:px-8">
-        <div className="mx-auto max-w-6xl">
+      <section id="verified-stays" className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
+        <div className="mx-auto max-w-7xl">
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <div><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">Khám phá</p><h2 className="mt-2 font-display text-3xl font-bold text-pine sm:text-4xl">Bắt đầu từ nhu cầu cụ thể</h2></div>
-            <Link href="/tim-phong" className="inline-flex min-h-11 items-center font-bold text-pine hover:text-copper-strong">Xem toàn bộ bộ lọc →</Link>
+            <div><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">Dữ liệu thật đang công khai</p><h2 className="mt-2 text-3xl font-bold text-pine sm:text-5xl">Homestay & phòng Tà Xùa đã thẩm định</h2><p className="mt-3 max-w-3xl leading-7 text-muted">Chỉ hiển thị phòng có hồ sơ Cloud View còn hiệu lực trong dữ liệu công khai. Không có dữ liệu thì không tạo thẻ mẫu.</p></div>
+            <Link href={PUBLIC_ROUTES.stay} className="inline-flex min-h-11 items-center font-bold text-pine hover:text-copper-strong">Xem toàn bộ Lưu trú →</Link>
           </div>
-          <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {SEO_LANDING_SLUGS.map((slug) => {
-              const page = SEO_LANDING_PAGES[slug];
-              return (
-                <Link key={slug} href={`/${slug}`} className="group rounded-[1.75rem] border border-line bg-surface p-5 shadow-sm hover:border-copper">
-                  <Mountain className="text-copper" aria-hidden="true" />
-                  <h3 className="mt-5 font-display text-2xl font-bold text-pine group-hover:text-copper-strong">{page.h1}</h3>
-                  <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted">{page.intro}</p>
-                </Link>
-              );
-            })}
+          {cloudRooms.length ? <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">{cloudRooms.map((result) => <VerifiedStayCard key={result.room.id} result={result} />)}</div> : <div className="mt-8"><EmptyState title={roomResponse.status === "error" ? "Dữ liệu hiện chưa tải được" : "Chưa có phòng Cloud View đang công khai"} description={roomResponse.status === "unconfigured" ? "Nguồn dữ liệu Lưu trú chưa được cấu hình. Trang vẫn hoạt động và không hiển thị dữ liệu thay thế." : "Khi có hồ sơ thẩm định còn hiệu lực, phòng sẽ xuất hiện tại đây. Chúng tôi không tạo điểm hoặc thẻ mẫu."} action={<Link href={PUBLIC_ROUTES.stay} className={buttonVariants({ variant: "secondary" })}>Mở Lưu trú</Link>} /></div>}
+        </div>
+      </section>
+
+      <section id="services" className="bg-white px-5 py-16 sm:px-8 sm:py-20">
+        <div className="mx-auto max-w-7xl">
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">Một chuyến Tà Xùa trọn vẹn</p>
+          <h2 className="mt-3 text-4xl font-bold text-pine sm:text-5xl">Mỗi dịch vụ đều nói rõ trạng thái.</h2>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card className="p-5"><BedDouble className="text-copper" aria-hidden="true" /><Badge className="mt-4 text-success">Đang hoạt động</Badge><h3 className="mt-3 text-2xl font-bold text-pine">Lưu trú</h3><p className="mt-2 text-sm leading-6 text-muted">Tìm theo phòng, ngày, bằng chứng, giá và tình trạng được ghi nhận.</p><Link href={PUBLIC_ROUTES.stay} className="mt-4 inline-flex min-h-11 items-center font-bold text-pine">Tìm phòng →</Link></Card>
+            {[
+              [BusFront, "Xe khách", "Lịch trình và tồn chỗ chưa được kết nối; chưa nhận đặt trên website."],
+              [Bike, "Xe máy", "Nguồn vận hành tương lai là Tà Xùa Biker; hiện chưa có tích hợp đặt xe."],
+              [Package, "Combo", "Chưa có gói dịch vụ, giá gói hoặc quy trình xác nhận nhà cung cấp."],
+            ].map(([Icon, title, description]) => <Card key={String(title)} className="p-5"><Icon className="text-copper" aria-hidden="true" /><Badge className="mt-4 bg-mist text-muted">Sắp có</Badge><h3 className="mt-3 text-2xl font-bold text-pine">{String(title)}</h3><p className="mt-2 text-sm leading-6 text-muted">{String(description)}</p></Card>)}
           </div>
         </div>
+      </section>
+
+      <section id="explore" className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
+        <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+          <Card className="trip-detail-hero p-6 text-white sm:p-8"><ShieldCheck className="text-trip-sunrise" size={32} aria-hidden="true" /><p className="mt-6 text-sm font-bold uppercase tracking-[0.14em] text-white/70">Cách chúng tôi thẩm định</p><h2 className="mt-2 text-4xl font-bold">Biết thông tin thuộc đúng phạm vi nào.</h2><p className="mt-4 leading-8 text-white/80">Danh tính phòng, bằng chứng đúng phòng, Cloud View, đường vào, chất lượng và độ mới được giữ tách biệt.</p><Link href={PUBLIC_ROUTES.verification} className={buttonVariants({ variant: "secondary", size: "lg", className: "mt-6 border-white/30 bg-white text-pine" })}>Xem phương pháp thẩm định</Link></Card>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[
+              [BedDouble, "Loại phòng / phòng mẫu"],
+              [CheckCircle2, "Phòng cụ thể / Room ID"],
+              [Eye, "View Thật & Cloud View"],
+              [Route, "Đường vào đã thẩm định"],
+              [Sparkles, "Chất lượng từng chiều"],
+              [CloudSun, "Ngày xác minh & độ mới"],
+            ].map(([Icon, label]) => <Card key={String(label)} className="flex items-center gap-3 p-4"><span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-pine-soft text-pine"><Icon size={20} aria-hidden="true" /></span><h3 className="font-bold text-pine">{String(label)}</h3></Card>)}
+          </div>
+        </div>
+      </section>
+
+      <section id="cloud-view" className="bg-white px-5 py-16 sm:px-8 sm:py-20">
+        <div className="mx-auto max-w-7xl">
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">Cloud View</p><h2 className="mt-3 text-4xl font-bold text-pine sm:text-5xl">Chất lượng góc nhìn, không phải dự báo thời tiết.</h2><p className="mt-3 max-w-3xl leading-7 text-muted">Điểm Cloud View chỉ mô tả vị trí nhìn vật lý khi điều kiện phù hợp. Nó không nói xác suất có mây và không bảo đảm săn mây thành công.</p>
+          {cloudRooms.length ? <div className="mt-8 grid gap-4 md:grid-cols-3">{cloudRooms.map((result) => <Link key={result.room.id} href={buildRoomPath(result.property.slug, result.room.slug)} className="rounded-3xl border border-line bg-cream p-5 hover:border-copper"><p className="text-sm font-semibold text-muted">{result.property.name}</p><h3 className="mt-1 text-xl font-bold text-pine">{result.room.name}</h3><p className="mt-4 text-3xl font-bold text-copper-strong">{Number(result.cloudView?.score_10).toFixed(1)} / 10</p><p className="mt-2 text-sm text-muted">View từ giường: {result.cloudView ? CLOUD_VIEW_FROM_BED_LABELS[result.cloudView.view_from_bed] : "Chưa xác minh"}</p></Link>)}</div> : <p className="mt-6 rounded-3xl border border-line bg-cream p-5 text-sm leading-6 text-muted">Chưa có hồ sơ Cloud View còn hiệu lực để giới thiệu. Xem danh sách Lưu trú để kiểm tra dữ liệu từng phòng.</p>}
+        </div>
+      </section>
+
+      <section className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
+        <div className="mx-auto max-w-5xl text-center"><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">Nguyên tắc thương hiệu</p><h2 className="mt-4 text-4xl font-bold text-pine sm:text-6xl">Không bán cái đẹp.<br />Bán cái phù hợp.</h2><p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-muted">Lựa chọn tốt không phải lúc nào cũng nổi bật nhất trên ảnh. Đó là lựa chọn phù hợp với cách bạn muốn đi và những điều bạn sẵn sàng đánh đổi.</p></div>
+      </section>
+
+      <section id="final-cta" className="trip-detail-hero px-5 py-16 text-white sm:px-8 sm:py-20">
+        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-7 md:flex-row md:items-center"><div><p className="text-sm font-bold uppercase tracking-[0.14em] text-white/70">Tà Xùa, trước khi bạn đến.</p><h2 className="mt-3 text-4xl font-bold sm:text-5xl">Phần phức tạp để chúng tôi lo.</h2><p className="mt-4 max-w-2xl leading-7 text-white/80">Bắt đầu bằng nơi lưu trú phù hợp. Các phần còn lại của chuyến sẽ chỉ được mở khi có dữ liệu và quy trình thật.</p></div><Link href={PUBLIC_ROUTES.stay} className={buttonVariants({ variant: "secondary", size: "lg", className: "shrink-0 border-white/30 bg-white text-pine" })}>Bắt đầu tìm chuyến<ArrowRight size={18} aria-hidden="true" /></Link></div>
       </section>
     </main>
   );

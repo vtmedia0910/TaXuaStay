@@ -55,7 +55,7 @@ export default async function SeoLandingPage({ params, searchParams }: SeoPagePr
           <Badge className="bg-white/15 text-white">Chọn theo nhu cầu</Badge>
           <h1 className="mt-5 max-w-4xl font-display text-4xl font-bold sm:text-6xl">{config.h1}</h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{config.intro}</p>
-          <Link href="/tim-phong" className={buttonVariants({ variant: "accent", size: "lg", className: "mt-7" })}>
+          <Link href="/stay" className={buttonVariants({ variant: "accent", size: "lg", className: "mt-7" })}>
             MỞ BỘ LỌC TÌM PHÒNG
           </Link>
         </div>

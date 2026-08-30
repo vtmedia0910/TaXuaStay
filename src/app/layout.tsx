@@ -1,7 +1,15 @@
 import type { Metadata, Viewport } from "next";
+import { Be_Vietnam_Pro } from "next/font/google";
 import { getPublicPageRobots } from "@/config/seo";
 import { getSiteUrl, SITE } from "@/config/site";
 import "./globals.css";
+
+const beVietnamPro = Be_Vietnam_Pro({
+  subsets: ["vietnamese", "latin"],
+  weight: ["400", "600", "700"],
+  display: "swap",
+  variable: "--font-be-vietnam-pro",
+});
 
 export const metadata: Metadata = {
   metadataBase: getSiteUrl(),
@@ -19,32 +27,23 @@ export const metadata: Metadata = {
     siteName: SITE.name,
     title: `${SITE.name} — ${SITE.tagline}`,
     description: SITE.description,
-    images: [
-      {
-        url: "/og.png",
-        width: 1200,
-        height: 630,
-        alt: `${SITE.name} — ${SITE.tagline}`,
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${SITE.name} — ${SITE.tagline}`,
     description: SITE.description,
-    images: ["/og.png"],
   },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#173d35",
+  themeColor: "#083D76",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="vi">
+    <html lang="vi" className={beVietnamPro.variable}>
       <body>{children}</body>
     </html>
   );

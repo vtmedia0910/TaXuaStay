@@ -31,7 +31,7 @@ export default async function AdminVerificationPage({ searchParams }: { searchPa
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-      <AdminPageHeader title="Verification" description="Lifecycle, bằng chứng và độ mới cho Tà Xùa Stay Verified Standard." action={<Link href="/admin/verification/new" className={buttonVariants()}><Plus size={18} />Tạo xác minh</Link>} />
+      <AdminPageHeader title="Verification" description="Lifecycle, bằng chứng và độ mới cho tiêu chuẩn thẩm định Tà Xùa Trip." action={<Link href="/admin/verification/new" className={buttonVariants()}><Plus size={18} />Tạo xác minh</Link>} />
       <FormFeedback saved={params.saved} error={params.error} />
       <form className="mb-6 grid gap-3 rounded-3xl border border-line bg-surface p-4 sm:grid-cols-5" method="get">
         <Select name="status" defaultValue={params.status ?? ""}><option value="">Tất cả trạng thái</option><option value="current">Còn hiệu lực</option><option value="not_yet_valid">Ngày xác minh chưa có hiệu lực</option><option value="expired">Đã hết hạn</option>{VERIFICATION_STATUSES.filter((value) => !["verified", "expired"].includes(value)).map((value) => <option key={value}>{value}</option>)}</Select>

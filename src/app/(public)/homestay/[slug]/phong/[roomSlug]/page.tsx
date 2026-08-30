@@ -19,6 +19,7 @@ import { getPublicRoom } from "@/features/rooms/data";
 import { BATHROOM_TYPE_LABELS, VIEW_TYPE_LABELS } from "@/features/search/labels";
 import { buildRoomSearchUrl, buildStayContextQuery, DEFAULT_ROOM_SEARCH_PARAMS, parseRoomSearchParams, type RawSearchParams } from "@/features/search/params";
 import { getPublicRoomVerificationBundle } from "@/features/verification/data";
+import { buildPropertyPath, buildRoomPath } from "@/config/routes";
 
 type RoomParams = Promise<{ slug: string; roomSlug: string }>;
 
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: { params: RoomParams }): Prom
   return {
     title: `${room.name} — ${property.name}`,
     description: room.short_description ?? `Thông tin phòng ${room.name} tại ${property.name}.`,
-    alternates: { canonical: `/homestay/${property.slug}/phong/${room.slug}` },
+    alternates: { canonical: buildRoomPath(property.slug, room.slug) },
   };
 }
 
@@ -65,9 +66,10 @@ export default async function RoomPage({ params, searchParams }: { params: RoomP
 
   return (
     <main className="bg-cream pb-20">
-      <section className="bg-pine px-5 py-12 text-white sm:px-8 sm:py-16">
+      <section className="trip-detail-hero px-5 py-12 text-white sm:px-8 sm:py-16">
         <div className="mx-auto max-w-6xl">
-          <Link href={`/homestay/${property.slug}?${contextQuery}`} className="text-sm font-bold text-white/70 hover:text-white">← {property.name}</Link>
+          <nav aria-label="Breadcrumb" className="mb-5 text-sm text-white/70"><Link href="/">Tà Xùa Trip</Link> <span aria-hidden="true">/</span> <Link href="/stay">Lưu trú</Link> <span aria-hidden="true">/</span> <Link href={`${buildPropertyPath(property.slug)}?${contextQuery}`}>{property.name}</Link></nav>
+          <Badge className="bg-white/15 text-white">Áp dụng cho loại phòng</Badge>
           <h1 className="mt-5 max-w-4xl font-display text-4xl font-bold sm:text-6xl">{room.name}</h1>
           {room.short_description ? <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{room.short_description}</p> : null}
         </div>

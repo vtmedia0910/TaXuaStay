@@ -46,5 +46,6 @@ export async function savePhysicalRoomAction(formData: FormData) {
   revalidatePath("/admin/media");
   revalidatePath("/admin/verification");
   revalidatePath("/homestay/[slug]/phong/[roomSlug]", "page");
+  revalidatePath("/stay/[slug]/[roomSlug]", "page");
   redirect(`/admin/physical-rooms/${data.id}/edit?saved=1`);
 }

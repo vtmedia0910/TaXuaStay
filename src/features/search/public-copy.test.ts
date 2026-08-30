@@ -7,6 +7,10 @@ const PUBLIC_SOURCE_FILES = [
   "src/app/(public)/tim-phong/page.tsx",
   "src/app/(public)/[seoSlug]/page.tsx",
   "src/app/(public)/homestay/[slug]/phong/[roomSlug]/page.tsx",
+  "src/components/trip/trip-header.tsx",
+  "src/components/trip/trip-footer.tsx",
+  "src/components/verification/property-verified-section.tsx",
+  "src/components/verification/room-verified-section.tsx",
   "src/components/search/search-form.tsx",
   "src/components/search/search-results.tsx",
   "src/components/media/media-gallery.tsx",
@@ -33,6 +37,8 @@ describe("customer-facing copy", () => {
       "View cơ bản",
       "amenity đã xuất bản",
       "loại phòng đã xuất bản",
+      "TÀ XÙA STAY",
+      "Phase 2.5",
     ]) {
       expect(source).not.toContain(forbidden);
     }

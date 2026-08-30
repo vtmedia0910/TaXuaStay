@@ -3,6 +3,7 @@ import { ACCESS_CERTAINTIES, PROPERTY_TYPES } from "@/features/properties/types"
 import type { BathroomType, ViewType } from "@/features/rooms/types";
 import { BATHROOM_TYPES, VIEW_TYPES } from "@/features/rooms/types";
 import type { ParsedRoomSearch, RoomSearchParams } from "@/features/search/types";
+import { PUBLIC_ROUTES } from "@/config/routes";
 
 export type RawSearchParams = Record<string, string | string[] | undefined>;
 
@@ -84,7 +85,7 @@ export function normalizeRoomSearchParams(params: RoomSearchParams) {
 
 export function buildRoomSearchUrl(params: RoomSearchParams, page = params.page) {
   const query = normalizeRoomSearchParams({ ...params, page });
-  return query ? `/tim-phong?${query}` : "/tim-phong";
+  return query ? `${PUBLIC_ROUTES.stay}?${query}` : PUBLIC_ROUTES.stay;
 }
 
 export function buildStayContextQuery(params: Pick<RoomSearchParams, "checkIn" | "checkOut" | "adults" | "children" | "rooms">) {

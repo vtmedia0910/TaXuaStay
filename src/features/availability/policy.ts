@@ -8,7 +8,7 @@ export const VERIFIED_TODAY_HOURS = 24;
 
 export const INVENTORY_SOURCE_LABELS: Record<InventorySource, string> = {
   partner: "Nơi lưu trú cập nhật",
-  admin: "Nhân sự Tà Xùa Stay xác nhận",
+  admin: "Nhân sự Tà Xùa Trip xác nhận",
   booking_engine: "Hệ thống đặt phòng cập nhật",
   import: "Dữ liệu nhập",
 };

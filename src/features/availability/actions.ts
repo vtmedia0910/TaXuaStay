@@ -34,8 +34,11 @@ export async function setInventoryRangeAction(formData: FormData) {
 
   revalidatePath("/admin/availability");
   revalidatePath("/tim-phong");
+  revalidatePath("/stay");
   revalidatePath("/homestay/[slug]", "page");
   revalidatePath("/homestay/[slug]/phong/[roomSlug]", "page");
+  revalidatePath("/stay/[slug]", "page");
+  revalidatePath("/stay/[slug]/[roomSlug]", "page");
   const query = new URLSearchParams({
     room: value.room_type_id,
     from: value.date_from,

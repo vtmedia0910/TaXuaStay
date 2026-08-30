@@ -1,8 +1,8 @@
 export const SITE = {
-  name: "TÀ XÙA STAY",
-  tagline: "Đúng phòng. Đúng view. Yên tâm lên Tà Xùa.",
+  name: "TÀ XÙA TRIP",
+  tagline: "Đi thật. Biết trước.",
   description:
-    "Tìm loại phòng tại Tà Xùa theo sức chứa, hướng nhìn, đường vào và tiện ích đang được ghi nhận.",
+    "Nền tảng du lịch địa phương giúp bạn xem nơi ở, bằng chứng thẩm định và thông tin cần biết trước chuyến Tà Xùa.",
 } as const;
 
 interface SiteEnvironment {

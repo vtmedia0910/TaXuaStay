@@ -21,7 +21,7 @@ export const PRICE_CONFIDENCE_LABELS: Record<PriceConfidence, string> = {
 
 export const PRICE_SOURCE_LABELS: Record<PriceSource, string> = {
   partner: "Đối tác lưu trú",
-  admin: "Nhân sự Tà Xùa Stay",
+  admin: "Nhân sự Tà Xùa Trip",
   contract: "Thỏa thuận giá",
   import: "Dữ liệu nhập",
   reference: "Nguồn tham khảo",

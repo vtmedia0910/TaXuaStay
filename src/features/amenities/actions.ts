@@ -36,5 +36,7 @@ export async function saveAmenityAction(formData: FormData) {
   revalidatePath("/admin/amenities");
   revalidatePath("/homestay/[slug]", "page");
   revalidatePath("/homestay/[slug]/phong/[roomSlug]", "page");
+  revalidatePath("/stay/[slug]", "page");
+  revalidatePath("/stay/[slug]/[roomSlug]", "page");
   redirect(`/admin/amenities/${data.id}/edit?saved=1`);
 }

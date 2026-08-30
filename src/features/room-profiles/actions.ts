@@ -56,5 +56,6 @@ export async function saveRoomProfileNoteAction(formData: FormData) {
 
   revalidatePath("/admin/room-profiles");
   revalidatePath("/homestay/[slug]/phong/[roomSlug]", "page");
+  revalidatePath("/stay/[slug]/[roomSlug]", "page");
   redirect(`/admin/room-profiles/notes/${data.id}/edit?saved=1`);
 }

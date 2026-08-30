@@ -170,8 +170,11 @@ export async function saveVerificationAction(formData: FormData) {
 
   revalidatePath("/admin/verification");
   revalidatePath("/tim-phong");
+  revalidatePath("/stay");
   revalidatePath("/homestay/[slug]", "page");
   revalidatePath("/homestay/[slug]/phong/[roomSlug]", "page");
+  revalidatePath("/stay/[slug]", "page");
+  revalidatePath("/stay/[slug]/[roomSlug]", "page");
   revalidatePath("/verified");
   redirect(`/admin/verification/${data}/edit?saved=1`);
 }

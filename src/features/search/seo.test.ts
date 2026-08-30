@@ -12,10 +12,10 @@ describe("Phase 3 SEO landing configuration", () => {
     }
   });
 
-  it("keeps cloud/view pages cautious before Phase 4", () => {
+  it("keeps cloud/view landing pages cautious without current evidence", () => {
     for (const slug of ["homestay-san-may-ta-xua", "homestay-ta-xua-view-dep"] as const) {
       const text = JSON.stringify(SEO_LANDING_PAGES[slug]);
-      expect(text).toContain("chưa được kiểm chứng theo tiêu chuẩn Cloud View Verified");
+      expect(text).toContain("chưa được thẩm định theo tiêu chuẩn Cloud View");
       expect(text).not.toContain("đã xác minh");
       expect(text).not.toMatch(/\b9\.\d\b|tốt nhất/i);
     }

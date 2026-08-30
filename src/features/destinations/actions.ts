@@ -44,5 +44,6 @@ export async function saveDestinationAction(formData: FormData) {
   if (error || !data) redirect("/admin/destinations?error=destination-save");
   revalidatePath("/admin/destinations");
   revalidatePath("/homestay/[slug]", "page");
+  revalidatePath("/stay/[slug]", "page");
   redirect(`/admin/destinations/${data.id}/edit?saved=1`);
 }

@@ -31,7 +31,7 @@ export function ExactRoomVerifiedSection({ rooms }: { rooms: ExactRoomProfileDto
             <div className="flex flex-wrap gap-2">
               <Badge className="text-success"><ShieldCheck size={14} className="mr-1" aria-hidden="true" />Đã xác minh phòng cụ thể</Badge>
               {profile.cloudView ? <Badge><Eye size={14} className="mr-1" aria-hidden="true" />Cloud View của đúng phòng</Badge> : null}
-              {profile.quality ? <Badge>Room Quality đã kiểm tra</Badge> : null}
+              {profile.quality ? <Badge>Chất lượng phòng đã kiểm tra</Badge> : null}
             </div>
             <h3 className="mt-4 font-display text-xl font-bold text-pine">{room.display_name ?? room.room_code}</h3>
             <p className="mt-1 text-sm font-bold text-copper-strong">Mã phòng: {room.room_code}</p>
