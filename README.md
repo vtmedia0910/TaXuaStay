@@ -1,14 +1,18 @@
-# TÀ XÙA STAY
+# TÀ XÙA TRIP — STAY VERTICAL
 
-**Đúng phòng. Đúng view. Yên tâm lên Tà Xùa.**
+**Đi thật. Biết trước.**
 
-Tà Xùa Stay is evolving from a verified accommodation platform into a **Verified Local Travel Commerce** system for Tà Xùa. The application now provides a Destination → Property → Room Type → Physical Room identity hierarchy alongside verified evidence, Cloud View, Road Verified, pricing, pooled availability, room-first search, SEO, and authorized operations. The V2 target combines four product pillars—**VERIFY, BUNDLE, OPERATE, DISTRIBUTE**—without rewriting that foundation.
+This repository is the existing Tà Xùa Stay technical foundation and the future `/stay` accommodation vertical of **Tà Xùa Trip**, a Verified Local Travel platform. The master brand, consumer taxonomy, SEO language, and technical domain are intentionally distinct: **Tà Xùa Trip → Lưu trú → Homestay Tà Xùa → Stay `/stay`**.
+
+The current application has not yet received the public brand/UX migration. It already provides a Destination → Property → Room Type → Physical Room identity hierarchy alongside verified evidence, Cloud View, Road Verified, pricing, pooled availability, room-first search, SEO, and authorized operations. Master Plan V2.1 combines four product pillars—**VERIFY, BUNDLE, OPERATE, DISTRIBUTE**—without rewriting that foundation.
 
 Suppliers, partners, services, packages, unified trip booking, payments, bus integration, and the Trip Dashboard remain future architecture only. Tà Xùa Biker remains an independent product and source of truth for motorbike operations.
 
 ## Roadmap status
 
-Migrations 001–008 and their historical phase documents are the **Legacy Foundation Completed**. Migration 009 implements **V2 Phase 1 — Architecture Alignment**. Migration 010 implements **V2 Phase 2 — Verified Room Profile** with separate Room Type Verified, Exact Room Verified, Room Quality dimensions, and factual strengths/caveats. V2 Phase 3 has not started.
+Migrations 001–008 and their historical phase documents are the **Legacy Foundation Completed**. Migration 009 implements **V2 Phase 1 — Architecture Alignment**. Migration 010 implements **V2 Phase 2 — Verified Room Profile** with separate Room Type Verified, Exact Room Verified, Room Quality dimensions, and factual strengths/caveats.
+
+The next separately authorized implementation is **V2 Phase 2.5 — Master Brand + Public UX Migration**. It has not been implemented. V2 Phase 3 has not started.
 
 ## Local development
 
@@ -47,8 +51,12 @@ npm run build
 
 Project references:
 
-- `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md` — canonical architecture and roadmap reference; each task prompt still controls the phase execution scope.
+- `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md` — canonical Master Plan V2.1 architecture and roadmap reference; each task prompt still controls the phase execution scope.
 - `docs/STAY_ARCHITECTURE.md` — current system boundary and implementation state.
+- `docs/brand/BRAND_SYSTEM.md` — durable Tà Xùa Trip brand architecture and naming rules.
+- `docs/brand/CONTENT_VOICE.md` — truthful Vietnamese content voice, evidence language, and claim boundaries.
+- `docs/brand/PUBLIC_UX_DIRECTION.md` — target Phase 2.5 information architecture and public experience.
+- `docs/brand/VISUAL_REFERENCE.md` — visual precedence, palette, typography, photography, and asset status.
 - `docs/PHASE_1_DATABASE_AUTH.md` — migration, authorization, and operating notes for Phase 1.
 - `docs/PHASE_2_PROPERTIES_ROOMS.md` — Phase 2 domain, lifecycle, routes, and limitations.
 - `docs/PHASE_3_SEARCH_SEO.md` — room-first search contracts, supported filters, ranking, pagination, and SEO strategy.

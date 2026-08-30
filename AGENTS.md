@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Repository identity and boundaries
 
-- This is the independent Tà Xùa Stay repository.
+- This is the independent TaXuaStay technical repository and infrastructure boundary. Under Master Plan V2.1, its accommodation product becomes the `Stay` domain and future `/stay` vertical of the Tà Xùa Trip master brand; that public migration is not implemented yet.
 - `vtmedia0910/taxuabiker2` is a read-only technical reference. Never modify, commit to, push to, rewrite, or delete anything in Biker while doing Stay work.
 - Stay must use its own GitHub repository, Supabase project, Vercel project, Auth users, Storage, environment variables, and customer data.
 - Never add a runtime dependency on Biker's application, API, database, Auth, Storage, secrets, or customer data.
@@ -18,9 +18,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Architecture and database discipline
 
-- Before implementing any new product phase, read `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md`, `docs/STAY_ARCHITECTURE.md`, and the latest relevant phase documentation completely. The current user prompt defines the execution scope and may authorize only one phase.
-- The V2 Master Plan supersedes the former 11-phase accommodation roadmap. Historical phase documents remain factual implementation records, not the active roadmap.
-- Existing migrations `202608290001` through `202608290008` are the completed legacy foundation and are immutable. New implementation numbering restarts at **V2 Phase 1 — Architecture Alignment** and must begin from the current repository state.
+- Before implementing any new product phase, read `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md`, `docs/STAY_ARCHITECTURE.md`, `docs/brand/BRAND_SYSTEM.md`, `docs/brand/PUBLIC_UX_DIRECTION.md`, and the latest relevant phase documentation completely. The current user prompt defines the execution scope and may authorize only one phase.
+- Master Plan V2.1 supersedes the former 11-phase accommodation roadmap and earlier V2 direction wherever they conflict. Historical phase documents remain factual implementation records, not the active roadmap.
+- Existing migrations `202608290001` through `202608290008` are the completed legacy foundation and are immutable. V2 Phase 1 / migration 009 and V2 Phase 2 / migration 010 are also complete and remotely applied.
+- The next implementation step is **V2 Phase 2.5 — Master Brand + Public UX Migration**. Do not start V2 Phase 3 before Phase 2.5 has been separately authorized, implemented, visually reviewed, and accepted.
 - Do not replay Biker migrations into Stay.
 - Create clean, Stay-specific migrations only when the requested phase needs them.
 - After a migration has been applied remotely, never edit it; add a new additive migration instead.

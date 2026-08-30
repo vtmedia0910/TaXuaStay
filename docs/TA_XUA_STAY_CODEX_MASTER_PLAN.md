@@ -1,978 +1,1526 @@
-# TÀ XÙA STAY / VERIFIED LOCAL TRAVEL COMMERCE
-## CODEX MASTER PLAN V2
-### Kiến trúc chuyển đổi từ nền tảng verified accommodation sang Travel Operating System cho Tà Xùa
+# TÀ XÙA TRIP — CODEX MASTER PLAN V2.1
+## Verified Local Travel Platform
+### Stay Migration + Travel Commerce Architecture + Public UX / Brand System
 
-**Version:** 2.0  
-**Ngày định hướng lại:** 2026-08-29  
+**Version:** 2.1
+**Ngày chốt định hướng:** 30/08/2026
 **Target repository:** `vtmedia0910/TaXuaStay`  
 **Read-only technical reference:** `vtmedia0910/taxuabiker2`  
-**Current Stay production database:** Supabase project riêng của Tà Xùa Stay  
-**Current deployment:** Vercel project riêng của Tà Xùa Stay  
+**Canonical target file trong repo sau khi áp dụng:** `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md`
+**Current product state:** Legacy Foundation 001–008 + V2 Phase 1 / migration 009 + V2 Phase 2 / migration 010 đã hoàn thành; V2 Phase 2.5 là bước implementation tiếp theo và chỉ được thực hiện khi có task riêng.
 
 ---
 
-# 0. MỤC ĐÍCH CỦA MASTER PLAN V2
+# 0. TUYÊN BỐ SOURCE OF TRUTH
 
-Master Plan V2 thay thế định hướng cũ coi Tà Xùa Stay chủ yếu là một nền tảng accommodation booking / booking request.
+Tài liệu này là **Master Plan V2.1** và thay thế toàn bộ định hướng trước đó nếu có mâu thuẫn.
 
-Từ phiên bản này, hệ thống phải được thiết kế như:
+Nếu một tài liệu cũ nói:
 
-# VERIFIED LOCAL TRAVEL COMMERCE
+- Tà Xùa Stay là master brand;
+- homepage chính là website lưu trú;
+- booking chỉ là room booking;
+- Biker chỉ là outbound referral;
+- package chỉ là tính năng phụ;
+- hoặc UI tiếp tục xoay quanh homestay như sản phẩm trung tâm;
 
-với mục tiêu dài hạn:
+thì các điểm đó được coi là **superseded** bởi V2.1.
 
-# TRAVEL OPERATING SYSTEM CHO TÀ XÙA
+Từ V2.1:
 
-Hệ thống không chỉ giúp khách:
+# TÀ XÙA TRIP LÀ MASTER BRAND.
 
-- tìm homestay;
-- xem phòng;
-- xem giá;
-- kiểm tra tình trạng phòng.
+# TÀ XÙA STAY KHÔNG CÒN LÀ BRAND ĐỘC LẬP.
 
-Hệ thống phải dần giúp khách hoàn thành toàn bộ hành trình:
+Toàn bộ code/data hiện tại của Tà Xùa Stay trở thành vertical:
 
-```text
-TÌM HIỂU
-→ SO SÁNH
-→ XÁC MINH
-→ CHỌN TRẢI NGHIỆM
-→ CHỌN PHÒNG
-→ CHỌN VẬN CHUYỂN
-→ CHỌN XE MÁY
-→ GHÉP PACKAGE
-→ ĐẶT CHUYẾN
-→ THANH TOÁN / ĐẶT CỌC
-→ SUPPLIER CONFIRMATION
-→ TRIP DASHBOARD
-→ HỖ TRỢ TRƯỚC / TRONG CHUYẾN
-→ REVIEW
-→ LOYALTY / REFERRAL
-```
+# `/stay`
 
-Tà Xùa Stay hiện tại là nền tảng kỹ thuật đã có nhiều module quan trọng.
+trong hệ sinh thái Tà Xùa Trip.
 
-Không được rewrite từ đầu.
+Không rewrite mù quáng.
 
-Master Plan V2 yêu cầu:
+Không bỏ dữ liệu đã xây.
 
-1. bảo tồn những gì đã làm đúng;
-2. thêm lớp kiến trúc còn thiếu;
-3. chuyển trọng tâm từ `ROOM BOOKING` sang `TRIP COMMERCE`;
-4. giữ Verified data là moat cốt lõi;
-5. giữ Biker độc lập về repo / database / operations;
-6. nhưng thiết kế Travel Commerce để có thể tích hợp Biker như một service provider thực sự;
-7. không biến website thành directory;
-8. không biến website thành clone Booking.com.
+Không đổi database chỉ để đổi tên.
+
+Không phá SEO.
+
+Không merge Biker vào Stay database.
 
 ---
 
-# 1. CURRENT SYSTEM BASELINE — KHÔNG LÀM LẠI
+# 1. QUYẾT ĐỊNH CHIẾN LƯỢC ĐÃ CHỐT
 
-Tại thời điểm Master Plan V2 được viết, codebase Stay đã có nền tảng hoạt động.
-
-Các migration hiện có và đã được coi là immutable sau khi apply remote:
+## 1.1 Master brand
 
 ```text
-202608290001_stay_foundation.sql
-202608290002_properties_rooms_amenities_media.sql
-202608290003_harden_phase2_accommodation.sql
-202608290004_verified_standard.sql
-202608290005_harden_phase4_verification.sql
-202608290006_rate_plans_and_pricing.sql
-202608290007_harden_phase5_pricing.sql
-202608290008_room_inventory_and_availability.sql
+TÀ XÙA TRIP
 ```
 
-Các domain hiện có:
+## 1.2 Slogan
 
 ```text
-SITE SETTINGS
-AUTH / ADMIN / STAFF
-PROPERTY
-ROOM TYPE
-AMENITY
-MEDIA
-PHOTO / VIDEO / PANORAMA
-VERIFICATION
-CLOUD VIEW
-ROAD VERIFIED
-PRICE / RATE PLAN
-ROOM RATE RULE
-ROOM INVENTORY
-AVAILABILITY
-ROOM-FIRST SEARCH
-SEO LANDING PAGES
+Đi thật. Biết trước.
 ```
 
-Các điểm đã làm đúng và phải giữ:
-
-- Supabase riêng của Stay;
-- Vercel riêng của Stay;
-- Biker không phải runtime dependency;
-- `app_metadata.role`;
-- RLS;
-- public DTO / allow-list;
-- integer VND;
-- `[check_in, check_out)` lodging-night semantics;
-- Cloud View khác Cloud Forecast;
-- `unknown` là first-class state;
-- Price khác Availability;
-- Verification có freshness;
-- evidence đúng target;
-- 360 không được dùng sai vị trí;
-- temporary Vercel hostname noindex;
-- không fake rating;
-- không fake availability;
-- không fake price;
-- không fake Cloud View.
-
-Master Plan V2 KHÔNG yêu cầu xóa các domain này.
-
-Master Plan V2 yêu cầu mở rộng chúng.
-
----
-
-# 2. NHỮNG GÌ THAY ĐỔI SO VỚI MASTER PLAN CŨ
-
-Master Plan cũ có product center:
+## 1.3 Campaign line
 
 ```text
-ROOM
-→ PRICE
-→ AVAILABILITY
-→ BOOKING REQUEST
+Tà Xùa, trước khi bạn đến.
 ```
 
-Master Plan V2 đổi product center thành:
+## 1.4 Positioning
 
 ```text
-DESTINATION
-→ VERIFIED INVENTORY
-→ SERVICE COMPONENTS
-→ TRIP OPTION
-→ PACKAGE
-→ BOOKING
-→ OPERATIONS
+VERIFIED LOCAL TRAVEL
 ```
 
-Thay đổi quan trọng:
+Nền tảng thẩm định và thiết kế hành trình địa phương.
 
-## 2.1 Property không còn là root cao nhất
-
-Kiến trúc mới:
+## 1.5 Brand promise
 
 ```text
-Destination
-    ↓
-Property
-    ↓
-Room Type
-    ↓
-Physical Room
+Biết rõ trước khi lên đường.
 ```
 
-## 2.2 Room Type không đủ để đại diện "đúng phòng"
-
-Hệ thống phải support:
+## 1.6 Core values
 
 ```text
-Room Type
-+
-Exact Physical Room
+THẬT — HIỂU — TRỌN VẸN
 ```
 
-## 2.3 Pricing không chỉ có Sell Price
-
-Travel Commerce cần phân biệt:
+## 1.7 Principle
 
 ```text
-Net Cost
-Market Reference
-Sell Price
+Không bán cái đẹp. Bán cái phù hợp.
 ```
 
-và sau này:
+## 1.8 Culture rule
 
 ```text
-Trip Cost
-Trip Sell
-Gross Contribution
-Gross Margin
+Đừng bán cho khách một chuyến đi mà chính mình sẽ không chọn.
 ```
 
-## 2.4 Availability không phải end goal
-
-Availability là một input của Decision Engine và Booking.
-
-## 2.5 Biker không còn chỉ là referral marketing
-
-Biker vẫn là hệ thống vận hành riêng.
-
-Nhưng Travel Commerce phải có abstraction để motorbike trở thành:
+## 1.9 Operational promise
 
 ```text
-BOOKABLE / CONFIRMABLE TRIP COMPONENT
-```
-
-không phải chỉ một outbound link.
-
-## 2.6 Booking không còn chỉ là room booking
-
-Booking mới phải support:
-
-```text
-Booking
-    ↓
-Booking Items
-        ROOM
-        MOTORBIKE
-        BUS
-        TRANSFER
-        ACTIVITY
-        MEAL
-        GUIDE
-        SERVICE
-        CUSTOM
-```
-
-## 2.7 North Star đổi
-
-Không tối ưu:
-
-```text
-room booking count
-```
-
-North Star:
-
-```text
-COMPLETED TRIP BOOKINGS
-```
-
-và economics:
-
-```text
-CONTRIBUTION PER TRIP
+Phần phức tạp để chúng tôi lo.
 ```
 
 ---
 
-# 3. PRODUCT POSITIONING
+# 2. PRODUCT PURPOSE
 
-Không định vị:
+Mục tiêu của Tà Xùa Trip không phải giúp khách thấy nhiều listing hơn.
 
-> Website đặt homestay Tà Xùa.
-
-Không định vị:
-
-> Booking.com phiên bản Tà Xùa.
-
-Định vị:
-
-# NỀN TẢNG XÁC MINH VÀ THIẾT KẾ CHUYẾN ĐI TÀ XÙA
-
-hoặc consumer proposition:
-
-# XEM ĐÚNG PHÒNG. GHÉP ĐÚNG CHUYẾN.
-
-Brand accommodation hiện tại vẫn có thể giữ:
+Mục tiêu là thu hẹp khoảng cách giữa:
 
 ```text
-TÀ XÙA STAY
-Đúng phòng. Đúng view. Yên tâm lên Tà Xùa.
+THỨ KHÁCH THẤY TRÊN INTERNET
 ```
 
-Không bắt buộc rename repo / domain trong giai đoạn V2 foundation.
-
-Architecture phải đủ generic để sau này brand ecosystem có thể là:
+và:
 
 ```text
-TÀ XÙA ECOSYSTEM
-├── Tà Xùa Stay
-├── Tà Xùa Biker
-└── Trip / Travel Commerce layer
+THỨ KHÁCH THẬT SỰ NHẬN ĐƯỢC KHI ĐẾN NƠI
 ```
 
-hoặc Tà Xùa Stay tự mở rộng thành consumer travel brand.
+Tà Xùa Trip phải giúp khách:
 
-Brand decision không được hard-code vào data model.
+- biết đúng phòng;
+- biết đúng view;
+- biết đường vào;
+- biết điểm mạnh;
+- biết điểm yếu;
+- biết mức giá;
+- biết độ tin cậy của giá;
+- biết tình trạng phòng;
+- biết tình trạng đó mới đến đâu;
+- biết dịch vụ nào còn chưa được xác nhận;
+- biết nên chọn phương án nào;
+- ghép phòng + xe khách + xe máy + dịch vụ thành một chuyến;
+- có một đầu mối hỗ trợ.
 
 ---
 
-# 4. PRODUCT PROMISE
+# 3. PRODUCT POSITIONING — KHÔNG PHẢI OTA THÔNG THƯỜNG
 
-Khách không chỉ mua một room night.
+Không xây:
 
-Khách mua:
+```text
+Booking.com bản Tà Xùa
+```
 
-- certainty;
-- verified data;
-- less research;
-- less coordination;
-- less risk;
-- local support;
-- better trip design;
-- bundle value.
+Không xây:
 
-Mọi feature phải trả lời ít nhất một câu:
+```text
+directory 100 homestay
+```
 
-1. Có giúp khách quyết định nhanh hơn không?
-2. Có giảm rủi ro chuyến đi không?
-3. Có tăng conversion không?
-4. Có tăng AOV không?
-5. Có tăng gross contribution không?
-6. Có tăng trust không?
-7. Có giảm khả năng cắt cầu không?
-8. Có làm supplier phụ thuộc hơn vào platform value không?
+Không xây:
 
-Nếu không giải quyết ít nhất một mục trên:
+```text
+website review homestay
+```
 
-không ưu tiên build.
+Xây:
+
+# VERIFIED LOCAL TRAVEL PLATFORM
+
+Giá trị cốt lõi:
+
+```text
+VERIFY
+→ BUNDLE
+→ OPERATE
+→ DISTRIBUTE
+```
 
 ---
 
-# 5. 4 TRỤ CỘT SẢN PHẨM
+# 4. 4 TRỤ CỘT HỆ THỐNG
 
-# VERIFY
+## 4.1 VERIFY
 
-Xác minh:
+Thẩm định:
 
-- exact room;
-- room facts;
-- actual view;
-- view from bed;
-- view direction;
+- Property;
+- Room Type;
+- Physical Room;
+- Room ID;
+- Exact Room;
 - Cloud View;
-- Road access;
-- price freshness;
-- availability freshness;
+- View From Bed;
+- Road Access;
+- Parking;
+- Media;
 - 360;
-- pros / cons;
-- later room quality.
+- Room Quality;
+- Pros;
+- Cons;
+- Price freshness;
+- Availability freshness.
 
-# BUNDLE
+## 4.2 BUNDLE
 
 Ghép:
 
-- room;
-- motorbike;
-- bus;
-- transfer;
-- meal;
-- activity;
-- guide;
-- support;
-- itinerary.
+- Stay;
+- Bus;
+- Motorbike;
+- Transfer;
+- Meal;
+- Activity;
+- Guide;
+- Support;
+- Package;
+- Itinerary.
 
-# OPERATE
+## 4.3 OPERATE
 
-Kiểm soát local operations:
+Vận hành:
 
-- motorbike;
 - supplier confirmation;
-- local support;
-- trip tasks;
+- motorbike operations;
+- availability;
+- booking tasks;
+- pickup;
 - arrival instructions;
-- later pickup / guide / photographer.
+- trip support;
+- after-sales.
 
-# DISTRIBUTE
+## 4.4 DISTRIBUTE
 
 Tạo demand:
 
 - SEO;
 - TikTok;
+- Facebook;
 - Reels;
 - Shorts;
-- comparison content;
-- verified room content;
-- cloud alert;
-- referrals.
+- Blog;
+- comparison;
+- verified content;
+- room walkthrough;
+- cloud content.
 
 ---
 
-# 6. ANTI-CIRCUMVENTION PRINCIPLE
+# 5. 6 NGUYÊN TẮC CÔNG KHAI
 
-Không chống cắt cầu bằng:
-
-- giấu tên property;
-- giấu địa chỉ;
-- giấu location;
-- khóa khách;
-- UI gây khó chịu.
-
-Chống cắt cầu bằng VALUE STACK.
-
-Direct supplier có thể bán:
-
-```text
-ROOM
-```
-
-Platform bán:
-
-```text
-VERIFIED ROOM
-+ VERIFIED VIEW
-+ AVAILABILITY CONFIDENCE
-+ MOTORBIKE
-+ BUS
-+ ITINERARY
-+ LOCAL SUPPORT
-+ GUARANTEE POLICY
-+ PACKAGE ECONOMICS
-```
-
-Mục tiêu:
-
-> Khách có thể bỏ platform nhưng không muốn bỏ platform.
-
-Supplier:
-
-> Có thể cắt một booking nhưng mất một channel lâu dài có traffic, content, booking và data.
+1. Thấy gì nói đó.
+2. Không xác minh thì không khẳng định.
+3. Không bán sự đánh giá.
+4. Không ép khách chọn sản phẩm lợi nhuận cao nhất.
+5. Giá trị chuyến đi quan trọng hơn giá rẻ nhất.
+6. Phần phức tạp để chúng tôi lo.
 
 ---
 
-# 7. SYSTEM BOUNDARIES
+# 6. BRAND ARCHITECTURE
 
-## 7.1 Stay infrastructure
-
-Stay vẫn có:
+Target:
 
 ```text
-GitHub riêng
-Supabase riêng
-Auth riêng
-Storage riêng
-Vercel riêng
-Staff riêng
-Customer data riêng
-Travel Commerce data riêng
-```
-
-## 7.2 Biker infrastructure
-
-Biker vẫn có:
-
-```text
-GitHub riêng
-Supabase riêng
-Fleet riêng
-Rental operations riêng
-Auth riêng
-Vercel riêng
-```
-
-## 7.3 Không shared database
-
-Không:
-
-```text
-Stay SQL query trực tiếp Biker DB
-Biker SQL query trực tiếp Stay DB
-shared auth table
-shared service-role
-shared customer table
-```
-
-## 7.4 Integration sau này
-
-Dùng:
-
-```text
-API
-signed server-to-server call
-manual supplier task
-opaque external reference
-event/webhook
-```
-
-Tùy phase.
-
-MVP không cần microservice architecture phức tạp.
-
----
-
-# 8. CORE DOMAIN MODEL V2
-
-Kiến trúc target:
-
-```text
-Destination
-    ↓
-Property
-    ↓
-RoomType
-    ↓
-PhysicalRoom
-    ↓
-Verification / Media
-
-Destination
-    ↓
-Supplier / Partner
-    ↓
-Services
-
-Service
-    ↓
-ROOM
-MOTORBIKE
-BUS
-TRANSFER
-ACTIVITY
-MEAL
-GUIDE
-OTHER
-
-TripPackage
-    ↓
-PackageComponent
-    ↓
-Service / Inventory / Price
-
-Booking
-    ↓
-BookingItem
-    ↓
-SupplierConfirmation
-
-Booking
-    ↓
-Trip
-    ↓
-TripDashboard
+TÀ XÙA TRIP
+│
+├── Lưu trú / Stay
+│   ├── Property
+│   ├── Room Type
+│   ├── Exact Room
+│   ├── Verified Standard
+│   ├── Cloud View
+│   ├── 360
+│   ├── Rate
+│   └── Availability
+│
+├── Combo / Trip Package
+│
+├── Xe khách
+│
+├── Xe máy
+│   └── nguồn vận hành: Tà Xùa Biker
+│
+├── Săn mây / Cloud Intelligence
+│
+├── Cẩm nang
+│
+└── My Trip
 ```
 
 ---
 
-# 9. DESTINATION DOMAIN
+# 6A. NAMING ARCHITECTURE — LOCKED
 
-Add:
-
-```text
-destinations
-```
-
-Suggested fields:
+V2.1 chốt ba lớp naming khác nhau để tối ưu đồng thời UX, SEO và khả năng mở rộng:
 
 ```text
-id
-slug
-name
-short_name
-province
-country_code
-timezone
-latitude
-longitude
-altitude_reference_m
-description
-is_active
-publish_status
-created_at
-updated_at
+MASTER BRAND
+Tà Xùa Trip
+
+CONSUMER TAXONOMY
+Lưu trú
+
+SEO / SEARCH LANGUAGE
+Homestay Tà Xùa
+
+TECHNICAL DOMAIN
+Stay / /stay
 ```
 
-Initial record:
+Lý do:
+
+- `Homestay` là vocabulary acquisition/search intent quan trọng.
+- `Lưu trú` bao quát Homestay, Khách sạn, Bungalow, Villa, Nhà nghỉ và các loại hình tương lai.
+- `Stay` ngắn, sạch cho code/namespace nhưng không phải từ bắt khách Việt phải hiểu.
+- Không đổi `/stay` thành `/homestay` chỉ để SEO.
+- SEO được tối ưu bằng title, H1, copy, internal links, landing pages, entity data và first-party verified content.
+- Không biến `Homestay` thành taxonomy root vì khách sạn/villa/bungalow không phải homestay.
+
+Canonical consumer hierarchy:
 
 ```text
-slug = ta-xua
-name = Tà Xùa
-timezone = Asia/Ho_Chi_Minh
+Tà Xùa Trip
+→ Lưu trú
+→ Homestay / Khách sạn / Bungalow / ...
+→ Cơ sở lưu trú
+→ Loại phòng
+→ Phòng cụ thể
 ```
 
-Do not hard-code Tà Xùa forever in domain relationships.
+---
 
-Add:
+# 7. TÀ XÙA STAY — VAI TRÒ MỚI
+
+Tà Xùa Stay không bị xóa.
+
+Nó được nâng cấp thành:
+
+# STAY VERTICAL
+
+Trong UI consumer cuối:
 
 ```text
-properties.destination_id
+TÀ XÙA TRIP
+→ LƯU TRÚ
 ```
+
+Trong codebase:
+
+- giữ các table hiện tại;
+- giữ module;
+- giữ logic;
+- giữ migration;
+- giữ test;
+- giữ admin tool;
+- giữ SEO value;
+- đổi role của homepage/brand.
+
+---
+
+# 8. TÀ XÙA BIKER — VAI TRÒ
+
+Tà Xùa Biker tiếp tục là:
+
+```text
+SPECIALIZED MOTORBIKE OPERATIONS SOURCE-OF-TRUTH
+```
+
+Biker giữ:
+
+- fleet;
+- plate;
+- maintenance;
+- rental operations;
+- bike QR;
+- handover;
+- repair;
+- operational history.
+
+Trip không copy Biker database.
+
+Trip tích hợp Biker qua:
+
+```text
+manual confirmation
+external reference
+API later
+signed server calls later
+webhook later
+```
+
+Consumer copy có thể:
+
+```text
+Dịch vụ xe máy vận hành bởi Tà Xùa Biker
+```
+
+---
+
+# 9. CURRENT CODEBASE — LEGACY FOUNDATION COMPLETED
+
+Migrations đã có trước V2:
+
+```text
+001 Foundation
+002 Property / Room / Amenity / Media
+003 Accommodation Hardening
+004 Verified Standard
+005 Verification Hardening
+006 Pricing
+007 Pricing Hardening
+008 Availability
+```
+
+V2 Phase 1:
+
+```text
+009 Destination + Physical Room
+```
+
+Các domain hiện đã có:
+
+- settings;
+- auth;
+- admin;
+- properties;
+- room types;
+- amenities;
+- media;
+- 360;
+- verification;
+- Cloud View;
+- Road Verified;
+- rates;
+- room rate rules;
+- availability;
+- search;
+- SEO;
+- destinations;
+- physical rooms.
+
+Không rewrite.
+
+---
+
+# 10. CURRENT CODE DO-NOT-BREAK LIST
+
+Bắt buộc preserve:
+
+```text
+/tim-phong
+property page
+room type page
+Verified Standard
+Cloud View
+Road Verified
+360
+Pricing
+Price Confidence
+Availability
+Availability freshness
+Admin Settings
+Admin Properties
+Admin Room Types
+Admin Physical Rooms
+Admin Media
+Admin Verification
+Admin Rates
+Admin Availability
+```
+
+---
+
+# 11. V2.1 INFORMATION ARCHITECTURE
+
+Target public IA:
+
+```text
+/
+```
+
+Homepage Tà Xùa Trip.
+
+```text
+/stay
+```
+
+Root taxonomy kỹ thuật và landing consumer cho **Lưu trú**.
+
+Quy tắc naming đã chốt:
+
+```text
+Master brand: Tà Xùa Trip
+Navigation category: Lưu trú
+Category H1/SEO: Homestay & lưu trú Tà Xùa
+Technical namespace: /stay
+```
+
+Không dùng “Stay” làm từ chính trên giao diện khách hàng. `stay` là technical namespace.
+
+SEO acquisition routes ưu tiên ngôn ngữ người dùng thực sự tìm kiếm:
+
+```text
+/stay/homestay-ta-xua
+/stay/khach-san-ta-xua
+/stay/homestay-san-may-ta-xua
+/stay/homestay-view-tu-giuong-ta-xua
+/stay/homestay-cho-couple-ta-xua
+/stay/homestay-cho-nhom-ta-xua
+/stay/homestay-co-cho-do-o-to-ta-xua
+```
+
+Các route chỉ được tạo khi có nội dung/data đủ khác biệt; không tạo hàng loạt thin pages.
+
+Entity routes:
+
+```text
+/stay/[propertySlug]
+/stay/[propertySlug]/[roomSlug]
+```
+
+Taxonomy phải cho phép mở rộng:
+
+```text
+Homestay
+Khách sạn
+Bungalow
+Villa
+Nhà nghỉ
+Camping / Glamping
+```
+
+Không dùng `Homestay` làm root taxonomy vì sẽ khiến khách sạn/bungalow/villa trở thành con của một loại hình không phù hợp.
 
 Future:
 
 ```text
-Mộc Châu
-Sa Pa
-Hà Giang
-Y Tý
-Măng Đen
+/trip-finder
+/combo
+/combo/[slug]
+/bus
+/motorbike
+/cloud
+/guide
+/blog
+/about
+/partner
+/my-trip/[bookingCode]
 ```
-
-Destination affects:
-
-- SEO;
-- weather location;
-- property scope;
-- package scope;
-- service scope;
-- search;
-- analytics.
 
 ---
 
-# 10. PROPERTY DOMAIN V2
+# 12. URL MIGRATION PRINCIPLE
 
-Current `properties` remains.
+Không xóa URL cũ.
 
-Do not replace it.
+Không redirect toàn bộ về homepage.
 
-Add relationship:
+Phải map 1:1.
+
+Ví dụ target:
 
 ```text
-destination_id
+old /homestay-a
+→ /stay/homestay-a
 ```
+
+```text
+old /homestay-a/phong-x
+→ /stay/homestay-a/phong-x
+```
+
+```text
+old /homestay-san-may-ta-xua
+→ /stay/cloud-view
+```
+
+Giữ slug ổn định nếu có thể.
+
+---
+
+# 13. SEO MIGRATION
+
+Khi chuyển brand:
+
+- title suffix → `| Tà Xùa Trip`;
+- canonical → domain Trip;
+- sitemap → URL mới;
+- robots không index version cũ;
+- redirect 301 1:1;
+- structured data giữ factual fields;
+- không duplicate old/new.
+
+Temporary `.vercel.app` tiếp tục:
+
+```text
+noindex,nofollow
+```
+
+until final domain.
+
+---
+
+# 14. PUBLIC NAVIGATION V2.1
+
+Header target:
+
+```text
+TÀ XÙA TRIP
+
+Khám phá
+Lưu trú
+Combo
+Xe khách
+Xe máy
+Cẩm nang
+Về chúng tôi
+
+[Tìm chuyến đi]
+```
+
+`Lưu trú` là nhãn navigation chính thức. Không dùng `Stay` trong navigation consumer và không dùng `Homestay` làm tên taxonomy cấp master.
+
+Trong SEO title, H1, copy và landing pages, chủ động dùng **Homestay Tà Xùa** theo search intent khi phù hợp.
+
+Không hiển thị:
+
+```text
+Quản trị
+```
+
+trên public navigation.
+
+Admin:
+
+```text
+/admin/login
+```
+
+---
+
+# 15. PUBLIC FOOTER V2.1
+
+Master brand:
+
+```text
+TÀ XÙA TRIP
+Đi thật. Biết trước.
+```
+
+Columns:
+
+```text
+DỊCH VỤ
+Lưu trú
+Combo
+Xe khách
+Xe máy
+Cloud
+
+HỖ TRỢ
+FAQ
+Chính sách
+Liên hệ
+My Trip
+
+VỀ CHÚNG TÔI
+Phương pháp
+Cam kết
+Đối tác
+Cẩm nang
+```
+
+Footer không dùng Tà Xùa Stay làm master identity.
+
+---
+
+# 16. VISUAL DIRECTION — PRIMARY REFERENCE
+
+V2.1 chọn visual direction:
+
+# LIGHT BLUE / CLOUD / MOUNTAIN NAVY
+
+Moodboard website + marketing màu xanh nhạt là primary reference.
+
+Moodboard xanh lá/kem chỉ giữ làm secondary reference cho trust/local accents.
+
+---
+
+# 17. COLOR SYSTEM V2.1
+
+Primary:
+
+```text
+TRIP NAVY
+#083D76
+```
+
+Use:
+
+- main CTA;
+- header anchors;
+- trust UI;
+- footer;
+- navigation active;
+- premium cards.
+
+Secondary:
+
+```text
+CLOUD TEAL
+#0EA5A5
+```
+
+Use:
+
+- verification;
+- interaction;
+- info;
+- 360;
+- data accent.
+
+Positive:
+
+```text
+TRIP GREEN
+#10B981
+```
+
+Use:
+
+- availability;
+- successful operation;
+- confirmed states.
+
+Accent:
+
+```text
+SUNRISE
+#F59E0B
+```
+
+Use:
+
+- Cloud Score highlight;
+- accent CTA;
+- sunrise content;
+- selected badges.
+
+Canvas:
+
+```text
+CLOUD WHITE
+#F6FAFC
+```
+
+Cards:
+
+```text
+WHITE
+#FFFFFF
+```
+
+Ink:
+
+```text
+#16324A
+```
+
+Avoid overusing dark blue background.
+
+70–80% page area should be light/cloud.
+
+---
+
+# 18. VISUAL SYSTEM RULES
+
+UI should feel:
+
+- trustworthy;
+- calm;
+- clear;
+- modern;
+- airy;
+- travel intelligence;
+- local but not rustic;
+- premium without luxury pretension.
+
+Avoid:
+
+- overly beige eco-lodge look;
+- dark green everywhere;
+- generic OTA blue clone;
+- gradient overload;
+- fake glassmorphism;
+- decorative script in body/UI.
+
+---
+
+# 19. TYPOGRAPHY
+
+Primary:
+
+```text
+Be Vietnam Pro
+```
+
+Use for:
+
+- UI;
+- body;
+- navigation;
+- CTA;
+- cards;
+- Admin.
+
+Optional campaign decorative type:
+
+only for:
+
+```text
+Đi thật. Biết trước.
+```
+
+in marketing/hero when readable.
+
+No decorative font for:
+
+- forms;
+- table;
+- body;
+- filters;
+- prices.
+
+---
+
+# 20. ICON SYSTEM
+
+Line icons:
+
+- Verified;
+- Shield;
+- 360;
+- Cloud;
+- Location;
+- Bus;
+- Motorbike;
+- Support;
+- Package;
+- Road;
+- Parking;
+- Room;
+- Bed;
+- Sunrise;
+- View.
+
+Rounded line style.
+
+No icon zoo.
+
+---
+
+# 21. PHOTOGRAPHY
+
+Use real:
+
+- Tà Xùa landscape;
+- sunrise;
+- cloud valley;
+- room-from-bed;
+- balcony POV;
+- bathroom;
+- road access;
+- parking;
+- exterior;
+- bus;
+- motorbike;
+- human-in-landscape.
+
+Avoid stock/fake.
+
+People should often be secondary to place.
+
+---
+
+# 22. BRAND CORE COPY
 
 Keep:
 
-- location;
-- public facts;
-- access;
-- facilities;
-- publish lifecycle.
-
-Future partner fields MUST NOT be added directly into public property table unless needed.
-
-Separate partner/business-private data.
-
-Property ≠ Partner.
-
-One property may have one or more commercial partner relationships over time.
-
----
-
-# 11. ROOM TYPE VS PHYSICAL ROOM
-
-This distinction becomes mandatory.
-
-## 11.1 Room Type
-
-Represents commercial category:
-
 ```text
-Deluxe Valley View
-Bungalow Couple
-Family Room
-Dorm 6
+Đi thật. Biết trước.
 ```
 
-Contains shared facts:
-
-- base capacity;
-- bed configuration;
-- base facilities;
-- room size range if identical;
-- commercial rate;
-- pooled availability.
-
-## 11.2 Physical Room
-
-Add:
-
 ```text
-physical_rooms
+Tà Xùa, trước khi bạn đến.
 ```
 
-Suggested fields:
-
 ```text
-id
-property_id
-room_type_id
-room_code
-display_name
-floor_label
-unit_label
-position_notes
-is_active
-publish_status
-exact_room_bookable
-created_at
-updated_at
+Phần phức tạp để chúng tôi lo.
 ```
 
-Example:
-
 ```text
-TX-LALA-201
-TX-LALA-202
-TX-LALA-B02
+Không bán cái đẹp. Bán cái phù hợp.
 ```
 
-Constraints:
-
 ```text
-unique(property_id, room_code)
-room_type.property_id = physical_room.property_id
-```
-
-## 11.3 Exact Room
-
-Exact Room means:
-
-customer-visible physical unit can be specifically assigned or guaranteed.
-
-Do not claim Exact Room if supplier only confirms room type.
-
-Fields later:
-
-```text
-assignment_policy
-exact_room_guarantee_supported
+Trước khi đặt, bạn biết mình sẽ nhận được gì.
 ```
 
 ---
 
-# 12. ROOM ID PRINCIPLE
+# 23. HOMEPAGE V2.1 — MASTER PURPOSE
 
-Every physical room can have stable Room ID:
+Homepage không được là Stay homepage đổi logo.
+
+Homepage bán:
+
+# TRIP
+
+Stay là một section.
+
+---
+
+# 24. HOMEPAGE SECTION 01 — HERO
+
+Eyebrow:
 
 ```text
-TX-MAY-203
-TX-LALA-B02
+TÀ XÙA • VERIFIED LOCAL TRAVEL
 ```
 
-Room ID should link:
+H1:
 
-- property;
-- room type;
-- floor;
-- exact view evidence;
-- verification;
+```text
+Đi thật. Biết trước.
+```
+
+Sub:
+
+```text
+Chúng tôi trực tiếp thẩm định nơi ở, quay video 360°, chỉ rõ ưu nhược điểm và kết nối phòng, xe khách, xe máy thành một chuyến Tà Xùa trọn vẹn.
+```
+
+Primary CTA:
+
+```text
+Tìm chuyến đi phù hợp
+```
+
+Secondary:
+
+```text
+Xem phòng đã thẩm định
+```
+
+---
+
+# 25. HOMEPAGE HERO SEARCH / TRIP ENTRY
+
+Tabbed entry target:
+
+```text
+Lưu trú
+Combo
+Xe khách
+Xe máy
+```
+
+MVP rule:
+
+Tabs chưa implemented đầy đủ không được giả backend.
+
+Allowed:
+
+- functioning;
+- disabled;
+- preview;
+- landing.
+
+Core form:
+
+```text
+Ngày đi
+Ngày về
+Số người
+Nhu cầu
+```
+
+CTA:
+
+```text
+Tìm chuyến đi
+```
+
+Until Trip Finder exists:
+
+can route to Stay search with honest wording.
+
+---
+
+# 26. HOMEPAGE SECTION 02 — TRUST STRIP
+
+Only factual metrics.
+
+Allowed claims:
+
+```text
+Phòng được kiểm tra thực tế
+Video 360°
+Ưu & nhược điểm minh bạch
+Hỗ trợ xuyên suốt chuyến đi
+```
+
+Do not show:
+
+```text
+50+
+200+
+5000+
+99%
+```
+
+unless real data exists.
+
+---
+
+# 27. HOMEPAGE SECTION 03 — TẠI SAO CHÚNG TÔI TỒN TẠI?
+
+Message:
+
+```text
+Ảnh đẹp không nói hết một căn phòng.
+Một dòng “view núi” không cho bạn biết có nhìn thấy cảnh từ giường hay đường vào có khó không.
+Chúng tôi kiểm tra những chi tiết đó trước.
+```
+
+---
+
+# 28. HOMEPAGE SECTION 04 — CHÚNG TÔI LÀM GÌ KHÁC?
+
+Cards:
+
+```text
+THẨM ĐỊNH TẠI CHỖ
+```
+
+```text
+XEM TRƯỚC BẰNG 360°
+```
+
+```text
+NÓI CẢ ĐIỂM CHƯA TỐT
+```
+
+```text
+GHÉP CẢ CHUYẾN ĐI
+```
+
+---
+
+# 29. HOMEPAGE SECTION 05 — VERIFIED ACCOMMODATION
+
+Consumer title ưu tiên:
+
+```text
+Homestay & phòng Tà Xùa đã thẩm định
+```
+
+Supporting copy:
+
+```text
+Không chỉ xem ảnh của homestay. Xem đúng loại phòng, view thực tế, ưu nhược điểm và lần kiểm tra gần nhất.
+```
+
+Cards should show real:
+
+- Property;
+- Room Type / Room ID scope;
+- Cloud View;
+- verification date;
+- View From Bed;
 - 360;
-- room-quality data;
-- future assignment;
-- future booking item allocation.
+- Pros/Cons preview;
+- Price;
+- Availability state.
 
-Do not derive Room ID from mutable room name.
-
-Use stable code.
+No fake score.
 
 ---
 
-# 13. VERIFICATION V2
+# 30. HOMEPAGE SECTION 06 — TRẢI NGHIỆM TÀ XÙA TRỌN VẸN
 
-Existing Phase 4 remains valid.
-
-Do not delete:
+Cards:
 
 ```text
-verification_records
-cloud_view_verifications
-road_verifications
-verification_evidence
+Lưu trú
+Xe khách
+Xe máy
+Combo
 ```
 
-Extend target model to support:
+Each card can be:
 
-```text
-physical_room_id
-```
+- active;
+- preview;
+- landing.
 
-where appropriate.
-
-## 13.1 Verification target hierarchy
-
-Possible:
-
-```text
-PROPERTY
-ROOM TYPE
-PHYSICAL ROOM
-```
-
-Example:
-
-Property identity:
-
-```text
-property
-```
-
-Road:
-
-```text
-property
-```
-
-Room type facts:
-
-```text
-room_type
-```
-
-Exact view:
-
-prefer:
-
-```text
-physical_room
-```
-
-when physical unit exists.
-
-If supplier inventory is pooled and rooms are truly identical:
-
-room-type verification may remain valid.
-
-## 13.2 Never silently reinterpret existing room-type verification
-
-Existing records stay historically valid.
-
-New exact-room verification is additive.
+No fake booking.
 
 ---
 
-# 14. CLOUD VIEW SCORE
+# 31. HOMEPAGE SECTION 07 — HOW WE VERIFY
 
-Keep current 100-point rubric unless separately approved.
+Explain:
 
-Cloud View means:
+```text
+Room identity
+Room evidence
+Cloud View
+Road access
+Quality
+Freshness
+```
 
-physical viewing quality.
+CTA:
 
-Never weather probability.
+```text
+Xem phương pháp thẩm định
+```
 
-Keep separate:
+---
+
+# 32. HOMEPAGE SECTION 08 — TOP CLOUD VIEW
+
+Only real current verification.
+
+Do not equate:
 
 ```text
 Cloud View Score
-Cloud Forecast Score
 ```
 
-Potential exact-room rule:
+with:
 
-If physical rooms of same room type have materially different view:
-
-Cloud View must move to exact-room level.
-
-Room-type score may be:
-
-- omitted;
-- range;
-- derived summary.
-
-Do not average away material differences.
+```text
+weather probability
+```
 
 ---
 
-# 15. ROOM QUALITY PROFILE
+# 33. HOMEPAGE SECTION 09 — PACKAGE
 
-Add later as separate score dimensions.
+When package exists:
 
-Do NOT contaminate Cloud View.
+show real package.
 
-Possible dimensions:
+Before package exists:
 
-```text
-cleanliness
-soundproof
-heating
-hot_water
-wifi
-bathroom
-room_accuracy
-comfort
-```
-
-Public page can show:
+can show concept section only if clearly:
 
 ```text
-Cloud View: 9.3
-Soundproof: 5.5
+Sắp có
 ```
 
-This transparency builds trust.
+or omit.
 
-Avoid a single opaque "overall score" until enough data exists.
+No fake price.
 
 ---
 
-# 16. PROS / CONS
+# 34. HOMEPAGE SECTION 10 — CUSTOMER PROOF
 
-Verified Room Profile should eventually support:
+Only real review.
 
-```text
-pros
-cons
-```
+No seeded fake testimonial.
 
-Examples:
+Before reviews:
 
-Pros:
-
-- sunrise trực diện;
-- view rộng;
-- ban công riêng.
-
-Cons:
-
-- cách âm trung bình;
-- WC nhỏ;
-- đường vào khó.
-
-Do not hide real disadvantages because partner is Preferred.
-
-Sponsored status and Verification must remain independent.
+omit or use factual process proof instead.
 
 ---
 
-# 17. MEDIA / 360 V2
+# 35. HOMEPAGE SECTION 11 — BRAND STATEMENT
 
-Existing media_assets remains.
-
-Add optional:
+Use:
 
 ```text
-physical_room_id
+Không bán cái đẹp.
+Bán cái phù hợp.
 ```
 
-A media asset should target exactly one logical content owner where possible:
+Supporting:
 
 ```text
-property
-room_type
-physical_room
+Một lựa chọn tốt không phải lựa chọn đẹp nhất trên ảnh.
+Đó là lựa chọn phù hợp nhất với cách bạn muốn đi.
 ```
-
-Exact-room evidence must never use another room's media.
-
-360 concepts:
-
-```text
-ROOM INTERIOR
-ACTUAL VIEW POSITION
-```
-
-Public strategy:
-
-show enough evidence to create trust and conversion.
-
-Do not hide core proof behind booking.
-
-Post-booking can unlock:
-
-- exact arrival details;
-- assigned unit details;
-- proprietary instructions;
-- operational notes.
 
 ---
 
-# 18. PRICE ARCHITECTURE V2
+# 36. HOMEPAGE SECTION 12 — FINAL CTA
 
-Existing Phase 5 sell-price engine remains.
+Title:
 
-It currently answers:
+```text
+Phần phức tạp để chúng tôi lo.
+```
 
-> Giá bán áp dụng cho room type và lodging date là bao nhiêu?
+Body:
 
-Do not rewrite it.
+```text
+Bạn chỉ cần chọn kiểu Tà Xùa mình muốn trải nghiệm.
+Chúng tôi giúp bạn ghép phần còn lại.
+```
 
-Introduce new economics layer later.
+CTA:
 
-Three concepts:
+```text
+Bắt đầu tìm chuyến
+```
+
+---
+
+# 37. `/stay` LANDING — HOMESTAY & LƯU TRÚ
+
+Current Stay homepage logic migrates to:
+
+```text
+/stay
+```
+
+Consumer category name:
+
+```text
+Lưu trú
+```
+
+SEO/H1 acquisition language:
+
+```text
+Homestay & lưu trú Tà Xùa
+```
+
+Recommended H1:
+
+```text
+Homestay & lưu trú Tà Xùa đã được kiểm tra trước khi bạn đặt.
+```
+
+Recommended SEO title:
+
+```text
+Homestay Tà Xùa: Xem phòng, view thật & giá | Tà Xùa Trip
+```
+
+Recommended meta description:
+
+```text
+Tìm homestay Tà Xùa theo đúng loại phòng, Cloud View, view từ giường, video 360°, giá và tình trạng phòng được cập nhật.
+```
+
+Sub:
+
+```text
+Xem phòng thực tế, video 360°, góc nhìn, ưu nhược điểm và tình trạng theo ngày.
+```
+
+Primary:
+
+```text
+Tìm phòng phù hợp
+```
+
+Secondary:
+
+```text
+Xem phòng Cloud View
+```
+
+Nguyên tắc SEO/UX:
+
+- `Homestay` là acquisition keyword quan trọng.
+- `Lưu trú` là taxonomy rộng và bền vững.
+- `Stay` chỉ là technical/internal terminology.
+- `Chỗ ở` có thể dùng trong conversational UX, không phải tên vertical chính.
+- Không keyword stuffing.
+
+---
+
+# 38. `/stay` SECTIONS
+
+Recommended:
+
+```text
+Room Finder
+Cloud View Verified
+View From Bed
+Couple Picks
+Best Value
+Verified Recently
+How We Verify
+360 Demo
+Trip CTA
+```
+
+Only if data supports.
+
+---
+
+# 39. PROPERTY PAGE V2.1
+
+Must show:
+
+- Property name;
+- destination;
+- verification scope;
+- room types;
+- exact room where available;
+- Road Verified;
+- parking;
+- map/location;
+- policies;
+- room cards;
+- price;
+- availability.
+
+CTA:
+
+```text
+Xem phòng
+Kiểm tra ngày
+```
+
+Secondary future:
+
+```text
+Thêm vào chuyến
+```
+
+---
+
+# 40. VERIFIED ROOM PAGE V2.1
+
+Header:
+
+```text
+[Tên phòng] • [Tên cơ sở]
+```
+
+Proof:
+
+```text
+Đã thẩm định
+Verified [date]
+360° available
+```
+
+Cloud:
+
+```text
+Cloud View Score x/10
+```
+
+Disclaimer:
+
+```text
+Đây là đánh giá chất lượng góc nhìn khi điều kiện phù hợp, không phải dự báo chắc chắn có mây.
+```
+
+---
+
+# 41. ROOM DETAIL — REALITY CHECK
+
+Sections:
+
+```text
+Điểm chúng tôi thích
+```
+
+```text
+Điều bạn nên biết
+```
+
+Must allow negative factual truth.
+
+---
+
+# 42. ROOM DETAIL — FACTS
+
+Display:
+
+- view from bed;
+- balcony;
+- window;
+- direction;
+- sunrise;
+- obstruction;
+- soundproof;
+- Wi-Fi;
+- bathroom;
+- hot water;
+- bed;
+- capacity;
+- floor;
+- Road context.
+
+---
+
+# 43. ROOM SCOPE
+
+Public must show clearly:
+
+```text
+PHÒNG CỤ THỂ
+```
+
+or:
+
+```text
+LOẠI PHÒNG / PHÒNG MẪU
+```
+
+Do not confuse.
+
+---
+
+# 44. EXACT ROOM VERIFIED
+
+Exact Room Verified requires:
+
+- physical room;
+- stable Room ID;
+- current exact-room verification;
+- exact evidence;
+- correct scope;
+- not expired.
+
+Not equivalent to:
+
+```text
+exact_room_bookable
+```
+
+---
+
+# 45. CLOUD VIEW
+
+Keep current rubric.
+
+Cloud View = physical view.
+
+Not:
+
+- overall quality;
+- weather;
+- review;
+- popularity;
+- sponsor score.
+
+---
+
+# 46. ROOM QUALITY
+
+Separate dimensions:
+
+```text
+Cleanliness
+Soundproof
+Heating
+Hot Water
+Wi-Fi
+Bathroom
+Room Accuracy
+Comfort optional
+```
+
+No overall score in initial V2.1.
+
+---
+
+# 47. PROS / CONS
+
+Public:
+
+```text
+Điểm chúng tôi thích
+Điều bạn nên biết
+```
+
+Must remain factual.
+
+Partner cannot edit score to remove inconvenient truth without review process.
+
+---
+
+# 48. ROAD VERIFIED
+
+Keep property-level.
+
+Do not change to Room score.
+
+Public:
+
+- Grade;
+- car access;
+- motorbike access;
+- sedan;
+- parking;
+- walk;
+- last verified.
+
+---
+
+# 49. PRICE
+
+Public customer sees:
+
+```text
+SELL PRICE
+```
+
+Internal future:
 
 ```text
 NET COST
@@ -980,27 +1528,11 @@ MARKET REFERENCE
 SELL PRICE
 ```
 
-Current:
-
-```text
-room_rate_rules.price_vnd
-```
-
-should be treated as public/commercial sell price unless migration docs say otherwise.
-
-Do not overload one field to represent all three.
-
-Future tables may include:
-
-```text
-supplier_cost_rules
-market_reference_rates
-package_component_costs
-```
+Do not expose net cost.
 
 ---
 
-# 19. PRICE CONFIDENCE
+# 50. PRICE CONFIDENCE
 
 Keep:
 
@@ -1011,47 +1543,20 @@ reference
 unknown
 ```
 
-Price confidence is about fact freshness.
-
-It is separate from:
+Consumer copy:
 
 ```text
-commercial margin
-supplier cost
-discount
-package saving
+Giá đã xác minh
+Giá cập nhật gần đây
+Giá tham khảo
+Chưa có giá cập nhật
 ```
-
-Never call Net Cost "verified price" publicly.
 
 ---
 
-# 20. AVAILABILITY ARCHITECTURE V2
+# 51. AVAILABILITY
 
-Current `room_inventory` remains.
-
-For MVP:
-
-```text
-room_type_id
-date
-available_quantity
-```
-
-is correct.
-
-Do not delete.
-
-Future exact room support can add:
-
-```text
-physical_room_status
-physical_room_assignment
-```
-
-without replacing pooled inventory.
-
-Availability must continue to distinguish:
+Keep:
 
 ```text
 live
@@ -1061,263 +1566,179 @@ unknown
 sold_out
 ```
 
-Unknown != available.
+Consumer:
 
-Stale sold out != sold out forever.
+```text
+Còn phòng
+Đã xác nhận hôm nay
+Cần xác nhận lại
+Chưa có dữ liệu
+Hết phòng
+```
+
+Do not infer from quantity.
 
 ---
 
-# 21. INVENTORY MODES
+# 52. PRICE != AVAILABILITY
 
-Target support later:
+A price does not imply room available.
 
-```text
-POOLED
-EXACT_UNIT
-ALLOTMENT
-MANUAL_CONFIRMATION
-```
+Availability does not imply booking confirmed.
 
-## Pooled
-
-Supplier says:
-
-```text
-Deluxe còn 3
-```
-
-## Exact unit
-
-Supplier supports:
-
-```text
-TX-MAY-203 available
-```
-
-## Allotment
-
-Platform holds:
-
-```text
-5 units / night
-```
-
-with release period.
-
-## Manual confirmation
-
-No trusted real-time inventory.
-
-System accepts request then supplier confirms.
-
-MVP can remain manual/pooled.
-
-Do not build guaranteed allotment early.
+Keep separation across UI and logic.
 
 ---
 
-# 22. SUPPLIER DOMAIN
+# 53. DESTINATION
 
-Add later:
-
-```text
-suppliers
-```
-
-Supplier is commercial/service provider.
-
-Types:
+Current V2 Phase 1 established:
 
 ```text
-PROPERTY_OPERATOR
-BUS_OPERATOR
-MOTORBIKE_OPERATOR
-TRANSFER_PROVIDER
-ACTIVITY_PROVIDER
-GUIDE
-FOOD_PROVIDER
-OTHER
+destinations
 ```
 
-Private fields:
+Hierarchy:
 
-- legal / operator name;
-- phone;
-- Zalo;
-- payment details;
-- contract status;
-- notes.
+```text
+Destination
+→ Property
+→ Room Type
+→ Physical Room
+```
 
-Never expose supplier private contact via public DTO by default.
-
-Property operator supplier can be linked to property.
+Keep.
 
 ---
 
-# 23. PARTNER DOMAIN
+# 54. PHYSICAL ROOM
 
-Partner is commercial relationship, not public property.
+Purpose:
 
-Suggested:
+- Room ID;
+- exact evidence;
+- exact verification;
+- future assignment.
 
-```text
-partners
-partner_properties
-partner_tiers
-partner_terms
-```
-
-Tiers:
-
-```text
-standard
-verified
-preferred
-cloud_partner
-exclusive
-```
-
-Partner tier may influence:
-
-- distribution;
-- commercial access;
-- packages;
-- ranking within allowed rules.
-
-Partner tier MUST NOT change:
-
-- Cloud View score;
-- verified facts;
-- review score.
-
-Sponsored != Verified.
+Do not move rates/availability to physical room prematurely.
 
 ---
 
-# 24. PARTNER VALUE
+# 55. MEDIA SCOPE
 
-Platform sells partner:
+Media owner:
 
-- content production;
-- 360;
-- verification;
-- SEO;
-- social distribution;
-- bookings;
-- support;
-- packages;
-- data;
-- channel revenue.
+```text
+Property
+Room Type
+Physical Room
+```
 
-Do not pitch only:
+Public scope label:
 
-> commission.
+```text
+Khu chung
+Loại phòng
+Đúng phòng
+```
 
-Commercial model can combine:
-
-- room margin;
-- supplier commission;
-- package margin;
-- promoted listing;
-- premium services.
+No ambiguous exact-room proof.
 
 ---
 
-# 25. MOTORBIKE INTEGRATION ARCHITECTURE
+# 56. 360
 
-Do not copy Biker fleet into Stay.
-
-Biker remains source-of-truth for:
-
-- bike identity;
-- plate;
-- maintenance;
-- fleet status;
-- rental operations.
-
-Stay Travel Commerce needs a Motorbike Service Adapter.
-
-Phase 1 MVP adapter can support:
+360 can be:
 
 ```text
-manual_confirmation
-external_ref
-deep_link
+Room Interior
+Actual View Position
+Common Area
 ```
 
-Later:
-
-```text
-availability API
-reservation API
-webhook
-```
-
-Never:
-
-```text
-shared database joins
-shared service-role key
-```
-
-Stay booking item stores:
-
-```text
-provider = taxua_biker
-external_reference
-supplier_confirmation_state
-```
-
-not Biker fleet rows.
+Public label must match scope.
 
 ---
 
-# 26. BUS / TRANSPORT DOMAIN
+# 57. SUPPLIER
 
-Target entities:
+Future private entity.
 
-```text
-bus_operators
-bus_routes
-bus_trips
-bus_stops
-bus_fares
-bus_inventory
-```
-
-MVP may use manual confirmation.
-
-Required data:
-
-- operator;
-- vehicle type;
-- departure;
-- pickup;
-- drop-off;
-- duration;
-- net cost;
-- sell price;
-- cancellation;
-- contact;
-- confirmation method.
-
-Do not block package MVP waiting for realtime bus API.
+Never mix supplier private contact into public property DTO by default.
 
 ---
 
-# 27. GENERIC SERVICE CATALOG
+# 58. PARTNER
 
-To avoid hard-coding Room + Bus + Bike:
+Commercial relation.
 
-add generic service abstraction later.
+Partner tier independent from factual verification.
+
+---
+
+# 59. PARTNER TIERS
 
 Possible:
 
 ```text
-services
+Standard
+Verified
+Preferred
+Cloud Partner
+Exclusive
 ```
 
-Types:
+Do not let tier change:
+
+- Cloud View;
+- quality;
+- review;
+- verification.
+
+---
+
+# 60. SPONSORED RULE
+
+Sponsored placement must be labeled.
+
+Sponsored cannot buy verification.
+
+---
+
+# 61. MOTORBIKE
+
+Trip component.
+
+Provider:
+
+```text
+taxua_biker
+```
+
+Biker remains operational source-of-truth.
+
+---
+
+# 62. BUS
+
+Future structured:
+
+- operator;
+- route;
+- time;
+- pickup;
+- dropoff;
+- price;
+- status;
+- confirmation mode.
+
+Manual MVP acceptable.
+
+---
+
+# 63. GENERIC SERVICE COMPONENT
+
+Future types:
 
 ```text
 ROOM
@@ -1331,280 +1752,114 @@ SERVICE
 CUSTOM
 ```
 
-Each service has:
-
-- supplier;
-- destination;
-- availability model;
-- pricing model;
-- confirmation model;
-- public metadata.
-
-Room can remain a specialized domain and be referenced as a service component.
-
-Do not force every room fact into generic services table.
+Do not hard-code package only room+bus+bike.
 
 ---
 
-# 28. PACKAGE DOMAIN
+# 64. PACKAGE
 
-Add:
+Package must own value.
 
-```text
-trip_packages
-package_components
-```
+Not just visual bundle.
 
-TripPackage:
+Value:
 
-```text
-id
-destination_id
-slug
-name
-duration_days
-duration_nights
-package_type
-description
-target_margin_bps
-publish_status
-is_active
-```
-
-Component:
-
-```text
-id
-package_id
-component_type
-service_ref
-quantity
-required
-optional
-display_order
-pricing_strategy
-```
-
-Package components must be flexible.
-
-No hard-coded assumption:
-
-```text
-Room + Bus + Bike only
-```
+- coordination;
+- combined pricing;
+- verified component;
+- support;
+- trip dashboard;
+- supplier confirmation.
 
 ---
 
-# 29. PACKAGE TYPES
+# 65. PACKAGE EXAMPLES
 
-Initial consumer concepts:
+Consumer concepts:
 
 ```text
-Tà Xùa Easy Trip
+Tà Xùa Easy
 Cloud Hunter
-Ultimate Cloud
+Cloud Select
 ```
 
-These names are product examples, not DB enums forever.
-
-Package recommendation criteria can include:
-
-- Cloud View;
-- budget;
-- couple/group;
-- road access;
-- verified room;
-- motorbike;
-- transport.
+Not permanent DB enums.
 
 ---
 
-# 30. PACKAGE PRICING
+# 66. PACKAGE ECONOMICS
 
-Package price is not simple sum of public retail.
-
-Need support:
+Private:
 
 ```text
-component net cost
-component market reference
-component sell allocation
-package sell price
-target margin
-```
-
-Margin equation:
-
-```text
-Selling Price = Cost / (1 - Target Margin)
-```
-
-All money:
-
-integer VND.
-
-Margin percentage can use basis points:
-
-```text
-2500 = 25.00%
-```
-
-Avoid floating-point financial storage.
-
----
-
-# 31. PACKAGE ECONOMICS
-
-For each trip/package quote later calculate:
-
-```text
-Gross Booking Value
-Supplier Cost
-Variable Cost
-Discount
-Payment Fee
-Refund
+Component Cost
+Package Cost
+Sell Price
 Gross Contribution
 Gross Margin
 ```
 
-Primary business optimization:
+All integer VND.
 
-# CONTRIBUTION PER TRIP
-
-not:
-
-# PROFIT PER ROOM
+Margin bps preferred.
 
 ---
 
-# 32. TRIP FINDER / DECISION ENGINE
+# 67. TRIP FINDER
 
-Search remains useful.
+Homepage/decision entry:
 
-Do not remove `/tim-phong`.
-
-But homepage primary flow evolves into:
-
-# TÌM CHUYẾN ĐI PHÙ HỢP
+```text
+Bạn muốn trải nghiệm Tà Xùa như thế nào?
+```
 
 Inputs:
 
-```text
-dates
-guests
-budget
-travel style
-cloud/view preference
-couple/group
-road preference
-transport needed?
-motorbike needed?
-privacy
-sunrise
-amenities
-```
+- dates;
+- guests;
+- budget;
+- cloud preference;
+- view from bed;
+- couple/group;
+- road;
+- privacy;
+- transport;
+- bike.
 
 Output:
 
 ```text
-Top 3 Trip Options
+3 lựa chọn phù hợp
 ```
-
-not:
-
-```text
-83 homestays
-```
-
-Recommendation v1 should be deterministic.
-
-No ML required.
-
-No AI hallucination.
 
 ---
 
-# 33. SEARCH ENGINE VS DECISION ENGINE
+# 68. TRIP FINDER PRINCIPLE
 
-Keep:
+Ranking according to:
 
-```text
-/tim-phong
-```
-
-for:
-
-- SEO;
-- advanced search;
-- self-directed users.
-
-Add:
-
-```text
-/tim-chuyen-di
-```
-
-or equivalent later for guided recommendation.
-
-Search returns inventory.
-
-Decision Engine returns opinionated options.
-
-Both can share core data.
-
----
-
-# 34. RECOMMENDATION V1
-
-Input normalized.
-
-Score components can include:
-
-- requirement match;
-- current availability;
-- price budget fit;
-- Cloud View;
-- Room Verified;
-- Road fit;
-- exact room evidence;
+- user intent;
+- verified data;
+- real price;
+- real availability;
 - package completeness.
 
-Never let partner payment alter Verified score.
-
-Sponsored options must be labeled.
-
-Avoid opaque AI language.
-
-Explain:
-
-> Vì sao chúng tôi đề xuất lựa chọn này.
+Not commission only.
 
 ---
 
-# 35. BOOKING V2
+# 69. BOOKING
 
-Booking becomes trip-level.
-
-Add:
+Future trip-level.
 
 ```text
-bookings
-booking_items
-booking_events
+Booking
+→ Booking Items
 ```
 
-Booking:
+---
 
-- customer;
-- trip dates;
-- currency;
-- total;
-- status;
-- private token;
-- source attribution.
-
-BookingItem:
+# 70. BOOKING ITEM TYPES
 
 ```text
 ROOM
@@ -1617,30 +1872,19 @@ GUIDE
 OTHER
 ```
 
-Each item stores:
-
-- supplier;
-- external ref;
-- quantity;
-- unit snapshot;
-- cost snapshot;
-- sell snapshot;
-- confirmation state;
-- cancellation policy snapshot.
-
 ---
 
-# 36. BOOKING STATUSES
+# 71. BOOKING STATUS
 
-Long-term status model:
+Target:
 
 ```text
 DRAFT
 PENDING_PAYMENT
 PAID
 PENDING_SUPPLIER_CONFIRMATION
-CONFIRMED
 PARTIALLY_CONFIRMED
+CONFIRMED
 READY_TO_TRAVEL
 IN_PROGRESS
 COMPLETED
@@ -1649,17 +1893,9 @@ REFUNDED
 FAILED
 ```
 
-MVP may start with subset.
-
-Do not create uncontrolled status strings.
-
-Use tested state machine.
-
 ---
 
-# 37. BOOKING ITEM CONFIRMATION
-
-Each item can have:
+# 72. BOOKING ITEM STATUS
 
 ```text
 pending
@@ -1670,35 +1906,17 @@ cancelled
 failed
 ```
 
-Trip can be:
+---
 
-```text
-PARTIALLY_CONFIRMED
-```
+# 73. PAYMENT != CONFIRMATION
 
-if some components remain pending.
-
-Example:
-
-```text
-ROOM        CONFIRMED
-MOTORBIKE   CONFIRMED
-BUS         PENDING
-```
-
-Admin dashboard must show unresolved components.
+Payment success does not imply supplier confirmed.
 
 ---
 
-# 38. SUPPLIER TASKS
+# 74. SUPPLIER TASK
 
-MVP can create:
-
-```text
-supplier_tasks
-```
-
-Examples:
+Future:
 
 ```text
 Confirm Room
@@ -1707,448 +1925,286 @@ Prepare Motorbike
 Arrange Pickup
 ```
 
-Task fields:
-
-- booking item;
-- supplier;
-- due time;
-- state;
-- owner;
-- notes.
-
-Avoid external workflow engine initially.
-
 ---
 
-# 39. ROOM BOOKING ALLOCATION
+# 75. MY TRIP
 
-Booking item can initially reserve:
+Future customer dashboard:
 
-```text
-room_type_id
-```
-
-Optional later:
-
-```text
-physical_room_id
-```
-
-Rules:
-
-If product sold as Exact Room Guaranteed:
-
-physical_room assignment becomes required before final confirmation.
-
-If product is pooled:
-
-room_type confirmation is sufficient.
-
-Do not claim exact room guarantee if not assigned.
-
----
-
-# 40. BOOKING TOKEN SECURITY
-
-Keep current intended pattern:
-
-- 32 random bytes;
-- base64url raw token;
-- SHA-256 stored;
-- raw token never stored;
-- private route noindex;
-- allow-listed DTO;
-- server-only lookup.
-
-Trip dashboard later uses same security pattern.
-
----
-
-# 41. PAYMENT
-
-Not required in first alignment phase.
-
-Future support:
-
-```text
-deposit
-full payment
-bank transfer
-QR
-online payment
-```
-
-Store:
-
-```text
-deposit_amount
-balance_due
-balance_due_date
-```
-
-Do not design payment state only around one provider.
-
----
-
-# 42. PAYMENT ≠ SUPPLIER CONFIRMATION
-
-A paid trip may still be:
-
-```text
-PENDING_SUPPLIER_CONFIRMATION
-```
-
-Flow:
-
-```text
-payment
-→ supplier tasks
-→ item confirmation
-→ trip confirmed
-```
-
-Do not show "Confirmed" merely because payment succeeded.
-
----
-
-# 43. CANCELLATION
-
-Cancellation can differ by item.
-
-Snapshot policy per booking item.
-
-Example:
-
-```text
-Room: D-7 free
-Bus: non-refundable
-Bike: D-1 free
-```
-
-Refund engine later sums item-level result.
-
-Do not hard-code one booking-wide cancellation percentage.
-
----
-
-# 44. TRIP DASHBOARD
-
-Customer page:
-
-# MY TÀ XÙA TRIP
-
-Contains:
-
-- booking code;
-- dates;
+- booking;
 - room;
-- exact room if assigned;
-- verified evidence;
+- exact room;
+- media;
 - bus;
-- pickup;
 - motorbike;
+- pickup;
 - itinerary;
-- map;
-- weather/cloud later;
+- balance;
 - support;
-- payment balance;
-- supplier confirmation state.
-
-This becomes major anti-circumvention utility.
+- status.
 
 ---
 
-# 45. CONTENT STRATEGY
+# 76. ANTI-CIRCUMVENTION
 
-Do not produce only:
+Do not hide legitimate facts.
 
-> Review Homestay ABC.
+Build value stack.
 
-Produce platform-centered content:
+---
 
-- 5 phòng thật sự nhìn được mây từ giường;
-- phòng Cloud View 8+ dưới ngân sách;
-- view đẹp nhưng cách âm yếu;
-- phòng tốt cho couple;
-- phòng dễ đi ô tô.
+# 77. GUARANTEE
 
-CTA:
+Future Room Match Guarantee.
+
+Do not launch legal guarantee before operations/policy.
+
+---
+
+# 78. CLOUD INTELLIGENCE
+
+Keep separate:
 
 ```text
-Xem View Thật
-Xem 360
-Kiểm tra tình trạng
-Xem các phòng tương tự
-Tìm trip phù hợp
+Cloud View
+```
+
+and future:
+
+```text
+Cloud Forecast
 ```
 
 ---
 
-# 46. SEO STRATEGY V2
-
-Keep:
-
-- property pages;
-- room type pages;
-- SEO landings.
-
-Add later:
-
-- physical-room profiles where enough unique content;
-- comparison pages;
-- trip pages;
-- itinerary pages;
-- transport pages;
-- verified guides.
-
-Do not generate thousands of thin exact-room pages automatically.
-
-A physical-room page should index only if it has unique substantive content.
-
----
-
-# 47. HOMEPAGE V2 DIRECTION
-
-Future hero:
-
-# Đi Tà Xùa nhưng không biết phòng nào thật sự nhìn thấy mây?
-
-Sub:
-
-> Chúng tôi kiểm tra phòng thực tế, quay 360°, đánh giá view và giúp bạn ghép cả chuyến đi.
-
-Primary CTA:
-
-# TÌM CHUYẾN ĐI PHÙ HỢP
-
-Secondary:
-
-# XEM PHÒNG ĐÃ XÁC MINH
-
-Do not change homepage purely cosmetically before core domains support the promise.
-
----
-
-# 48. TRUST SYSTEM
-
-Non-negotiable:
-
-Sponsored != Verified.
-
-Partner tier != score.
-
-Payment != ranking truth.
-
-Cloud View cannot be purchased.
-
-Verification cannot be purchased.
-
-Ads may influence placement only when labeled:
-
-```text
-Sponsored
-```
-
-and never alter factual score.
-
----
-
-# 49. GUARANTEE
-
-Future:
-
-# ROOM MATCH GUARANTEE
-
-Possible promise:
-
-If delivered room materially differs from the verified booked room/room class/view conditions:
-
-- support;
-- alternative room;
-- voucher;
-- partial refund according to policy.
-
-Do not launch Guarantee before operational process and financial rules exist.
-
-No weather guarantee.
-
----
-
-# 50. CLOUD ALERT
+# 79. CLOUD ALERT
 
 Future retention feature.
 
-Input:
-
-- preferred dates;
-- budget;
-- guests;
-- room needs.
-
-When environmental forecast indicates good window:
-
-notify customer.
-
-Show real:
-
-- verified room availability;
-- bike availability;
-- bus seat data if available.
-
-No fake urgency.
+No false certainty.
 
 ---
 
-# 51. CLOUD FORECAST
+# 80. REVIEW
 
-Future separate from Cloud View.
+Future verified context.
 
-Uses weather signals.
+Dimensions can include:
 
-Possible public output:
-
-```text
-Low
-Medium
-High potential
-```
-
-Do not claim certainty.
-
-No:
-
-```text
-92% chắc chắn có mây
-```
-
-without validated statistical model.
-
----
-
-# 52. REVIEW SYSTEM
-
-Review should support room/exact room context.
-
-Future dimensions:
-
-- room accuracy;
-- view accuracy;
+- accuracy;
 - cleanliness;
 - soundproof;
-- staff;
 - road;
-- WiFi;
-- bathroom;
-- value.
-
-Important question:
-
-> View thực tế có giống bằng chứng không?
-
-This creates verification feedback loop.
+- view accuracy.
 
 ---
 
-# 53. ATTRIBUTION
-
-Track:
+# 81. CONTENT PILLARS
 
 ```text
-content_source
-campaign
-video_id
-landing
-search
-room_viewed
-trip_option
-package_viewed
-checkout
-booking
-revenue
-gross_contribution
+VERIFY
+COMPARE
+KNOW BEFORE YOU GO
+BUILD THE TRIP
+LOCAL REALITY
 ```
-
-Do not store unnecessary sensitive tracking.
-
-Use first-party attribution where possible.
 
 ---
 
-# 54. KEY METRICS
+# 82. CONTENT HOOKS
+
+Examples:
+
+```text
+Phòng này view 9/10, nhưng có một nhược điểm bạn nên biết.
+```
+
+```text
+Đừng chọn homestay chỉ bằng ảnh.
+```
+
+```text
+Nếu có 2 triệu/người cho 2N1Đ, tôi sẽ ghép chuyến thế này.
+```
+
+---
+
+# 83. SOCIAL CTA
+
+```text
+Xem 360°, điểm thẩm định và tình trạng ngày bạn đi trên website.
+```
+
+---
+
+# 84. SEO CLUSTERS
+
+Accommodation acquisition ưu tiên vocabulary người dùng:
+
+- homestay Tà Xùa;
+- homestay săn mây Tà Xùa;
+- homestay view đẹp Tà Xùa;
+- homestay view mây Tà Xùa;
+- homestay view từ giường Tà Xùa;
+- homestay Tà Xùa cho couple;
+- homestay Tà Xùa cho nhóm;
+- homestay Tà Xùa có chỗ đỗ ô tô;
+- homestay Tà Xùa giá phù hợp;
+- khách sạn Tà Xùa;
+- bungalow Tà Xùa;
+- phòng Tà Xùa;
+- review phòng thực tế Tà Xùa.
+
+Trip:
+
+- Tà Xùa 2N1Đ;
+- combo Tà Xùa;
+- xe Hà Nội Tà Xùa;
+- thuê xe máy Tà Xùa;
+- săn mây Tà Xùa;
+- Tà Xùa đi tháng nào.
+
+SEO moat không phải số lượng listicle. Ưu tiên first-party verified data:
+Cloud View, View From Bed, 360, Room ID, Road Verified, Price, Availability và Room Quality.
+
+---
+
+# 85. SEO CONTENT PRINCIPLE
+
+Each page should contain unique verified data.
+
+Avoid thin keyword pages.
+
+---
+
+# 86. STRUCTURED DATA
+
+Use factual:
+
+- LodgingBusiness;
+- Hotel;
+- offer only when real;
+- no fake rating;
+- no fake review.
+
+---
+
+# 87. ANALYTICS EVENTS
+
+Future:
+
+```text
+trip_finder_started
+trip_recommended
+property_viewed
+room_verified_viewed
+video_360_opened
+package_viewed
+bike_added
+bus_added
+checkout_started
+deposit_paid
+booking_confirmed
+trip_completed
+review_submitted
+partner_lead
+```
+
+---
+
+# 88. BUSINESS METRIC
 
 North Star:
 
 # COMPLETED TRIP BOOKINGS
 
-Secondary:
+---
+
+# 89. SECONDARY METRICS
+
+- Room Nights;
+- GBV;
+- AOV;
+- Contribution per Trip;
+- Gross Margin;
+- Package Attach Rate;
+- Motorbike Attach Rate;
+- Bus Attach Rate;
+- Availability Freshness;
+- Verification Coverage;
+- Conversion.
+
+---
+
+# 90. MULTI-DESTINATION
+
+Architecture reusable.
+
+UI Tà Xùa-specific.
+
+Do not hard-code data model.
+
+---
+
+# 91. DATA OWNERSHIP
 
 ```text
-Room Nights
-GBV
-AOV
-Gross Contribution
-Gross Margin
-Conversion Rate
-Cancellation Rate
-Repeat Rate
-Package Attach Rate
-Motorbike Attach Rate
-Bus Attach Rate
-Partner Retention
-Inventory Utilization
+Property facts → Stay/Trip property domain
+Cloud View → verification
+Road → verification
+Sell Price → pricing
+Availability → inventory
+Bike Fleet → Biker
+Package → Trip
+Booking → Trip
 ```
 
 ---
 
-# 55. PARTNER HEALTH
+# 92. SECURITY
 
-Future score:
+RLS business tables.
 
-- rate competitiveness;
-- availability freshness;
-- confirmation speed;
-- cancellations;
-- accuracy;
-- customer rating;
-- circumvention incidents.
+Anon explicit reads.
 
-This can influence commercial ranking.
+No public service-role.
 
-But verification scores remain factual.
+App role from app_metadata.
+
+No `select("*")` in sensitive public paths.
 
 ---
 
-# 56. MULTI-DESTINATION DESIGN
+# 93. COMMERCIAL PRIVATE DATA
 
-Do not hard-code Tà Xùa deeply in relational model.
+Never public:
 
-Reusable hierarchy:
-
-```text
-Destination
-→ Property
-→ Room Type
-→ Physical Room
-→ Verification
-```
-
-and:
-
-```text
-Destination
-→ Service
-→ Package
-```
-
-UI can remain Tà Xùa-specific initially.
-
-Architecture should not require total rewrite to add Mộc Châu.
+- net cost;
+- supplier margin;
+- commission;
+- supplier bank;
+- private contact;
+- internal note;
+- gross contribution;
+- contract.
 
 ---
 
-# 57. ADMIN TARGET MODULES
+# 94. CUSTOMER PRIVATE DATA
 
-Long-term Admin:
+Booking/customer info only:
+
+- authenticated;
+- token;
+- authorized staff.
+
+No PII in public URL query.
+
+---
+
+# 95. ADMIN
+
+Long-term modules:
 
 ```text
 Dashboard
@@ -2157,1001 +2213,488 @@ Properties
 Room Types
 Physical Rooms
 Verification
-Media / 360
+Media
 Rates
 Availability
 Suppliers
 Partners
 Services
-Motorbike Integration
+Motorbike
 Bus
 Packages
-Trip Finder Rules
 Bookings
 Supplier Tasks
-Customers
 Payments
 Reviews
 Content
-Attribution
 Analytics
 Settings
 ```
 
-Do not add empty nav items before feature implementation.
+Do not add empty nav.
 
 ---
 
-# 58. DATA OWNERSHIP
+# 96. ADMIN UX
 
-Facts must have clear owner.
+Mobile-friendly for:
 
-Examples:
-
-```text
-Property facts → Stay property domain
-Cloud View → Stay verification domain
-Road → Stay verification domain
-Sell room rate → Stay pricing domain
-Room availability → Stay inventory
-Bike fleet state → Biker
-Bus seat state → Bus supplier / Stay mirror
-Package economics → Stay Travel Commerce
-Booking → Stay
-```
-
-Avoid duplicate competing source-of-truth.
+- availability;
+- verification;
+- confirmation;
+- booking tasks;
+- support.
 
 ---
 
-# 59. SECURITY PRINCIPLES
+# 97. COMPONENT ARCHITECTURE
 
-Keep:
-
-- RLS on business tables;
-- anon explicit reads;
-- no anonymous writes;
-- no service-role in public flow;
-- app_metadata roles;
-- public DTOs;
-- internal cost fields private;
-- supplier contact private;
-- payment details private;
-- booking token hashed;
-- no PII in referral URL.
-
-Travel Commerce adds sensitive commercial data.
-
-Never expose:
+Reusable:
 
 ```text
-net cost
-supplier bank
-internal margin
-supplier direct contact
-internal task notes
-staff IDs
+StaySearch
+StayFilters
+PropertyCard
+RoomCard
+VerificationBadge
+VerificationSummary
+CloudScoreBadge
+Media360Viewer
+ProsConsBlock
+RateAvailabilityWidget
+AddToTripButton
+StayBookingItemSummary
+PartnerBadge
 ```
 
-publicly.
+Do not tie to old Stay homepage.
 
 ---
 
-# 60. COMMERCIAL DATA SECURITY
+# 98. CURRENT PUBLIC BRAND MIGRATION
 
-Public:
+Do not merely replace text.
 
-```text
-sell price
-market comparison if intentional
-package price
-verified facts
-public supplier/property brand
-```
+Need:
 
-Private:
-
-```text
-net rate
-supplier cost
-target margin
-gross contribution
-contract terms
-partner tier internal reason
-```
-
-Use separate views/DTO.
-
-Do not rely only on UI hiding.
+- master layout;
+- logo;
+- header;
+- footer;
+- homepage;
+- Stay landing;
+- routes;
+- metadata;
+- redirect plan;
+- design tokens.
 
 ---
 
-# 61. MIGRATION DISCIPLINE V2
+# 99. ADMIN PUBLIC NAV RULE
 
-Existing migrations 001–008 are immutable if remote-applied.
+Remove Admin from public header.
 
-Every V2 phase:
+Admin remains direct route.
+
+---
+
+# 100. LEGAL/TRUST PAGES BEFORE LAUNCH
+
+Need review:
+
+- booking terms;
+- payment;
+- cancellation/refund;
+- Room Match Guarantee;
+- bike rental;
+- transport;
+- privacy;
+- partner rules;
+- sponsored disclosure;
+- complaints/support.
+
+---
+
+# 101. LAUNCH PRIORITY
+
+## P0
+
+- Master brand;
+- Homepage;
+- Stay;
+- Verified Room;
+- Rate;
+- Availability;
+- Motorbike;
+- Package;
+- Booking;
+- Admin confirmation;
+- policies.
+
+## P1
+
+- Trip Finder;
+- 360 improvements;
+- comparison;
+- bus;
+- My Trip;
+- reviews;
+- attribution.
+
+## P2
+
+- Partner dashboard;
+- Cloud Alert;
+- loyalty;
+- allotment;
+- recommendation improvement.
+
+## P3
+
+- AI assistant;
+- B2B portal;
+- multi-destination expansion;
+- APIs.
+
+---
+
+# 102. ROADMAP V2.1
+
+Historical:
 
 ```text
-npx.cmd supabase migration list
+Legacy 001–008 ✅
+V2 Phase 1 / migration 009 ✅
+V2 Phase 2 / migration 010 ✅
 ```
 
-must confirm expected Local = Remote.
-
-New migration:
+Active roadmap:
 
 ```text
-db push --dry-run
+V2 Phase 2.5
+MASTER BRAND + PUBLIC UX MIGRATION
 ```
-
-must show only expected new migrations.
 
 Then:
 
 ```text
-db push
-migration list
-db lint --linked
+V2 Phase 3
+Supplier + Partner Foundation
 ```
-
-Never:
 
 ```text
-db reset
-migration repair
-drop schema
-force history
+V2 Phase 4
+Commercial Economics
 ```
 
-without explicit owner approval.
+```text
+V2 Phase 5
+Motorbike Integration
+```
+
+```text
+V2 Phase 6
+Package Commerce
+```
+
+```text
+V2 Phase 7
+Trip Finder
+```
+
+```text
+V2 Phase 8
+Unified Trip Booking
+```
+
+```text
+V2 Phase 9
+Checkout / Deposit / Economics
+```
+
+```text
+V2 Phase 10
+Trip Operations / My Trip
+```
+
+```text
+V2 Phase 11
+Bus / Transfer / Add-ons
+```
+
+```text
+V2 Phase 12
+Growth / Reviews / Cloud / Loyalty / Partner Portal
+```
+
+```text
+V2 Phase 13
+Multi-destination hardening
+```
 
 ---
 
-# 62. QUALITY GATE
-
-Every phase:
-
-```text
-npm run lint
-npm run typecheck
-npm run test
-npm run build
-```
-
-No phase completion if gates fail.
-
-Also:
-
-```text
-git status
-git diff
-git log --oneline
-```
-
-No secret files.
-
-No fake production data.
-
----
-
-# 63. MASTER PLAN V2 ROADMAP
-
-The V2 roadmap restarts numbering from Phase 1.
-
-These phases are NOT the old Phase 1–11.
-
-The previous implementation is treated as:
-
-# LEGACY FOUNDATION COMPLETED
-
-The new Phase 1 begins from the CURRENT repository state.
-
----
-
-# PHASE 1 — ARCHITECTURE ALIGNMENT
-## DESTINATION + PHYSICAL ROOM + EXACT ROOM FOUNDATION
-
-This is the first V2 phase.
-
-It exists specifically because the current system was built around:
-
-```text
-Property
-→ Room Type
-```
-
-and V2 requires:
-
-```text
-Destination
-→ Property
-→ Room Type
-→ Physical Room
-```
-
-## Phase 1 goals
-
-1. Add Destination.
-2. Add Physical Room / Room ID.
-3. Make current domains compatible with exact-room data.
-4. Preserve all existing functionality.
-5. Do not yet build Package, Booking, Supplier or Motorbike commerce.
-6. Do not remove room-type pooled inventory.
-7. Do not invalidate migrations 001–008.
-
-## Phase 1 current-code changes
-
-### Database
-
-Create additive migration after 008.
-
-Suggested:
-
-```text
-202608290009_v2_destination_and_physical_rooms.sql
-```
-
-Add:
-
-```text
-destinations
-physical_rooms
-```
-
-Add:
-
-```text
-properties.destination_id
-```
-
-Backfill all existing properties to initial:
-
-```text
-ta-xua
-```
-
-only if existing production property rows exist and the mapping is objectively known.
-
-Do not fabricate property-specific facts.
-
-Initial destination record is infrastructure/business identity, not fake accommodation data.
-
-### properties
-
-Update:
-
-```text
-property schema
-types
-queries
-Admin
-public DTO where destination is needed
-test fixtures
-```
-
-Destination should default to Tà Xùa in current Admin UX but be an actual foreign key.
-
-### physical_rooms
-
-Fields:
-
-```text
-id
-property_id
-room_type_id
-room_code
-display_name
-floor_label
-unit_label
-position_notes
-exact_room_bookable
-is_active
-publish_status
-created_at
-updated_at
-created_by
-updated_by
-```
-
-Constraints:
-
-- same property as room type;
-- unique property + room code;
-- stable code;
-- no hard delete by default.
-
-### media_assets
-
-Add optional:
-
-```text
-physical_room_id
-```
-
-Refactor ownership constraint safely.
-
-Media may belong to exactly one:
-
-```text
-property
-room_type
-physical_room
-```
-
-Do not break existing rows.
-
-### verification
-
-Extend target support.
-
-Existing records remain valid.
-
-New verification may target physical room for:
-
-```text
-room
-cloud_view
-media_360
-```
-
-Do not force all Cloud View to exact room immediately.
-
-Create explicit target resolution.
-
-### public pages
-
-Do not create indexed physical-room pages automatically.
-
-Room-type page can show:
-
-```text
-Các phòng cụ thể đã xác minh
-```
-
-when exact rooms exist.
-
-### Admin
-
-Add:
-
-```text
-/admin/rooms/physical
-```
-
-or property-scoped equivalent.
-
-Staff can:
-
-- create room ID;
-- link room type;
-- set floor;
-- identify exact-room bookability;
-- attach media;
-- start exact-room verification.
-
-### Availability
-
-Current room-type inventory remains unchanged.
-
-Do not move availability to physical room yet.
-
-### Pricing
-
-Current room-type rate remains unchanged.
-
-### Search
-
-Still returns room types.
-
-Optionally enrich with:
-
-```text
-exact_room_verified_count
-```
-
-only if truthfully derived.
-
-### SEO
-
-Do not create thin physical-room pages.
-
-### Tests
-
-Test:
-
-- destination ownership;
-- room code uniqueness;
-- room/room-type property consistency;
-- media exact target;
-- verification exact target;
-- existing room-type flows still pass;
-- existing search/rate/availability unchanged.
-
-### Acceptance
-
-Current public site behaves as before when no physical rooms exist.
-
-New exact-room data is additive.
-
----
-
-# PHASE 2 — VERIFIED ROOM PROFILE V2
-## EXACT ROOM + QUALITY + PROS / CONS
+# 103. V2 PHASE 2 — VERIFIED ROOM PROFILE
 
 Goal:
 
-turn Verified Standard from room-type heavy into exact-room-capable trust layer.
-
-Build:
-
 - Exact Room Verified;
-- exact view evidence;
-- physical-room Cloud View;
-- physical-room 360;
-- Room ID display;
-- strengths;
-- weaknesses;
-- later quality dimensions.
+- Room Quality;
+- Pros/Cons;
+- exact evidence;
+- scope clarity.
 
-Do not merge quality into Cloud View.
-
-Potential new tables:
+Migration expected:
 
 ```text
-room_quality_assessments
-room_profile_notes
+010
 ```
 
-or normalized verification extensions.
-
-Customer UI:
-
-```text
-Room ID
-Cloud View
-View from Bed
-View position
-Direction
-Verification date
-360
-Pros
-Cons
-```
-
-Fallback:
-
-If physical room not assigned:
-
-clearly say verification applies to room type, not exact unit.
-
-Do not overpromise exact-room assignment.
+Do not change brand frontend heavily in this phase except Room Profile UI.
 
 ---
 
-# PHASE 3 — SUPPLIER + PARTNER FOUNDATION
-## COMMERCIAL RELATIONSHIP SEPARATE FROM PUBLIC PROPERTY
+# 104. V2 PHASE 2.5 — MASTER BRAND + PUBLIC UX MIGRATION
 
-Add:
+This is mandatory.
 
-```text
-suppliers
-partners
-partner_properties
-partner_terms
-```
+No database migration required unless unavoidable.
 
-Goals:
+Primary scope:
 
-- private supplier data;
-- commercial relationship;
-- confirmation method;
-- partner tier;
-- cancellation terms;
-- room supplier mapping.
-
-Do not add partner portal yet.
-
-Do not expose owner phone / bank publicly.
-
-Introduce Partner Tier independently from Verification.
+1. Tà Xùa Trip master branding.
+2. New design tokens.
+3. New header/footer.
+4. Homepage Trip.
+5. Current Stay homepage moved to `/stay`.
+6. Stay namespace.
+7. Old URL compatibility.
+8. Metadata/canonical migration.
+9. Remove Admin link from public.
+10. Verified Room visual system.
+11. Trip-service category cards.
+12. Public UX aligned to light-blue visual direction.
 
 ---
 
-# PHASE 4 — COMMERCIAL ECONOMICS
-## NET COST + MARKET REFERENCE + SELL PRICE
+# 105. PHASE 2.5 — BRAND ASSETS
 
-Preserve Phase 5 sell-price engine.
+Temporary brand assets allowed if final vector not ready.
 
-Add private economics.
-
-Potential:
+Need placeholders:
 
 ```text
-supplier_rate_costs
-market_reference_rates
+logo-trip-horizontal.svg
+logo-trip-icon.svg
+logo-trip-white.svg
+favicon
 ```
 
-Do not modify public price semantics silently.
-
-Admin must distinguish:
-
-```text
-Sell Rate
-Net Cost
-Market Reference
-```
-
-Add:
-
-- contribution preview;
-- margin calculation;
-- weekday negotiation support;
-- future package economics primitives.
-
-All integer VND.
-
-No dynamic pricing ML.
+Do not falsely claim legal trademark finality.
 
 ---
 
-# PHASE 5 — MOTORBIKE SERVICE INTEGRATION
-## BIKER AS OPERATIONS SOURCE-OF-TRUTH
+# 106. PHASE 2.5 — DESIGN TOKENS
 
-Do not copy Biker fleet.
+Create centralized tokens.
 
-Build Stay Travel Commerce adapter.
+No scattered hex.
 
-MVP:
+Tokens:
 
 ```text
-motorbike_service_offers
-provider = taxua_biker
-confirmation_mode = manual / external
+--trip-navy
+--trip-teal
+--trip-green
+--trip-sunrise
+--trip-cloud
+--trip-ink
+--trip-border
+--trip-muted
 ```
 
-Optional server integration only if Biker exposes safe API.
-
-Stay can quote/add motorbike to Trip Option.
-
-No shared DB.
-
-No customer PII in public query strings.
-
-Prepare external reference model.
+Use in CSS/theme.
 
 ---
 
-# PHASE 6 — PACKAGE COMMERCE FOUNDATION
-## TRIP PACKAGE + GENERIC COMPONENTS
+# 107. PHASE 2.5 — HEADER
 
-Create:
-
-```text
-trip_packages
-package_components
-```
-
-Support component types:
+Desktop:
 
 ```text
-ROOM
-MOTORBIKE
-BUS
-TRANSFER
-ACTIVITY
-MEAL
-GUIDE
-SERVICE
-CUSTOM
+Logo
+Khám phá
+Lưu trú
+Combo
+Xe khách
+Xe máy
+Cẩm nang
+Về chúng tôi
+CTA
 ```
 
-Initial package examples may be:
+Mobile:
 
-```text
-Easy Trip
-Cloud Hunter
-Ultimate Cloud
-```
-
-Do not hard-code only those.
-
-Build package cost / sell calculation.
-
-No checkout yet.
+hamburger + CTA.
 
 ---
 
-# PHASE 7 — TRIP FINDER / DECISION ENGINE V1
+# 108. PHASE 2.5 — HOMEPAGE ROUTE
 
-Build guided flow.
+`/` becomes Trip homepage.
 
-Inputs:
+Do not break data-dependent sections when no production data.
 
-- dates;
-- guests;
-- budget;
-- view preference;
-- couple/group;
-- road preference;
-- transport;
-- bike;
-- amenities.
-
-Output:
-
-```text
-3 recommended trip options
-```
-
-Deterministic rules only.
-
-Each result shows:
-
-- why recommended;
-- room;
-- verification;
-- availability;
-- price;
-- package components;
-- total trip price.
-
-Do not hallucinate.
-
-Do not hide alternatives.
+Graceful empty state.
 
 ---
 
-# PHASE 8 — UNIFIED TRIP BOOKING
-## BOOKING + BOOKING ITEMS + SUPPLIER CONFIRMATION
+# 109. PHASE 2.5 — `/stay`
 
-Create:
+Existing room search entry migrates here.
 
-```text
-customers
-bookings
-booking_items
-booking_events
-supplier_tasks
-```
-
-Booking is trip-level.
-
-Items support multiple service types.
-
-Reuse secure token pattern.
-
-Snapshot:
-
-- customer;
-- dates;
-- room;
-- pricing lines;
-- inventory state;
-- component costs/sell;
-- package version.
-
-Atomic room availability recheck.
-
-Motorbike/bus can initially use manual confirmation.
-
-No payment required to complete initial MVP request if not ready.
+Preserve query params.
 
 ---
 
-# PHASE 9 — CHECKOUT + DEPOSIT + BOOKING ECONOMICS
+# 110. PHASE 2.5 — COMPATIBILITY
 
-Add:
+Existing routes can remain temporarily as compatibility routes.
 
-```text
-payment records
-deposit
-balance
-payment state
-```
-
-Booking economics:
-
-```text
-GBV
-Supplier Cost
-Discount
-Payment Fee
-Variable Cost
-Gross Contribution
-Gross Margin
-```
-
-Do not expose economics publicly.
-
-Payment success != trip confirmation.
+Do not delete until redirect plan.
 
 ---
 
-# PHASE 10 — TRIP OPERATIONS + CUSTOMER TRIP DASHBOARD
+# 111. PHASE 2.5 — SEO
 
-Build:
+Temporary Vercel still noindex.
 
-```text
-My Tà Xùa Trip
-```
+If final domain not ready:
 
-Show:
+no need full permanent 301 yet.
 
-- booking;
-- component confirmations;
-- room;
-- exact room if assigned;
-- 360;
-- bus;
-- bike;
-- itinerary;
-- support;
-- payment balance;
-- arrival instructions.
-
-Admin operations:
-
-- supplier tasks;
-- unresolved confirmation;
-- upcoming trips;
-- check-in;
-- transport dependencies.
+But prepare redirect map.
 
 ---
 
-# PHASE 11 — BUS + TRANSFER + ADD-ON SERVICES
+# 112. PHASE 2.5 — PUBLIC COPY
 
-Add structured supplier services:
+Replace:
 
-- bus;
-- pickup;
-- transfer;
-- BBQ;
-- photography;
-- guide;
-- trekking;
-- meals.
+```text
+Tà Xùa Stay
+```
 
-Use generic component architecture.
+as master wordmark with:
 
-Do not turn every service into unrelated custom tables unless facts require it.
+```text
+Tà Xùa Trip
+```
 
-Manual confirmation acceptable.
+Stay still appears as category label.
 
 ---
 
-# PHASE 12 — GROWTH / DATA / INTELLIGENCE
+# 113. PHASE 2.5 — EMPTY SERVICE MODULES
 
-Subphases may be separately reviewed:
+No fake booking.
 
-```text
-Review system
-Content attribution
-Cloud Forecast
-Cloud Alert
-Referral
-Loyalty
-Partner Dashboard
-Import expansion
-Analytics
-```
+If package/bus not implemented:
 
-AI only after trusted data.
+use:
 
-Partner extranet only after operational demand.
+- overview content;
+- waitlist;
+- coming soon;
+- external/manual CTA;
+
+or omit.
 
 ---
 
-# PHASE 13 — MULTI-DESTINATION HARDENING
+# 114. V2 PHASE 3 — SUPPLIER / PARTNER
 
-After Tà Xùa proves demand:
-
-- remove remaining hidden Tà Xùa assumptions;
-- destination-aware SEO;
-- destination configuration;
-- destination service catalogs;
-- per-destination policies.
-
-Do not prematurely optimize before Tà Xùa operational fit.
+Add private commercial entities.
 
 ---
 
-# 64. PHASE 1 — DETAILED CODE CHANGE MAP
+# 115. V2 PHASE 4 — ECONOMICS
 
-This section is mandatory for the first implementation after V2 adoption.
-
-The current codebase already has:
-
-```text
-src/features/properties
-src/features/rooms
-src/features/media
-src/features/verification
-src/features/pricing
-src/features/availability
-```
-
-Phase 1 should add:
-
-```text
-src/features/destinations
-src/features/physical-rooms
-```
-
-and modify existing domains.
-
-## Properties modifications
-
-Add:
-
-```text
-destination_id
-```
-
-Update:
-
-- DB migration;
-- types;
-- schemas;
-- data queries;
-- Admin form;
-- public DTO only if useful;
-- test fixtures.
-
-Do not remove `area_name`.
-
-Area is within destination.
-
-## Room Types modifications
-
-Keep `room_types`.
-
-Clarify naming in docs:
-
-```text
-room_type = commercial/pool category
-physical_room = exact unit
-```
-
-Do not rename DB table unless necessary.
-
-## Media modifications
-
-Ownership moves from:
-
-```text
-property XOR room_type
-```
-
-to:
-
-```text
-exactly one of:
-property
-room_type
-physical_room
-```
-
-Update:
-
-- DB check;
-- media schema;
-- admin selector;
-- public queries;
-- verification evidence checks.
-
-## Verification modifications
-
-Current target rules should be extended.
-
-Do not make target polymorphism uncontrolled.
-
-Use explicit columns:
-
-```text
-property_id
-room_type_id
-physical_room_id
-```
-
-with constraints based on verification_type.
-
-Exact Cloud View rules:
-
-If physical_room_id exists:
-
-evidence must target same physical room.
-
-Room-type Cloud View remains allowed for genuinely equivalent pooled rooms.
-
-## 360 viewer
-
-No change to renderer needed.
-
-Only target ownership / labels.
-
-## Pricing modifications
-
-None required in Phase 1 except type references if shared room types change.
-
-Rates remain room_type-level.
-
-## Availability modifications
-
-None required in Phase 1 except compatibility tests.
-
-Inventory remains room_type-level.
-
-## Search modifications
-
-No forced physical-room search.
-
-Search remains room-type-first.
-
-May expose:
-
-```text
-Exact Room Verified available
-```
-
-only as derived badge when facts exist.
-
-## Admin modifications
-
-Add Destination management minimally.
-
-Because only Tà Xùa exists initially, Admin can have:
-
-```text
-Settings / Destination
-```
-
-or dedicated route.
-
-Add physical-room management.
-
-Do not expose irrelevant multi-destination complexity to normal operator workflow.
+Add net cost and market reference.
 
 ---
 
-# 65. PHASE 1 MIGRATION SAFETY
+# 116. V2 PHASE 5 — MOTORBIKE
 
-Expected current migrations:
+Biker integration.
 
-```text
-001
-002
-003
-004
-005
-006
-007
-008
-```
+---
 
-Before Phase 1:
+# 117. V2 PHASE 6 — PACKAGE
+
+Trip Package + component.
+
+---
+
+# 118. V2 PHASE 7 — TRIP FINDER
+
+Decision Engine.
+
+---
+
+# 119. V2 PHASE 8 — BOOKING
+
+Booking + BookingItem + Supplier Task.
+
+---
+
+# 120. V2 PHASE 9 — PAYMENT
+
+Deposit + balance.
+
+---
+
+# 121. V2 PHASE 10 — MY TRIP
+
+Trip Dashboard.
+
+---
+
+# 122. V2 PHASE 11 — TRANSPORT / ADD-ONS
+
+Bus / transfer / activity.
+
+---
+
+# 123. V2 PHASE 12 — GROWTH
+
+Reviews, attribution, Cloud, loyalty.
+
+---
+
+# 124. V2 PHASE 13 — MULTI-DESTINATION
+
+Scale only after Tà Xùa proves.
+
+---
+
+# 125. MIGRATION DISCIPLINE
+
+Before every DB phase:
 
 ```text
 npx.cmd supabase migration list
 ```
 
-All must match Local = Remote.
+Local = Remote expected.
 
-New:
+Then new migration.
 
-```text
-009_v2_destination_and_physical_rooms
-```
-
-Do not edit old migration.
-
-After implementation:
+Then:
 
 ```text
 npx.cmd supabase db push --dry-run
 ```
-
-Only 009 pending.
 
 Then:
 
@@ -3163,919 +2706,997 @@ npx.cmd supabase db lint --linked
 
 ---
 
-# 66. PHASE 1 BACKFILL POLICY
+# 126. OLD MIGRATION IMMUTABILITY
 
-Destination backfill:
-
-If all existing Stay properties are objectively Tà Xùa properties:
-
-safe to backfill destination_id to Tà Xùa.
-
-This does not invent lodging facts.
-
-Physical rooms:
-
-Do NOT auto-generate fake physical room IDs from `room_types.quantity`.
-
-Example forbidden:
+Do not modify applied:
 
 ```text
-Deluxe quantity=4
-→ auto create Room 1,2,3,4
+001–009
 ```
 
-unless real unit identities are known.
-
-No fake Room ID.
-
-Existing room types may have zero physical_room rows.
-
-That is valid.
+and later 010 once applied.
 
 ---
 
-# 67. EXACT ROOM PUBLIC CLAIM RULE
+# 127. NO FAKE PRODUCTION DATA
 
-Badge:
+Allowed:
 
 ```text
-Exact Room Verified
+Destination Tà Xùa
 ```
 
-requires:
+Not allowed:
 
-1. physical_room exists;
-2. current Room verification;
-3. current exact-target evidence;
-4. room code/identity known;
-5. required verification not expired.
-
-Do not derive Exact Room Verified solely from room_type verification.
+- fake rooms;
+- fake score;
+- fake availability;
+- fake price;
+- fake review;
+- fake package;
+- fake customer;
+- fake supplier.
 
 ---
 
-# 68. PACKAGE ANTI-CIRCUMVENTION RULE
+# 128. QUALITY GATES
 
-Do not design package as just UI grouping.
+Every phase:
 
-Package must eventually own value:
+```text
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```
 
-- bundled price;
-- support;
-- verified component selection;
-- operational coordination;
+---
+
+# 129. SECRET SAFETY
+
+No:
+
+- service role committed;
+- .env;
+- password;
+- DB credential;
+- Biker secret.
+
+---
+
+# 130. STOP CONDITIONS
+
+Stop if:
+
+- wrong repo;
+- wrong Supabase;
+- migration mismatch;
+- destructive migration;
+- unclear commercial money semantics;
+- risk to Biker;
+- uncertain backfill;
+- fake data required.
+
+---
+
+# 131. CODEX PHASE PROCESS
+
+Every implementation:
+
+1. Read AGENTS.
+2. Read Master Plan V2.1.
+3. Read architecture.
+4. Read previous phase doc.
+5. Audit.
+6. Migration list.
+7. Implement one phase.
+8. Tests.
+9. Dry-run.
+10. Push migration if applicable.
+11. Smoke test.
+12. Commit.
+13. Push.
+14. Stop.
+
+---
+
+# 132. CODEX FINAL REPORT FORMAT
+
+## Repository
+- branch
+- HEAD
+- commit
+
+## Audit
+- issues
+
+## Migration
+- before
+- new
+- dry-run
+- after
+
+## App
+- routes
+- admin
+- public
+
+## Security
+- anon
+- staff
+- private data
+
+## Tests
+- lint
+- typecheck
+- tests
+- build
+
+## Deployment
+- Vercel
+- noindex
+
+## Scope stop
+- next phase not started
+
+---
+
+# 133. DEFINITIONS
+
+## Stay
+
+Accommodation vertical.
+
+## Property
+
+Accommodation establishment.
+
+## Room Type
+
+Commercial pooled room category.
+
+## Physical Room
+
+Actual physical unit.
+
+## Room ID
+
+Stable business code.
+
+## Exact Room
+
+Specific physical room.
+
+## Verification
+
+Evidence-backed assessment.
+
+## Cloud View
+
+Physical viewing quality.
+
+## Availability
+
+Date-based room inventory state.
+
+## Package
+
+Trip bundle.
+
+## Booking
+
+Trip-level commercial transaction.
+
+---
+
+# 134. TERMINOLOGY — INTERNAL VS CUSTOMER
+
+Internal / technical:
+
+```text
+stay
+room_type
+physical_room
+verification_record
+availability resolver
+rate rule
+```
+
+Customer-facing:
+
+```text
+Stay → Lưu trú
+Property → Cơ sở lưu trú / tên loại hình thực tế
+Room Type → Loại phòng
+Physical Room → Phòng cụ thể / Mã phòng
+Verified Stay → Lưu trú đã thẩm định
+Stay Search → Tìm homestay & phòng
+Verification → Đã thẩm định
+Availability → Tình trạng phòng
+```
+
+Conversational copy có thể dùng:
+
+```text
+chỗ ở
+```
+
+khi tự nhiên, ví dụ:
+
+```text
+Bạn muốn chỗ ở như thế nào?
+```
+
+nhưng không dùng `Chỗ ở` làm taxonomy/navigation chính.
+
+---
+
+# 135. AVAILABILITY COPY
+
+Allowed:
+
+```text
+Còn phòng
+Xác nhận hôm nay
+Cần xác nhận lại
+Chưa có dữ liệu
+Hết phòng
+```
+
+No:
+
+```text
+Realtime
+```
+
+unless truly realtime.
+
+---
+
+# 136. VERIFICATION COPY
+
+Allowed:
+
+```text
+Đã thẩm định
+Cần thẩm định lại
+Phòng mẫu
+Đúng phòng
+```
+
+---
+
+# 137. PRICE COPY
+
+Allowed:
+
+```text
+Từ …
+Tổng chuyến …
+Đã bao gồm …
+```
+
+Only when factual.
+
+---
+
+# 138. WEATHER COPY
+
+Allowed:
+
+```text
+Tiềm năng săn mây: Thấp / Trung bình / Cao
+```
+
+Only future forecast.
+
+Must say:
+
+```text
+không phải cam kết thời tiết
+```
+
+---
+
+# 139. SPONSORED COPY
+
+```text
+Được tài trợ — không ảnh hưởng điểm thẩm định.
+```
+
+---
+
+# 140. CUSTOMER DECISION MODEL
+
+The system should progressively answer:
+
+```text
+Phòng nào?
+Có đúng không?
+View thế nào?
+Điểm yếu gì?
+Giá bao nhiêu?
+Còn phòng không?
+Đi bằng gì?
+Thuê xe gì?
+Combo nào hợp?
+Tổng chuyến bao nhiêu?
+Ai xác nhận?
+Ai hỗ trợ?
+```
+
+---
+
+# 141. PRODUCT MOAT
+
+Moat = data + operations.
+
+Not frontend aesthetics alone.
+
+Data moat:
+
+- exact room;
+- 360;
+- view;
+- road;
+- quality;
+- freshness.
+
+Operations moat:
+
+- Biker;
 - supplier confirmation;
-- trip dashboard.
-
-Otherwise customer can reconstruct it manually.
-
----
-
-# 69. SUPPLIER COMMERCIAL RULE
-
-Net Cost is private.
-
-Never send supplier net rates to browser.
-
-Admin and server-only computations may use net cost.
-
-If public client needs package price:
-
-server provides computed public DTO.
-
-RLS alone is not enough if raw cost columns are in a public view.
+- packages;
+- trip coordination.
 
 ---
 
-# 70. PRICING / PACKAGE SNAPSHOT RULE
+# 142. WHY PUBLIC UX MATTERS
 
-Any final/requested booking must snapshot pricing.
+Backend is not enough.
 
-Do not recalculate historical booking from current rate tables.
-
-Snapshot:
+Public interface must communicate:
 
 ```text
-component
-quantity
-net cost
-sell price
-market reference if used
-subtotal
-discount
-fees
-total
-policy version
-source
+WE KNOW BEFORE YOU GO
+```
+
+without claiming certainty beyond evidence.
+
+---
+
+# 143. WEBSITE FEEL
+
+Customer should feel:
+
+```text
+Đây là nền tảng biết Tà Xùa thật.
+```
+
+Not:
+
+```text
+Đây là một trang tổng hợp homestay.
 ```
 
 ---
 
-# 71. INVENTORY / BOOKING ATOMICITY
+# 144. DO NOT MAKE BRAND GENERIC
 
-When Phase 8 arrives:
+Avoid copy:
 
-```text
-public availability check
-→ atomic booking create re-check
-→ supplier confirmation / inventory lock
-```
+- “Book your stay”;
+- “Best deals”;
+- “Top hotels”;
+- “Amazing experience”.
 
-For trusted inventory:
+Use:
 
-use transaction / row locks.
-
-No overbooking.
-
-For manual confirmation:
-
-booking status must reflect pending confirmation.
-
-Do not pretend inventory is locked.
+- evidence;
+- scope;
+- facts;
+- suitability;
+- transparency.
 
 ---
 
-# 72. LOCAL OPERATIONS FIRST
+# 145. DO NOT OVERPROMISE
 
-MVP can be operationally manual.
+Never:
 
-Examples:
-
-- admin updates availability;
-- admin enters rates;
-- supplier confirms via Zalo;
-- staff clicks confirmed;
-- Biker confirms manually;
-- bus confirms manually.
-
-Do not overbuild APIs before volume.
-
-Core requirement:
-
-system records state accurately.
+```text
+100% có mây
+đảm bảo room view nếu scope không exact
+realtime nếu manual
+best price nếu không prove
+best room nếu subjective
+```
 
 ---
 
-# 73. IMPORT V2
+# 146. EXACT ROOM CONTENT
 
-Current/future import should eventually support:
+When exact:
 
 ```text
-Destinations
-Properties
-RoomTypes
-PhysicalRooms
-Amenities
-Media
-Verification
-Rates
-Inventory
-Suppliers
-Partners
-Packages
+Phòng TX-MAY-203
 ```
 
-Use preview / audit / rollback.
+show:
 
-Do not import Net Cost via public-safe paths.
+- scope;
+- evidence;
+- score;
+- pros;
+- cons;
+- date;
+- 360.
 
 ---
 
-# 74. VERCEL / SEO POLICY
+# 147. ROOM CLASS CONTENT
 
-Keep current:
-
-Temporary `.vercel.app`:
+When sample:
 
 ```text
-noindex,nofollow
+Loại phòng Deluxe
 ```
 
-Final brand domain only enables indexing when:
+say:
 
 ```text
-NEXT_PUBLIC_SITE_URL
+Bằng chứng áp dụng cho loại phòng / phòng mẫu.
 ```
-
-is explicitly configured.
-
-When product architecture changes:
-
-do not accidentally index internal or unfinished Trip routes.
 
 ---
 
-# 75. URL STRATEGY
+# 148. COMPARISON
 
-Existing URLs can remain.
+Future comparison should compare:
 
-Examples:
+- Cloud View;
+- soundproof;
+- road;
+- room accuracy;
+- price;
+- availability;
+- suitability.
 
-```text
-/tim-phong
-/homestay/[slug]
-/homestay/[propertySlug]/phong/[roomSlug]
-/verified
-```
+Not just stars.
+
+---
+
+# 149. RECOMMENDATION EXPLANATION
 
 Future:
 
 ```text
-/tim-chuyen-di
-/trip/[slug]
-/booking/[token]
-/trip-dashboard/[token]
+Vì sao phù hợp với bạn
 ```
 
-Do not expose physical room internal UUID.
-
-If exact-room public URL exists:
-
-use stable room_code slug carefully.
+Explain factors.
 
 ---
 
-# 76. CUSTOMER ACCOUNT
+# 150. NO DARK PATTERN
 
-Do not require account for MVP booking.
+No fake urgency.
 
-Private token flow is acceptable.
+No fake “3 people viewing”.
 
-Account can later add:
+No fake countdown.
 
-- trip history;
-- loyalty;
-- referral;
-- cloud alerts.
-
-Avoid forcing auth early and harming conversion.
+No fake sold-out.
 
 ---
 
-# 77. MOBILE-FIRST OPERATIONS
+# 151. NO COMMISSION-BIASED VERIFIED SCORE
 
-Admin workflows used locally must be usable on phone:
-
-- availability update;
-- supplier confirmation;
-- booking tasks;
-- verification;
-- quick customer support.
-
-Do not design Admin only for desktop.
+Non-negotiable.
 
 ---
 
-# 78. ANALYTICS / EVENT PRINCIPLE
+# 152. CURRENT ADMIN IDENTITY
 
-Events should have clear business purpose.
+Admin remains technical.
 
-Suggested future:
+No public header.
+
+Can use Tà Xùa Trip Admin wording after Phase 2.5.
+
+---
+
+# 153. ADMIN BRAND MIGRATION
+
+Phase 2.5 may change:
 
 ```text
-search_started
-room_viewed
-verification_viewed
-trip_finder_completed
-package_viewed
-booking_started
-booking_submitted
-payment_completed
-trip_confirmed
-trip_completed
+TÀ XÙA STAY Admin
 ```
 
-No invasive surveillance.
+to:
+
+```text
+TÀ XÙA TRIP Admin
+```
+
+but preserve auth.
 
 ---
 
-# 79. AI RULE
+# 154. REPOSITORY NAME
 
-AI is not a source-of-truth.
-
-Future AI Trip Assistant only queries verified/current data.
-
-If no data:
-
-say unknown.
-
-AI cannot create:
-
-- price;
-- availability;
-- Cloud View;
-- supplier confirmation.
-
----
-
-# 80. PRODUCT COPY RULE
-
-Consumer language:
-
-Use:
-
-```text
-phòng
-loại phòng
-phòng cụ thể
-nơi lưu trú
-tình trạng phòng
-giá đã xác minh
-view thật
-chuyến đi
-gói
-```
-
-Avoid exposing:
-
-```text
-room_type
-physical_room
-resolver
-priority
-policy version
-supplier task
-```
-
-outside Admin/debug context.
-
----
-
-# 81. LAUNCH DATA STRATEGY
-
-Do not optimize listing count.
-
-Better:
-
-```text
-20 properties
-50 high-quality rooms
-verified evidence
-accurate price
-fresh availability
-```
-
-than:
-
-```text
-100 properties
-unknown data
-```
-
-Track:
-
-- properties verified;
-- room types verified;
-- exact rooms verified;
-- rooms with 360;
-- fresh price coverage;
-- fresh availability coverage;
-- package-ready properties.
-
----
-
-# 82. TRIP PACKAGE READINESS SCORE
-
-Future internal indicator:
-
-A property/room becomes package-ready when:
-
-- verification current;
-- rate exists;
-- supplier linked;
-- cancellation rule known;
-- availability process known;
-- room policy known.
-
-Do not expose fake score publicly.
-
----
-
-# 83. PARTNER / VERIFIED SEPARATION
-
-Partner may be:
-
-```text
-Preferred
-```
-
-but room may be:
-
-```text
-Unverified
-```
-
-That is allowed.
-
-Room may be:
-
-```text
-Cloud View Verified 9.4
-```
-
-while partner tier is Standard.
-
-Commercial relationship cannot alter factual result.
-
----
-
-# 84. SPONSORED SEPARATION
-
-If paid placement later:
-
-label Sponsored.
-
-Ranking architecture should support:
-
-```text
-organic score
-sponsored placement
-```
-
-as different dimensions.
-
-Do not modify Cloud score for ads.
-
----
-
-# 85. AVAILABILITY FUTURE ALLOTMENT
-
-Current room_inventory represents reported sellable units.
-
-Future allotment requires separate concept.
-
-Do not repurpose available_quantity to mean guaranteed allotment.
-
-Potential:
-
-```text
-inventory_allotments
-release_date
-committed_quantity
-```
-
-Only after volume.
-
----
-
-# 86. STOP-SELL
-
-Future inventory may include:
-
-```text
-stop_sell
-minimum_stay
-```
-
-Do not add until supplier workflow requires it.
-
-Avoid turning MVP into full OTA engine.
-
----
-
-# 87. CUSTOMER GUARANTEE LANGUAGE
-
-Until Room Match Guarantee operational policy exists:
-
-Use:
-
-```text
-Đã xác minh
-View Thật
-```
-
-Do not say:
-
-```text
-Đảm bảo hoàn tiền
-Guaranteed
-100% exactly
-```
-
-unless policy supports it.
-
----
-
-# 88. PUBLIC SUPPLIER CONTACT
-
-Property public contact strategy should be reconsidered as Travel Commerce matures.
-
-Do not suddenly hide current legitimate public information solely for anti-circumvention.
-
-Instead improve platform CTA and utility.
-
-Commercial private supplier contact stays private.
-
----
-
-# 89. REPOSITORY STRATEGY
-
-Keep current repository:
+Keep:
 
 ```text
 TaXuaStay
 ```
 
-Do not create a new Travel repo now.
+for now.
 
-Reason:
+Repo name is technical legacy.
 
-- current code already contains core verified accommodation data;
-- replatform cost unnecessary;
-- Travel Commerce can evolve modularly.
-
-If future org needs separate orchestration service:
-
-decide later with evidence.
+No need rename during product migration.
 
 ---
 
-# 90. CODE MODULE PRINCIPLE
+# 155. SUPABASE PROJECT NAME
 
-Suggested future feature directories:
+Can remain existing.
 
-```text
-src/features/destinations
-src/features/properties
-src/features/rooms
-src/features/physical-rooms
-src/features/verification
-src/features/media
-src/features/pricing
-src/features/availability
-src/features/suppliers
-src/features/partners
-src/features/services
-src/features/motorbike-integration
-src/features/packages
-src/features/recommendations
-src/features/bookings
-src/features/supplier-tasks
-src/features/payments
-src/features/trips
-src/features/reviews
-src/features/attribution
-```
-
-Avoid giant `travel.ts`.
+Do not rename if operationally risky.
 
 ---
 
-# 91. PUBLIC VS INTERNAL DTO PRINCIPLE
+# 156. VERCEL PROJECT
 
-For every new domain ask:
-
-```text
-What may anonymous users know?
-What may customers with token know?
-What may staff know?
-What may admin know?
-```
-
-Create explicit selectors.
-
-Never:
-
-```text
-select("*")
-```
-
-on public/commercial sensitive paths.
+Can remain current technical project until final domain.
 
 ---
 
-# 92. CURRENT CODE DO-NOT-BREAK LIST
+# 157. FINAL DOMAIN
 
-Phase 1 V2 must preserve:
+When chosen:
+
+set:
 
 ```text
-/tim-phong
-property page
-room type page
-Verified Standard
-Cloud View
-Road Verified
-360
-pricing
-price confidence
-availability
-availability freshness
-Admin settings
-Admin properties
-Admin rooms
-Admin media
-Admin verification
-Admin rates
-Admin availability
+NEXT_PUBLIC_SITE_URL=https://...
 ```
 
-No regression acceptable.
+then enable index.
 
 ---
 
-# 93. CURRENT DATA MIGRATION RULE
+# 158. FINAL DOMAIN STRATEGY
 
-No existing production accommodation data may be silently reinterpreted.
-
-Examples:
-
-Do not:
+Preferred master domain concept:
 
 ```text
-room_type quantity 4
-→ infer four room IDs
+taxuatrip...
 ```
 
-Do not:
+Exact domain decision separate.
 
-```text
-room-type Cloud View
-→ claim every physical room identical
-```
-
-Do not:
-
-```text
-public price
-→ infer net cost
-```
-
-Do not:
-
-```text
-current inventory
-→ infer guaranteed allotment
-```
-
-Unknown remains unknown.
+Do not hard-code before chosen.
 
 ---
 
-# 94. MVP V2 CUT LINE
+# 159. DESIGN ASSET CHECKLIST
 
-Do not try to build all V2 phases before validating market.
-
-Recommended commercially meaningful MVP:
+Need later:
 
 ```text
-Destination
-Physical Room
-Verified Room Profile
+logo-master.svg
+logo-horizontal.svg
+logo-stacked.svg
+logo-icon.svg
+logo-white.svg
+favicon
+og-default.jpg
+hero-home-desktop.webp
+hero-home-mobile.webp
+verified-badge.svg
+360-badge.svg
+cloud-view-badge.svg
+icon set
+```
+
+---
+
+# 160. ASSET TRUTH
+
+Moodboard images are visual reference.
+
+Do not ship fake room images as real product assets.
+
+---
+
+# 161. HERO IMAGE
+
+Use actual landscape when available.
+
+If placeholder:
+
+must be clearly non-product/decorative.
+
+---
+
+# 162. MARKETING VISUAL
+
+Primary direction:
+
+- blue;
+- cloud;
+- mountain;
+- clean;
+- trust;
+- sunrise accent.
+
+---
+
+# 163. BRAND GREEN
+
+Green becomes support color.
+
+Not master canvas.
+
+---
+
+# 164. ACCESSIBILITY
+
+Contrast compliant.
+
+Buttons readable.
+
+No script font for essential actions.
+
+---
+
+# 165. RESPONSIVE
+
+Mobile-first.
+
+Homepage search usable on phone.
+
+Cards not too dense.
+
+---
+
+# 166. PERFORMANCE
+
+No giant hero video blocking LCP.
+
+360 lazy.
+
+Images optimized.
+
+---
+
+# 167. EMPTY STATES
+
+No data:
+
+say no data.
+
+Do not hide page errors as fake content.
+
+---
+
+# 168. PUBLIC DATA FALLBACK
+
+If Supabase unavailable:
+
+site should fail gracefully.
+
+No stale fake content.
+
+---
+
+# 169. PACKAGE FUTURE COPY
+
+Package public:
+
+```text
+đã bao gồm
+chưa bao gồm
+```
+
+No hidden cost.
+
+---
+
+# 170. TRIP CUSTOMER VALUE
+
+Trip combines:
+
+- decision;
+- booking;
+- coordination;
+- support.
+
+---
+
+# 171. PARTNER VALUE
+
+Partner gets:
+
+- verification;
+- content;
+- distribution;
+- bookings;
+- package inclusion;
+- data.
+
+---
+
+# 172. PARTNER TRUST
+
+Supplier cannot pay to change verification.
+
+---
+
+# 173. OPERATIONS FIRST
+
+Manual is acceptable if state is accurate.
+
+---
+
+# 174. DATA BEFORE AI
+
+No AI recommendation before verified structured data.
+
+---
+
+# 175. AI LATER
+
+AI queries facts.
+
+Never invents:
+
+- availability;
+- price;
+- score;
+- supplier confirmation.
+
+---
+
+# 176. MVP CUT
+
+Commercial MVP target:
+
+```text
+Master Brand
+Stay
+Verified Room
 Availability
-Supplier
-Motorbike Component
+Motorbike
 Package
-Trip Finder
-Booking Items
+Booking
 Supplier Confirmation
-Trip Dashboard
 ```
 
-Payment can initially remain manual/deposit workflow.
-
-Bus can initially be manual.
-
-Partner portal later.
+Trip Finder can be P1 if needed.
 
 ---
 
-# 95. V2 SUCCESS SCENARIO
+# 177. V2.1 IMPLEMENTATION ORDER
 
-Customer:
-
-1. enters dates;
-2. says budget and preferences;
-3. sees 3 trip options;
-4. sees exact evidence;
-5. knows price and availability confidence;
-6. chooses package;
-7. submits booking;
-8. staff confirms room + bike + bus;
-9. customer receives trip dashboard;
-10. customer travels with one coordinated plan.
-
-Supplier:
-
-1. has property verified;
-2. gets traffic;
-3. supplies rates;
-4. supplies availability;
-5. confirms bookings;
-6. sees bookings generated;
-7. has reason to remain partner.
-
----
-
-# 96. NON-GOALS FOR NEAR TERM
-
-Do not build yet:
-
-- global OTA;
-- multi-currency;
-- complex yield management;
-- ML dynamic pricing;
-- real-time integrations with every homestay;
-- full supplier extranet;
-- blockchain;
-- shared Biker/Stay database;
-- giant microservice fleet;
-- AI hallucinated itinerary;
-- guaranteed weather;
-- nationwide expansion.
-
----
-
-# 97. CODEX EXECUTION RULES
-
-For every new V2 phase:
-
-1. read:
-   - AGENTS.md
-   - STAY_ARCHITECTURE.md
-   - this Master Plan V2
-   - previous phase docs;
-2. inspect migration state;
-3. audit prior phase;
-4. implement only requested phase;
-5. run tests;
-6. dry-run migration;
-7. push migration safely;
-8. run remote smoke;
-9. commit;
-10. push;
-11. stop.
-
-Do not autonomously continue into next phase.
-
----
-
-# 98. STOP CONDITIONS
-
-Codex must stop if:
-
-- wrong Git remote;
-- Supabase Local/Remote mismatch;
-- Biker could be modified;
-- destructive migration needed;
-- schema assumptions conflict with production;
-- data backfill would invent facts;
-- external API requires owner credentials;
-- commercial policy unclear enough to affect money/booking;
-- security boundary unclear;
-- tests cannot pass without changing agreed business behavior.
-
-Report exact blocker.
-
----
-
-# 99. V2 PHASE COMPLETION REPORT FORMAT
-
-Every phase report:
-
-## Repository
-
-- branch;
-- HEAD;
-- commit.
-
-## Pre-audit
-
-- issues;
-- fixes.
-
-## Migration
-
-- before;
-- new migration;
-- dry-run;
-- push;
-- after;
-- db lint.
-
-## Database
-
-- tables;
-- constraints;
-- RLS;
-- views/RPC.
-
-## Application
-
-- public routes;
-- Admin;
-- integrations.
-
-## Data integrity
-
-- backfill;
-- unknown handling;
-- production fake data check.
-
-## Security
-
-- anon;
-- staff;
-- admin;
-- private commercial data.
-
-## Tests
-
-- lint;
-- typecheck;
-- test count;
-- build.
-
-## Vercel
-
-- deployment;
-- noindex policy.
-
-## Scope stop
-
-Explicitly confirm next phase not started.
-
----
-
-# 100. MASTER ACCEPTANCE PRINCIPLES
-
-The completed V2 architecture must support:
+Immediate:
 
 ```text
-TÀ XÙA STAY
-= verified accommodation intelligence
-
-PLUS
-
-TRIP COMMERCE
-= packaging + booking + local operations
+V2 Phase 2.5
 ```
 
-without making Biker a database dependency.
-
-The final product should make customer think:
-
-> Website này giúp tôi tránh chọn sai và đỡ phải tự ghép cả chuyến đi.
-
-Not:
-
-> Đây là nơi có danh sách homestay.
+Do not start Supplier until UX migration reviewed.
 
 ---
 
-# 101. FINAL PRODUCT NORTH STAR
+# 178. V2 PHASE 2 INVARIANTS
 
-The system wins if customers ask:
-
-> Bên này đã verify phòng nào đẹp?
-
-and then:
-
-> Có gói nào phù hợp cho lịch của tôi?
-
-and suppliers ask:
-
-> Làm sao để phòng của tôi được Verified và được đưa vào các trip option?
-
-That is the intended moat.
+- no overall score;
+- exact room != bookable boolean;
+- room type != exact room;
+- Cloud View separate;
+- pros/cons truthful.
 
 ---
 
-# 102. ONE-SENTENCE ARCHITECTURE SUMMARY
+# 179. V2 PHASE 2.5 INVARIANTS
 
-# Tà Xùa Stay V2 là nền tảng Verified Local Travel Commerce: Destination → Verified Accommodation → Local Services → Package → Trip Booking → Supplier Operations, trong đó dữ liệu xác minh tạo trust, package tạo value, local operations tạo margin và distribution tạo network moat.
+- master brand Trip;
+- stay → `/stay`;
+- no fake future service;
+- no SEO destruction;
+- no admin public nav;
+- visual system blue/cloud.
 
 ---
 
-# 103. IMMEDIATE NEXT ACTION
+# 180. MASTER ACCEPTANCE TEST
 
-Do NOT run the old post-Phase-6 roadmap.
+When a user opens homepage:
 
-The immediate next implementation is:
+they should understand within seconds:
 
-# V2 PHASE 1 — ARCHITECTURE ALIGNMENT
+1. This is Tà Xùa Trip.
+2. This is not only a homestay website.
+3. The platform checks things in real life.
+4. It can show evidence.
+5. It helps build a trip.
+6. Stay is one part of the journey.
+7. The brand is honest about uncertainty.
 
-Specifically:
+---
+
+# 181. ONE-SENTENCE ARCHITECTURE
+
+# Tà Xùa Trip là nền tảng Verified Local Travel, trong đó codebase Tà Xùa Stay trở thành vertical `/stay`; hệ thống dùng dữ liệu thẩm định để giúp khách chọn đúng, sau đó ghép lưu trú, vận chuyển, xe máy và dịch vụ thành một booking cấp chuyến và một trải nghiệm được điều phối xuyên suốt.
+
+---
+
+# 182. ONE-SENTENCE BRAND
+
+# Đi thật. Biết trước.
+
+---
+
+# 183. NEXT IMPLEMENTATION
+
+V2 Phase 2 / migration 010 is complete.
+
+The next separately authorized implementation is:
+
+# V2 PHASE 2.5 — MASTER BRAND + PUBLIC UX MIGRATION
+
+Do not skip directly to Supplier.
+
+---
+
+# 184. V2 PHASE 2.5 — DETAILED TASK MAP
+
+## Naming migration
+
+Lock consumer naming:
 
 ```text
-Destination
-Physical Room
-Room ID
-Exact-room-compatible Media
-Exact-room-compatible Verification
+Master brand → Tà Xùa Trip
+Navigation vertical → Lưu trú
+SEO/H1 acquisition → Homestay & lưu trú Tà Xùa
+Technical namespace → /stay
 ```
 
-while preserving:
+Do not rename database tables or feature folders merely for consumer SEO.
 
-```text
-Rate
-Availability
-Search
-SEO
-Verified Standard
-```
+## App Layout
 
-This Phase must be completed and reviewed before Supplier / Package / Booking expansion.
+Change master consumer shell.
+
+## Branding
+
+Trip logo / wordmark.
+
+## Navigation
+
+Trip IA.
+
+## Homepage
+
+Trip homepage.
+
+## Lưu trú / Stay technical vertical
+
+Move current Stay entry to `/stay`.
+
+Customer-facing navigation says `Lưu trú`.
+
+`/stay` H1/metadata uses `Homestay Tà Xùa` naturally for acquisition intent.
+
+Prepare SEO landing architecture under `/stay` rather than changing the root namespace to `/homestay`.
+
+## Metadata
+
+Trip suffix.
+
+## Public Admin
+
+Remove nav item.
+
+## Styling
+
+Use V2.1 blue/cloud system.
+
+## Verified Components
+
+Visually prominent.
+
+## Compatibility
+
+Keep old routes.
+
+## SEO
+
+Prepare redirects.
+
+## Empty states
+
+Truthful.
 
 ---
 
-# END OF TÀ XÙA STAY / VERIFIED LOCAL TRAVEL COMMERCE — CODEX MASTER PLAN V2
+# 185. V2 PHASE 2.5 — NO DATABASE REQUIREMENT
+
+Prefer no migration.
+
+If database migration appears necessary:
+
+stop and explain.
+
+Brand/route migration should primarily be application-level.
+
+---
+
+# 186. V2 PHASE 2.5 — TESTS
+
+Test:
+
+- `/` Trip;
+- `/stay`;
+- old Stay routes;
+- navigation;
+- mobile;
+- metadata;
+- canonical;
+- Admin hidden;
+- existing search;
+- rates;
+- availability;
+- verified room.
+
+---
+
+# 187. V2 PHASE 2.5 — VISUAL QA
+
+Check screenshots:
+
+Desktop:
+- homepage;
+- `/stay`;
+- property;
+- room.
+
+Mobile:
+- homepage;
+- menu;
+- search;
+- room.
+
+---
+
+# 188. V2 PHASE 2.5 — DEPLOY
+
+Temporary Vercel noindex unchanged.
+
+---
+
+# 189. V2 PHASE 3 — AFTER UX REVIEW
+
+Only after owner approves brand/public UX.
+
+---
+
+# 190. STOP RULE
+
+Do not implement the next phase automatically.
+
+---
+
+# 191. MASTER PLAN STATUS
+
+This V2.1 is the active plan.
+
+All previous roadmaps are historical context only.
+
+---
+
+# END

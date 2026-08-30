@@ -25,9 +25,11 @@ After migration 010, `migration list` must report 001–010 Local = Remote and l
 
 ## V2 migration lineage
 
-Migrations 001–008 are the **Legacy Foundation Completed**. They remain immutable production lineage. Master Plan V2 restarts product phase numbering, not database history.
+Migrations 001–008 are the **Legacy Foundation Completed**. They remain immutable production lineage. Master Plan V2.1 restarts product phase numbering, not database history.
 
-Migration `202608290009_v2_destination_and_physical_rooms.sql` is **V2 Phase 1 — Architecture Alignment**. Migration `202608290010_v2_verified_room_profile.sql` is **V2 Phase 2 — Verified Room Profile**. It adds Room Quality, factual strengths/caveats, and stronger exact-room resolution without changing pricing, pooled availability, search, Road Verified, or the Cloud View rubric. V2 Phase 3 has not started.
+Migration `202608290009_v2_destination_and_physical_rooms.sql` is **V2 Phase 1 — Architecture Alignment**. Migration `202608290010_v2_verified_room_profile.sql` is **V2 Phase 2 — Verified Room Profile**. It adds Room Quality, factual strengths/caveats, and stronger exact-room resolution without changing pricing, pooled availability, search, Road Verified, or the Cloud View rubric.
+
+The next roadmap step is **V2 Phase 2.5 — Master Brand + Public UX Migration**. It has not been implemented and is expected to be primarily application-level; this documentation adoption creates no migration 011 and performs no database push. If later Phase 2.5 implementation appears to require a database change, stop and review that need before creating a migration. V2 Phase 3 has not started.
 
 ## Migration order
 

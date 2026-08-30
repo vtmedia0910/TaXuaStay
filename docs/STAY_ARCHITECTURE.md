@@ -1,8 +1,10 @@
-# Tà Xùa Stay architecture
+# Tà Xùa Trip / Stay architecture
 
 ## System boundary
 
-Tà Xùa Stay is an independent verified accommodation application evolving toward a Verified Local Travel Commerce / Travel Operating System for Tà Xùa. The present implementation remains accommodation-heavy; the V2 target is a roadmap, not a claim that travel-commerce features already exist.
+The TaXuaStay repository is the independent technical and infrastructure boundary for the existing verified accommodation application. Under Master Plan V2.1, that foundation becomes the `Stay` domain and future `/stay` accommodation vertical of **Tà Xùa Trip**, the consumer master brand and Verified Local Travel platform.
+
+This is a target product/brand architecture, not a claim about current production UI. The present public shell remains accommodation-first and has not yet been migrated to the Tà Xùa Trip navigation, homepage, visual system, routes, logo, or metadata.
 
 Stay must have separate infrastructure:
 
@@ -16,9 +18,21 @@ No production database or customer data is shared with Biker.
 
 ## Source of truth and phase numbering
 
-`docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md` contains Master Plan V2 and is the sole canonical roadmap. It supersedes the former accommodation-oriented 11-phase plan. Migrations 001–008 and the existing `PHASE_1` through `PHASE_6` documents remain immutable/factual records of the **Legacy Foundation Completed**.
+`docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md` contains Master Plan V2.1 and is the sole canonical roadmap. It supersedes the former accommodation-oriented 11-phase plan and earlier V2 direction wherever they conflict. Migrations 001–008 and the existing `PHASE_1` through `PHASE_6` documents remain immutable/factual records of the **Legacy Foundation Completed**.
 
 New work uses a separate numbering sequence: **V2 Phase 1**, **V2 Phase 2**, and so on. An old Phase 1 is never the same thing as V2 Phase 1.
+
+Brand and naming layers are distinct:
+
+```text
+Master brand          Tà Xùa Trip
+Consumer taxonomy     Lưu trú
+SEO/search language   Homestay Tà Xùa
+Technical domain      Stay
+Technical namespace   /stay
+```
+
+The next separately authorized implementation is **V2 Phase 2.5 — Master Brand + Public UX Migration**. It is expected to be primarily application-level and must preserve current URLs through an explicit compatibility plan. It has not been implemented. V2 Phase 3 must not start until Phase 2.5 is implemented and reviewed.
 
 ## Currently implemented — legacy foundation completed
 
@@ -49,7 +63,7 @@ Room Type (commercial / pooled category)
 Physical Room (stable Room ID / exact unit)
 ```
 
-The future Travel Commerce flow is:
+The future Tà Xùa Trip commerce flow is:
 
 ```text
 Destination
@@ -180,8 +194,8 @@ Public inventory is read through a `security_invoker` allow-listed view backed b
 
 ## V2 roadmap boundary
 
-The V2 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is implemented by migration 009 and Verified Room Profile by migration 010. Only separately authorized later phases may add supplier/partner foundations, private commercial economics, motorbike service integration, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
+The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is implemented by migration 009 and Verified Room Profile by migration 010. Phase 2.5 is next and is not implemented. Only separately authorized later phases may add supplier/partner foundations, private commercial economics, motorbike service integration, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
 
 ## Future Biker relationship
 
-Tà Xùa Biker remains a separate repository, database, Auth boundary, deployment, and source of truth for motorbike fleet/rental operations. Stay must never query the Biker database directly or share a service-role key. A future V2 motorbike service adapter may use a safe API, signed server-to-server call, manual confirmation, webhook, or opaque external reference. Stay may record its own booking-item/external-confirmation state, but it must not copy fleet ownership or claim a Biker reservation without confirmation from Biker operations.
+Tà Xùa Biker remains a separate repository, database, Auth boundary, deployment, and source of truth for motorbike fleet/rental operations. Trip/Stay must never query the Biker database directly or share a service-role key. A future V2 motorbike service adapter may use a safe API, signed server-to-server call, manual confirmation, webhook, or opaque external reference. Trip may later record its own booking-item/external-confirmation state, but it must not copy fleet ownership or claim a Biker reservation without confirmation from Biker operations.
