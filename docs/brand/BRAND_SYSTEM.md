@@ -4,7 +4,7 @@
 
 This document is the durable brand summary for future repository work. The canonical product and roadmap source remains `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md`, now Master Plan V2.1. When older Stay/V2 material conflicts with V2.1, V2.1 wins. A task prompt still controls what may be executed in that task.
 
-The brand direction is adopted here as documentation only. The current public application has not yet been migrated to this brand system.
+The public application adopted this system in V2 Phase 2.5. V2 Phase 2.6 adds structured editorial operations without changing the locked brand core; code still owns layout, truth constraints, canonical/robots/schema and service-state behavior.
 
 ## Locked brand core
 

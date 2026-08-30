@@ -3,9 +3,14 @@ import Link from "next/link";
 import { CalendarDays, Info, Users } from "lucide-react";
 import { SearchForm } from "@/components/search/search-form";
 import { SearchResults } from "@/components/search/search-results";
+import { CmsImage } from "@/components/cms/cms-image";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { getPublicPageRobots } from "@/config/seo";
+import { findCmsSection } from "@/features/cms/defaults";
+import { getPublicCmsPage } from "@/features/cms/data";
+import { resolveCmsMediaUrl } from "@/features/cms/media-url";
+import type { CmsPage } from "@/features/cms/types";
 import { getPublicSearchOptions, searchPublicRooms } from "@/features/search/data";
 import { parseRoomSearchParams, type RawSearchParams } from "@/features/search/params";
 import { SEO_LANDING_PAGES, SEO_LANDING_SLUGS } from "@/features/search/seo";
@@ -13,38 +18,42 @@ import { SEO_LANDING_PAGES, SEO_LANDING_SLUGS } from "@/features/search/seo";
 export async function generateMetadata({ searchParams }: {
   searchParams: Promise<RawSearchParams>;
 }): Promise<Metadata> {
-  const raw = await searchParams;
+  const [raw, cms] = await Promise.all([searchParams, getPublicCmsPage("stay")]);
   const hasQuery = Object.values(raw).some((value) => value !== undefined);
+  const image = resolveCmsMediaUrl(cms.og_media);
   return {
-    title: "Homestay Tà Xùa: Xem phòng, view thật & giá",
-    description: "Khám phá nơi lưu trú Tà Xùa theo đúng loại phòng, sức chứa, view đã ghi nhận, giá theo ngày và tình trạng phòng khi có dữ liệu.",
+    title: cms.seo_title,
+    description: cms.seo_description ?? undefined,
     alternates: { canonical: "/stay" },
     robots: getPublicPageRobots(
       hasQuery ? { index: false, follow: true } : { index: true, follow: true },
     ),
+    openGraph: { title: cms.seo_title ?? cms.title, description: cms.seo_description ?? undefined, images: image ? [{ url: image, alt: cms.og_media?.alt_text }] : undefined },
   };
+}
+
+export function StayIntro({ cms, preview = false }: { cms: CmsPage; preview?: boolean }) {
+  const intro = findCmsSection(cms, "stay_intro");
+  const notes = findCmsSection(cms, "stay_notes");
+  if (!intro) return preview ? <div className="bg-copper px-5 py-3 text-center text-sm font-bold text-white">Section mở đầu đang tắt trong bản nháp</div> : null;
+  const desktop = intro?.desktop_media;
+  const mobile = intro?.mobile_media ?? desktop;
+  return <>{preview ? <div className="bg-copper px-5 py-3 text-center text-sm font-bold text-white">Bản xem trước nội dung nháp · không công khai</div> : null}<section className="trip-detail-hero relative isolate overflow-hidden px-5 py-12 text-white sm:px-8 sm:py-16">{desktop ? <div className="absolute inset-0 -z-20 hidden sm:block"><CmsImage media={desktop} priority sizes="100vw" /></div> : null}{mobile ? <div className="absolute inset-0 -z-20 sm:hidden"><CmsImage media={mobile} priority sizes="100vw" /></div> : null}{desktop || mobile ? <div className="absolute inset-0 -z-10 bg-pine/78" /> : null}<div className="mx-auto max-w-6xl"><Badge className="bg-white/15 text-white">{intro.eyebrow}</Badge><h1 className="mt-5 max-w-4xl font-display text-4xl font-bold sm:text-6xl">{intro.heading}</h1><p className="mt-4 max-w-3xl text-lg leading-8 text-white/80">{intro.body}</p>{notes ? <div className="mt-7 max-w-3xl rounded-2xl border border-white/20 bg-white/10 p-4"><p className="text-xs font-bold uppercase tracking-[0.12em] text-white/70">{notes.eyebrow}</p><p className="mt-1 font-bold">{notes.heading}</p><p className="mt-2 text-sm leading-6 text-white/75">{notes.body}</p></div> : null}</div></section></>;
 }
 
 export default async function RoomSearchPage({ searchParams }: {
   searchParams: Promise<RawSearchParams>;
 }) {
   const parsed = parseRoomSearchParams(await searchParams);
-  const [response, options] = await Promise.all([
+  const [response, options, cms] = await Promise.all([
     searchPublicRooms(parsed.params),
     getPublicSearchOptions(),
+    getPublicCmsPage("stay"),
   ]);
 
   return (
     <main className="bg-cream pb-20">
-      <section className="trip-detail-hero px-5 py-12 text-white sm:px-8 sm:py-16">
-        <div className="mx-auto max-w-6xl">
-          <Badge className="bg-white/15 text-white">LƯU TRÚ TÀ XÙA</Badge>
-          <h1 className="mt-5 max-w-4xl font-display text-4xl font-bold sm:text-6xl">Homestay Tà Xùa: xem phòng thật, view thật, giá rõ ràng</h1>
-          <p className="mt-4 max-w-3xl text-lg leading-8 text-white/80">
-            Chọn theo đúng loại phòng, sức chứa và bằng chứng đã công khai. Khi có đủ ngày, hệ thống đối chiếu từng đêm; dữ liệu thiếu không bao giờ được xem là còn phòng.
-          </p>
-        </div>
-      </section>
+      <StayIntro cms={cms} />
 
       <div id="stay-search" className="mx-auto grid max-w-7xl gap-8 px-5 py-10 sm:px-8 lg:grid-cols-[22rem_minmax(0,1fr)]">
         <aside className="lg:sticky lg:top-5 lg:self-start">

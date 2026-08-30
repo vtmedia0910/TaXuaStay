@@ -19,9 +19,13 @@ Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the appl
 202608290008
 202608290009
 202608290010
+202608290011
+202608290012
+202608290013
+202608290014
 ```
 
-After migration 010, `migration list` must report 001–010 Local = Remote and linked database lint must report no schema errors. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
+After the Phase 2.6 hardening migrations, `migration list` must report 001–014 Local = Remote and linked database lint must report no schema errors. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
 
 ## V2 migration lineage
 
@@ -29,7 +33,7 @@ Migrations 001–008 are the **Legacy Foundation Completed**. They remain immuta
 
 Migration `202608290009_v2_destination_and_physical_rooms.sql` is **V2 Phase 1 — Architecture Alignment**. Migration `202608290010_v2_verified_room_profile.sql` is **V2 Phase 2 — Verified Room Profile**. It adds Room Quality, factual strengths/caveats, and stronger exact-room resolution without changing pricing, pooled availability, search, Road Verified, or the Cloud View rubric.
 
-The next roadmap step is **V2 Phase 2.5 — Master Brand + Public UX Migration**. It has not been implemented and is expected to be primarily application-level; this documentation adoption creates no migration 011 and performs no database push. If later Phase 2.5 implementation appears to require a database change, stop and review that need before creating a migration. V2 Phase 3 has not started.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. Migration `202608290011_v2_cms_media_content_operations.sql` implements **V2 Phase 2.6 — CMS, Media & Content Operations** with structured draft/public snapshots, public-safe views, website media and the `site-content` bucket. V2 Phase 3 has not started.
 
 ## Migration order
 
@@ -46,6 +50,10 @@ supabase/migrations/202608290007_harden_phase5_pricing.sql
 supabase/migrations/202608290008_room_inventory_and_availability.sql
 supabase/migrations/202608290009_v2_destination_and_physical_rooms.sql
 supabase/migrations/202608290010_v2_verified_room_profile.sql
+supabase/migrations/202608290011_v2_cms_media_content_operations.sql
+supabase/migrations/202608290012_fix_cms_public_view_grants.sql
+supabase/migrations/202608290013_harden_cms_storage_delete.sql
+supabase/migrations/202608290014_enforce_cms_archive_lifecycle.sql
 ```
 
 Never reapply or edit a migration already present remotely. Migration `202608290003` is the additive corrective migration that preserves immutable migration `202608290002`; migration `202608290004` adds the normalized Verified Standard without seeding verification data; migration `202608290005` preserves immutable 004 while rejecting future/expired verified cycles, refreshing normal re-verification dates, and limiting anonymous Cloud/Road reads to public-view columns.
@@ -118,6 +126,22 @@ After migration 010, verify additionally:
 
 The post-010 remote smoke test returned HTTP 200 for both public room-profile views, both base tables' allow-listed columns, and the exact-room public view. Anonymous requests for quality `notes_internal`, profile-note `created_by`, and mutations carrying a writable field returned HTTP 401. The exact-room resolver returned `not_verified` for an unknown physical-room ID. Both new public views returned an exact count of zero, confirming that no score, note, or verification example was seeded. Migrations 001–010 were Local = Remote and `supabase db lint --linked` reported no schema errors.
 
+After migration 011, verify additionally:
+
+1. `cms_pages`, `cms_sections`, `cms_section_items`, `cms_media_assets` and all four `public_cms_*` views exist with RLS enabled on base tables.
+2. Anonymous reads of public views and their allow-listed base columns succeed; draft fields, `created_by`, `updated_by`, `published_by` and mutations are denied.
+3. Home, Stay and Footer expose their approved published copy; FAQ remains draft. No room, property, score, verification, price, inventory or booking example is inserted.
+4. A staff/admin draft edit does not change the anonymous result until `publish_cms_page` succeeds; publishing copies page, sections and items together and records `auth.uid()`.
+5. `site-content` is public-read, limited to 10 MB JPEG/PNG/WebP/AVIF objects, while uploads/updates/deletes require staff/admin Storage RLS.
+6. `cms_media_assets` accepts exactly one safe source, requires alt text/focal values and refuses archive while any draft or published reference remains.
+7. Public pages remain usable with no CMS media or when the public Supabase configuration is absent.
+
+Migration 012 is a minimal additive correction created after the first anonymous smoke test. The `security_invoker` views correctly depended on RLS but also needed column privileges for `cms_pages.status` and `cms_media_assets.is_active`, which appear in view filters. Migration 012 grants only those two lifecycle columns to `anon`; the corresponding RLS policies still expose only published-page and referenced-active-media rows. It adds no table, row, write permission or product behavior.
+
+Migration 013 replaces the original authenticated Storage delete policy with an orphan-only policy. A `site-content` object cannot be deleted while a matching CMS media metadata row exists. The upload rollback can still remove an object when metadata insertion failed and therefore no row exists. This prevents direct Storage operations from silently breaking CMS references.
+
+Migration 014 revokes authenticated table DELETE on all four CMS tables. Content uses page archive, section/item disable and reference-safe media archive instead of hard deletion. Staff/admin retain authenticated SELECT/INSERT/UPDATE and atomic publish RPC access.
+
 ## Environment configuration
 
 Copy `.env.example` to an uncommitted `.env.local` and fill it with values from the Stay project only. Do not commit that file. The public app uses the anon/publishable key and all authorization remains enforced by RLS.
@@ -133,7 +157,9 @@ No current application call site uses a service-role client, and the unused clie
 
 ## Storage architecture
 
-The content, verification, and V2 Phase 1 exact-room workflows use validated HTTPS media URLs and do not require live Storage or upload UX. Exact-target evidence links existing `media_assets`; no bucket was created by this task.
+Phase 2.6 creates `site-content` for public website presentation images only. It is independent from accommodation and verification evidence in `media_assets`. Public reads are intentional; writes require an authenticated staff/admin role through Storage RLS. See `docs/V2_PHASE_2_6_CMS_MEDIA_CONTENT_OPS.md` for MIME, size, folder, metadata and reference-safety rules.
+
+The content, verification, and V2 Phase 1 exact-room workflows continue to use validated HTTPS evidence URLs. Exact-target evidence links existing `media_assets`; Phase 2.6 does not migrate or copy them into `site-content`.
 
 Future Stay-owned buckets documented by the Master Plan are:
 

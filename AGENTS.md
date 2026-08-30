@@ -20,8 +20,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - Before implementing any new product phase, read `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md`, `docs/STAY_ARCHITECTURE.md`, `docs/brand/BRAND_SYSTEM.md`, `docs/brand/PUBLIC_UX_DIRECTION.md`, and the latest relevant phase documentation completely. The current user prompt defines the execution scope and may authorize only one phase.
 - Master Plan V2.1 supersedes the former 11-phase accommodation roadmap and earlier V2 direction wherever they conflict. Historical phase documents remain factual implementation records, not the active roadmap.
-- Existing migrations `202608290001` through `202608290008` are the completed legacy foundation and are immutable. V2 Phase 1 / migration 009 and V2 Phase 2 / migration 010 are also complete and remotely applied.
-- **V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. Do not start **V2 Phase 3** without a separately authorized owner task.
+- Existing migrations `202608290001` through `202608290008` are the completed legacy foundation and are immutable. V2 Phase 1 / migration 009, V2 Phase 2 / migration 010, and V2 Phase 2.6 migrations 011–014 are also complete, remotely applied, and immutable.
+- **V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** uses additive migration 011, narrow corrective migrations 012–014, and structured Admin publishing. Do not start **V2 Phase 3** without a separately authorized owner task.
 - Do not replay Biker migrations into Stay.
 - Create clean, Stay-specific migrations only when the requested phase needs them.
 - After a migration has been applied remotely, never edit it; add a new additive migration instead.

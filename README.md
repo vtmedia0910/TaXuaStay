@@ -12,7 +12,7 @@ Suppliers, partners, services, packages, unified trip booking, payments, bus int
 
 Migrations 001–008 and their historical phase documents are the **Legacy Foundation Completed**. Migration 009 implements **V2 Phase 1 — Architecture Alignment**. Migration 010 implements **V2 Phase 2 — Verified Room Profile** with separate Room Type Verified, Exact Room Verified, Room Quality dimensions, and factual strengths/caveats.
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented without a database migration. `/stay` is canonical; `/tim-phong` and the historical `/homestay/...` routes remain compatibility pages. **V2 Phase 3 has not started** and requires a separate owner task.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented without a database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented by migration 011 plus narrow corrective migrations 012–014: structured draft/publish content, public-safe website media and the `site-content` bucket. `/stay` is canonical; compatibility routes remain available. **V2 Phase 3 has not started** and requires a separate owner task.
 
 ## Local development
 
@@ -36,6 +36,10 @@ supabase/migrations/202608290007_harden_phase5_pricing.sql
 supabase/migrations/202608290008_room_inventory_and_availability.sql
 supabase/migrations/202608290009_v2_destination_and_physical_rooms.sql
 supabase/migrations/202608290010_v2_verified_room_profile.sql
+supabase/migrations/202608290011_v2_cms_media_content_operations.sql
+supabase/migrations/202608290012_fix_cms_public_view_grants.sql
+supabase/migrations/202608290013_harden_cms_storage_delete.sql
+supabase/migrations/202608290014_enforce_cms_archive_lifecycle.sql
 ```
 
 The public page remains usable with safe local defaults when Supabase environment variables are absent or settings cannot be read.
@@ -67,5 +71,6 @@ Project references:
 - `docs/V2_PHASE_1_ARCHITECTURE_ALIGNMENT.md` — Destination, Physical Room/Room ID, exact-target media and verification contracts.
 - `docs/V2_PHASE_2_VERIFIED_ROOM_PROFILE.md` — Room Type versus Exact Room verification, quality rubrics/freshness, pros/cons, evidence, Admin, and public security.
 - `docs/V2_PHASE_2_5_MASTER_BRAND_PUBLIC_UX.md` — implemented brand shell, route compatibility, truthful service states, design tokens, and QA contract.
+- `docs/V2_PHASE_2_6_CMS_MEDIA_CONTENT_OPS.md` — structured editorial ownership, atomic publish, media lifecycle, Storage, public projections, fallback and operating checklist.
 - `docs/LEGACY_ROADMAP_STATUS.md` — concise historical status and phase-numbering boundary.
 - `docs/SUPABASE_SETUP.md` — manual migration and future Storage setup.

@@ -10,8 +10,10 @@ describe("V2 Phase 2.5 public brand and UX", () => {
   it("uses Tà Xùa Trip as the public master brand", () => {
     expect(SITE).toMatchObject({ name: "TÀ XÙA TRIP", tagline: "Đi thật. Biết trước." });
     const homepage = source("src/app/(public)/page.tsx");
-    expect(homepage).toContain("Đi thật. Biết trước.");
-    expect(homepage).toContain("TÀ XÙA • VERIFIED LOCAL TRAVEL");
+    const defaults = source("src/features/cms/defaults.ts");
+    expect(defaults).toContain("Đi thật. Biết trước.");
+    expect(defaults).toContain("TÀ XÙA • VERIFIED LOCAL TRAVEL");
+    expect(homepage).toContain("getPublicCmsPage");
     expect(homepage).not.toContain("TÀ XÙA STAY");
   });
 

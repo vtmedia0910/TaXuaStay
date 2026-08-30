@@ -1,12 +1,13 @@
 # V2 current-state mapping
 
-This document bridges the **Legacy Foundation Completed** (migrations 001–008) and completed V2 Phases 1–2.5 to the target architecture in Master Plan V2.1. “Target” means planned future capability, not current application behavior.
+This document bridges the **Legacy Foundation Completed** (migrations 001–008) and completed V2 Phases 1–2.6 to the target architecture in Master Plan V2.1. “Target” means planned future capability, not current application behavior.
 
 ## Current implementation → V2 target
 
 | Current implementation | V2 target | Bridge status |
 | --- | --- | --- |
 | Public shell uses Tà Xùa Trip, `Lưu trú`, `Homestay Tà Xùa`, and canonical `/stay` routes | Tà Xùa Trip master homepage with truthful accommodation discovery and room-level evidence | Implemented in V2 Phase 2.5. Historical `/tim-phong` and `/homestay/...` URLs remain compatibility pages with `/stay` canonicals. |
+| Structured website copy, page SEO, presentation media and publish workflow live in `cms_*` tables | Admin-managed content within a code-managed public structure | Implemented in V2 Phase 2.6. CMS cannot override search, Room IDs, verification, Cloud View, Room Quality, price or availability truth. |
 | `destinations` owns destination identity; every property has `destination_id` | `Destination → Property` with reusable destination ownership | Implemented in V2 Phase 1. The only seeded identity is Tà Xùa; no fake geo facts are seeded. |
 | `properties` is the current lodging/business entity | Property belongs to a Destination; private commercial Partner/Supplier data stays separate | Destination ownership is implemented; commercial Partner/Supplier relationships are not. |
 | `room_types` represents the commercial category and pooled physical quantity | Room Type remains the commercial/pooled category beneath Property | Already compatible in concept; documentation and future relationships must preserve this meaning. |
@@ -31,6 +32,7 @@ This document bridges the **Legacy Foundation Completed** (migrations 001–008)
 - integer-VND room sell pricing and price confidence;
 - pooled room-type inventory, freshness-aware availability, and Admin bulk updates;
 - room-first search, public property/room routes, SEO landings, sitemap, robots, and temporary-host `noindex` safety.
+- structured Homepage/Stay/Footer editorial content, website media, protected draft preview and atomic page publishing, with code fallbacks.
 
 ## Explicitly not implemented
 
@@ -46,6 +48,8 @@ The completed V2 implementation is:
 
 **V2 Phase 2 — Verified Room Profile V2: Room Type/Exact Room trust scopes + Room Quality + factual strengths/caveats.**
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete. It changed public brand, navigation, canonical paths and presentation only; migrations remain 001–010 and rates, pooled availability, room-first search, SEO, and verification truth remain preserved.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete. It changed public brand, navigation, canonical paths and presentation only; migrations through 010 preserve rates, pooled availability, room-first search, SEO, and verification truth.
+
+**V2 Phase 2.6 — CMS + Media + Content Operations** is complete. Migrations 011–014 add structured draft/published content, website-only media, atomic publishing, public-safe projections and archive-focused lifecycle hardening. Product truth and page structure remain code-controlled.
 
 **V2 Phase 3 — Supplier + Partner Foundation** has not started and requires a separately authorized task.

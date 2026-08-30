@@ -32,7 +32,7 @@ Technical domain      Stay
 Technical namespace   /stay
 ```
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented at application level with no database migration. Historical routes remain compatibility pages with `/stay` canonicals. V2 Phase 3 has not started and requires a separate owner task.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented at application level with no database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented with additive migration 011 plus narrow corrective migrations 012–014. Historical routes remain compatibility pages with `/stay` canonicals. V2 Phase 3 has not started and requires a separate owner task.
 
 ## Currently implemented — legacy foundation completed
 
@@ -46,6 +46,7 @@ The current repository actually implements:
 - room-first public search, intent landing pages, metadata, sitemap, robots, and temporary-host indexing safety.
 - a published Tà Xùa Destination, required property destination ownership, stable physical-room identity, and exact-room-compatible media/verification targets;
 - Verified Room Profile V2 with independent Room Quality dimensions, factual strengths/caveats, and richer exact-room presentation.
+- structured website copy/media operations with protected preview, atomic page publish and public-safe fallbacks.
 
 There is currently no supplier or partner domain, generic services, package commerce, unified trip booking, booking items, payment, bus inventory, supplier confirmation workflow, or Trip Dashboard.
 
@@ -94,6 +95,16 @@ Migration 010 adds `room_quality` to the shared verification lifecycle, normaliz
 Exact Room Verified now resolves centrally to verified/expired/needs-review/not-verified and still requires a published Room ID, current exact-target `room` verification, and approved evidence owned by the same physical room. `exact_room_bookable` remains outside verification. The room-type page batches room-type and exact-room quality, notes, Cloud View, and evidence without creating physical-room SEO routes.
 
 Anonymous users can read only current public quality and explicitly public notes through allow-listed views backed by RLS. Internal assessment notes, private profile notes, staff IDs, lifecycle method, and private evidence remain protected. `/admin/verification` manages Room Quality lifecycle/assessment data and `/admin/room-profiles` manages strengths/caveats.
+
+## V2 Phase 2.6 — CMS, Media & Content Operations implemented
+
+Migration 011 adds `cms_pages`, `cms_sections`, `cms_section_items` and website-only `cms_media_assets`. Draft fields remain private while one staff/admin RPC copies the full normalized page into explicit `published_*` snapshots in one transaction. Public `security_invoker` views and column grants expose only current published content and referenced active media; audit users, draft values and anonymous mutations remain protected by grants plus RLS. Corrective migration 012 adds only the two view-filter column privileges required for `status` and `is_active`; RLS continues to hide draft/inactive rows. Migration 013 limits Storage deletion to orphan objects with no CMS metadata row, and migration 014 revokes direct CMS table deletes in favor of archive/disable lifecycle.
+
+The public `site-content` Storage bucket accepts only JPEG, PNG, WebP and AVIF up to 10 MB in fixed website folders. Staff/admin writes use the authenticated user and Storage RLS, never a service-role client. Every media row requires alt text, focal point and exactly one Storage path or external HTTPS URL. Archive is blocked while any draft or published reference remains. Existing accommodation/evidence `media_assets` are unchanged and separate.
+
+Homepage, Stay intro/SEO and footer copy read published CMS content with approved code fallbacks. Operational facts — rooms, evidence, verification, Cloud View, prices and availability — remain live domain queries rather than copied CMS values. Editors control SEO title/description/OG media only; canonical, robots, sitemap, schema and staging noindex remain code-owned. Publishing revalidates the affected public/Admin paths so content changes do not require a redeploy.
+
+See `docs/V2_PHASE_2_6_CMS_MEDIA_CONTENT_OPS.md` for the tables, role decision, publish workflow, media lifecycle, seeded copy and operations checklist.
 
 ## Legacy Phase 0 baseline
 
@@ -196,7 +207,7 @@ Public inventory is read through a `security_invoker` allow-listed view backed b
 
 ## V2 roadmap boundary
 
-The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is implemented by migration 009, Verified Room Profile by migration 010, and application-only brand/UX migration by V2 Phase 2.5. Only separately authorized later phases may add supplier/partner foundations, private commercial economics, motorbike service integration, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
+The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is implemented by migration 009, Verified Room Profile by migration 010, application-only brand/UX by V2 Phase 2.5, and structured website operations by migrations 011–014 / V2 Phase 2.6. Only separately authorized later phases may add supplier/partner foundations, private commercial economics, motorbike service integration, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
 
 ## Future Biker relationship
 

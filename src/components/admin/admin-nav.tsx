@@ -13,6 +13,7 @@ import {
   Settings,
   ShieldCheck,
   ListChecks,
+  FilePenLine,
   Sparkles,
 } from "lucide-react";
 import { logoutAction } from "@/features/admin/auth-actions";
@@ -30,6 +31,8 @@ const contentLinks = [
   { label: "Hồ sơ phòng", href: "/admin/room-profiles", icon: ListChecks },
   { label: "Giá", href: "/admin/rates", icon: BadgeDollarSign },
   { label: "Tình trạng", href: "/admin/availability", icon: CalendarCheck },
+  { label: "Nội dung web", href: "/admin/content", icon: FilePenLine },
+  { label: "Media website", href: "/admin/site-media", icon: ImageIcon },
 ] as const;
 
 const adminLinks = [{ label: "Cấu hình", href: "/admin/settings", icon: Settings }] as const;

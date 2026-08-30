@@ -18,6 +18,19 @@ const ERROR_MESSAGES: Record<string, string> = {
   "rate-rule-save": "Không thể lưu quy tắc giá. Hãy kiểm tra phòng thuộc đúng nơi lưu trú, khoảng ngày, nguồn và mức ưu tiên.",
   "rate-rule-range": "Quy tắc đang hoạt động phải có ít nhất một ngày giao với khoảng hiệu lực của bảng giá. Có thể tắt quy tắc để lưu trước cho kế hoạch sau.",
   "inventory-save": "Không thể cập nhật tình trạng phòng. Hãy kiểm tra khoảng ngày, số phòng vật lý, nguồn và giá vận hành tùy chọn.",
+  "cms-page-invalid": "Nội dung trang hoặc metadata chưa hợp lệ.",
+  "cms-page-save": "Không thể lưu bản nháp trang.",
+  "cms-page-archive": "Không thể lưu trữ trang CMS.",
+  "cms-section-invalid": "Section chưa hợp lệ. Liên kết chỉ được là đường dẫn nội bộ hoặc HTTPS.",
+  "cms-section-save": "Không thể lưu section.",
+  "cms-item-invalid": "Mục con chưa hợp lệ; chỉ chọn một loại phòng hoặc một Room ID.",
+  "cms-item-save": "Không thể lưu mục con.",
+  "cms-publish": "Không thể xuất bản nguyên tử toàn trang. Bản công khai cũ không bị thay đổi.",
+  "cms-media-invalid": "Media chưa hợp lệ. Alt text là bắt buộc; chỉ dùng HTTPS hoặc ảnh đúng định dạng/kích thước.",
+  "cms-media-upload": "Không thể tải ảnh lên bucket site-content.",
+  "cms-media-save": "Không thể lưu metadata media.",
+  "cms-media-archive": "Không thể lưu trữ media.",
+  "cms-media-referenced": "Media vẫn đang được tham chiếu trong bản nháp hoặc bản công khai. Hãy thay media trong nội dung trước.",
 };
 
 export function FormFeedback({ saved, error }: { saved?: string; error?: string }) {

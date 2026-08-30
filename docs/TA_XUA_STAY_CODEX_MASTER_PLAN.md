@@ -7,7 +7,7 @@
 **Target repository:** `vtmedia0910/TaXuaStay`  
 **Read-only technical reference:** `vtmedia0910/taxuabiker2`  
 **Canonical target file trong repo sau khi áp dụng:** `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md`
-**Current product state:** Legacy Foundation 001–008 + V2 Phase 1 / migration 009 + V2 Phase 2 / migration 010 + application-only V2 Phase 2.5 đã hoàn thành. V2 Phase 3 chưa bắt đầu và chỉ được thực hiện khi có task riêng.
+**Current product state:** Legacy Foundation 001–008 + V2 Phase 1 / migration 009 + V2 Phase 2 / migration 010 + application-only V2 Phase 2.5 + V2 Phase 2.6 / migrations 011–014 đã hoàn thành. V2 Phase 3 chưa bắt đầu và chỉ được thực hiện khi có task riêng.
 
 ---
 
@@ -2367,6 +2367,7 @@ Legacy 001–008 ✅
 V2 Phase 1 / migration 009 ✅
 V2 Phase 2 / migration 010 ✅
 V2 Phase 2.5 / no migration ✅
+V2 Phase 2.6 / migrations 011–014 ✅
 ```
 
 Active roadmap:
@@ -3484,7 +3485,7 @@ Immediate:
 V2 Phase 3 — only after separate owner authorization
 ```
 
-Phase 2.5 is complete. Do not start Supplier automatically.
+Phase 2.5 and the separately authorized Phase 2.6 content-operations extension are complete. Do not start Supplier automatically.
 
 ---
 
@@ -3539,13 +3540,13 @@ they should understand within seconds:
 
 # 183. NEXT IMPLEMENTATION
 
-V2 Phase 2 / migration 010 and V2 Phase 2.5 are complete.
+V2 Phase 2 / migration 010, V2 Phase 2.5 and V2 Phase 2.6 / migrations 011–014 are complete.
 
 The next separately authorized implementation is:
 
 # V2 PHASE 3 — SUPPLIER + PARTNER FOUNDATION
 
-This next phase is not authorized by completion of Phase 2.5.
+This next phase is not authorized by completion of Phase 2.6.
 
 ---
 

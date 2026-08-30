@@ -126,4 +126,4 @@ The SEO moat is first-party verified data—Cloud View, View From Bed, 360, Room
 
 ## Phase boundary
 
-Phase 2.5 should be primarily application-level. If a database migration appears necessary, stop and review the need before creating one. Supplier/Partner Phase 3 must not start until the master-brand/public UX migration has been reviewed.
+Phase 2.5 was completed at application level. The separately authorized V2 Phase 2.6 extension adds a bounded structured CMS and website-media workflow through migration 011; it does not turn this direction into a page builder or transfer operational facts/technical SEO into editable content. Supplier/Partner Phase 3 has not started and still requires separate owner authorization.

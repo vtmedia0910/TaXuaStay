@@ -1,18 +1,21 @@
 import Link from "next/link";
 import { TripLogo } from "@/components/trip/trip-logo";
 import { PUBLIC_ROUTES } from "@/config/routes";
+import { findCmsSection } from "@/features/cms/defaults";
+import type { CmsPage } from "@/features/cms/types";
 
 function Planned({ children }: { children: React.ReactNode }) {
   return <span className="text-white/55">{children} <span className="text-[0.65rem] uppercase tracking-wide">Sắp có</span></span>;
 }
 
-export function TripFooter() {
+export function TripFooter({ cms }: { cms?: CmsPage }) {
+  const intro = cms ? findCmsSection(cms, "footer_intro") : null;
   return (
     <footer className="bg-pine px-5 py-12 text-sm text-white/75 sm:px-8">
       <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.3fr_0.8fr_0.8fr_0.8fr]">
         <div>
           <TripLogo inverse />
-          <p className="mt-5 max-w-sm leading-7">Nền tảng du lịch địa phương giúp bạn biết rõ nơi ở, bằng chứng và điều cần lưu ý trước khi lên đường.</p>
+          <p className="mt-5 max-w-sm leading-7">{intro?.body ?? "Nền tảng du lịch địa phương giúp bạn biết rõ nơi ở, bằng chứng và điều cần lưu ý trước khi lên đường."}</p>
           <p className="mt-4 font-semibold text-white">THẬT · HIỂU · TRỌN VẸN</p>
         </div>
         <div>

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -18,40 +19,87 @@ import {
   Sparkles,
 } from "lucide-react";
 import { SearchEntryForm } from "@/components/search/search-entry-form";
+import { CmsImage } from "@/components/cms/cms-image";
 import { VerifiedStayCard } from "@/components/trip/verified-stay-card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { PUBLIC_ROUTES, buildRoomPath } from "@/config/routes";
+import { getPublicPageRobots } from "@/config/seo";
+import { findCmsSection } from "@/features/cms/defaults";
+import { getPublicCmsPage } from "@/features/cms/data";
+import { resolveCmsMediaUrl } from "@/features/cms/media-url";
+import type { CmsPage } from "@/features/cms/types";
 import { searchPublicRooms } from "@/features/search/data";
 import { DEFAULT_ROOM_SEARCH_PARAMS } from "@/features/search/params";
+import type { RoomSearchResponse } from "@/features/search/types";
 import { getPublicSiteSettings } from "@/features/settings/data";
+import type { PublicSiteSettings } from "@/features/settings/types";
 import { CLOUD_VIEW_FROM_BED_LABELS } from "@/features/verification/policy";
 
+export async function generateMetadata(): Promise<Metadata> {
+  const cms = await getPublicCmsPage("home");
+  const image = resolveCmsMediaUrl(cms.og_media);
+  return {
+    title: cms.seo_title,
+    description: cms.seo_description ?? undefined,
+    alternates: { canonical: "/" },
+    robots: getPublicPageRobots(),
+    openGraph: { title: cms.seo_title ?? cms.title, description: cms.seo_description ?? undefined, images: image ? [{ url: image, alt: cms.og_media?.alt_text }] : undefined },
+  };
+}
+
 export default async function HomePage() {
-  const [settings, roomResponse] = await Promise.all([
+  const [settings, roomResponse, cms] = await Promise.all([
     getPublicSiteSettings(),
     searchPublicRooms(DEFAULT_ROOM_SEARCH_PARAMS),
+    getPublicCmsPage("home"),
   ]);
-  const cloudRooms = roomResponse.items.filter((item) => item.cloudView).slice(0, 3);
+  return <HomeExperience settings={settings} roomResponse={roomResponse} cms={cms} />;
+}
+
+export function HomeExperience({ settings, roomResponse, cms, preview = false }: {
+  settings: PublicSiteSettings;
+  roomResponse: RoomSearchResponse;
+  cms: CmsPage;
+  preview?: boolean;
+}) {
+  const hero = findCmsSection(cms, "hero");
+  const why = findCmsSection(cms, "why_choose_us");
+  const differentiators = findCmsSection(cms, "differentiators");
+  const verifiedRooms = findCmsSection(cms, "verified_rooms");
+  const brandStatement = findCmsSection(cms, "brand_statement");
+  const finalCta = findCmsSection(cms, "final_cta");
+  const selectedRoomIds = verifiedRooms?.items.map((item) => item.room_type_id).filter(Boolean) as string[] | undefined;
+  const allCloudRooms = roomResponse.items.filter((item) => item.cloudView);
+  const orderedCloudRooms = selectedRoomIds?.length
+    ? selectedRoomIds.flatMap((id) => allCloudRooms.filter((item) => item.room.id === id))
+    : allCloudRooms;
+  const cloudRooms = orderedCloudRooms.slice(0, verifiedRooms?.max_items ?? 3);
+  const desktopHero = hero?.desktop_media;
+  const mobileHero = hero?.mobile_media ?? desktopHero;
 
   return (
     <main>
+      {preview ? <div className="sticky top-0 z-50 bg-copper px-5 py-3 text-center text-sm font-bold text-white">Bản xem trước nội dung nháp · không công khai</div> : null}
       {settings.announcement_enabled && settings.announcement ? (
         <div className="bg-pine px-5 py-3 text-center text-sm font-bold text-white" role="status">
           {settings.announcement}
         </div>
       ) : null}
 
-      <section className="trip-hero px-5 py-16 sm:px-8 sm:py-24">
+      {hero ? <section className="trip-hero relative isolate overflow-hidden px-5 py-16 sm:px-8 sm:py-24">
+        {desktopHero ? <div className="absolute inset-0 -z-20 hidden sm:block"><CmsImage media={desktopHero} priority sizes="100vw" /></div> : null}
+        {mobileHero ? <div className="absolute inset-0 -z-20 sm:hidden"><CmsImage media={mobileHero} priority sizes="100vw" /></div> : null}
+        {desktopHero || mobileHero ? <div className="absolute inset-0 -z-10 bg-white/72 backdrop-blur-[1px]" /> : null}
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
           <div>
-            <Badge className="bg-white/80 uppercase tracking-[0.14em] text-copper-strong">TÀ XÙA • VERIFIED LOCAL TRAVEL</Badge>
-            <h1 className="mt-5 max-w-4xl text-5xl font-bold leading-[0.98] tracking-[-0.045em] text-pine sm:text-7xl">Đi thật. Biết trước.</h1>
-            <p className="mt-6 max-w-3xl text-lg leading-8 text-ink sm:text-xl">Chúng tôi trực tiếp thẩm định nơi ở, quay video 360°, chỉ rõ ưu nhược điểm và giúp bạn chuẩn bị chuyến Tà Xùa rõ ràng hơn trước khi lên đường.</p>
+            <Badge className="bg-white/80 uppercase tracking-[0.14em] text-copper-strong">{hero?.eyebrow}</Badge>
+            <h1 className="mt-5 max-w-4xl text-5xl font-bold leading-[0.98] tracking-[-0.045em] text-pine sm:text-7xl">{hero?.heading}</h1>
+            <p className="mt-6 max-w-3xl text-lg leading-8 text-ink sm:text-xl">{hero?.body}</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={PUBLIC_ROUTES.stay} className={buttonVariants({ size: "lg" })}>Tìm chuyến đi phù hợp<ArrowRight size={18} aria-hidden="true" /></Link>
+              <Link href={hero?.cta_href ?? PUBLIC_ROUTES.stay} className={buttonVariants({ size: "lg" })}>{hero?.cta_label ?? "Tìm chuyến đi phù hợp"}<ArrowRight size={18} aria-hidden="true" /></Link>
               <Link href="/#verified-stays" className={buttonVariants({ variant: "secondary", size: "lg" })}>Xem phòng đã thẩm định</Link>
             </div>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-muted">Hiện tại luồng tìm kiếm hoạt động cho Lưu trú. Combo, xe khách và xe máy được ghi rõ trạng thái, không giả lập đặt dịch vụ.</p>
@@ -74,7 +122,7 @@ export default async function HomePage() {
           </Card>
           <div className="lg:col-span-2"><SearchEntryForm /></div>
         </div>
-      </section>
+      </section> : null}
 
       <section className="border-y border-line bg-white px-5 py-6 sm:px-8" aria-label="Cam kết quy trình">
         <div className="mx-auto grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -87,37 +135,37 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="about" className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
+      {why ? <section id="about" className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-          <div><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">Vì sao Tà Xùa Trip tồn tại?</p><h2 className="mt-3 text-4xl font-bold text-pine sm:text-5xl">Ảnh đẹp không nói hết một căn phòng.</h2></div>
-          <Card className="p-6 sm:p-8"><p className="text-lg leading-8 text-ink">Một dòng “view núi” chưa cho bạn biết có nhìn thấy cảnh từ giường, góc nhìn có bị che, đường vào có khó, phòng có khớp ảnh hay dữ liệu còn mới không.</p><p className="mt-4 leading-7 text-muted">Chúng tôi kiểm tra và tách từng thông tin đó để bạn tự chọn phương án phù hợp, kể cả khi câu trả lời hiện tại là “Chưa xác minh”.</p></Card>
+          <div><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">{why?.eyebrow}</p><h2 className="mt-3 text-4xl font-bold text-pine sm:text-5xl">{why?.heading}</h2></div>
+          <Card className="p-6 sm:p-8"><p className="text-lg leading-8 text-ink">Một dòng “view núi” chưa cho bạn biết có nhìn thấy cảnh từ giường, góc nhìn có bị che, đường vào có khó, phòng có khớp ảnh hay dữ liệu còn mới không.</p><p className="mt-4 leading-7 text-muted">{why?.body}</p></Card>
         </div>
-      </section>
+      </section> : null}
 
-      <section id="principles" className="bg-white px-5 py-16 sm:px-8 sm:py-20">
+      {differentiators ? <section id="principles" className="bg-white px-5 py-16 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-7xl">
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">Chúng tôi làm gì khác?</p>
-          <h2 className="mt-3 max-w-3xl text-4xl font-bold text-pine sm:text-5xl">Bắt đầu từ bằng chứng, không bắt đầu từ lời quảng cáo.</h2>
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">{differentiators?.eyebrow}</p>
+          <h2 className="mt-3 max-w-3xl text-4xl font-bold text-pine sm:text-5xl">{differentiators?.heading}</h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
+            {(differentiators?.items.length ? differentiators.items.map((item, index) => [[ShieldCheck, Camera, Info, Compass][index % 4], item.title, item.body ?? ""]) : [
               [ShieldCheck, "THẨM ĐỊNH TẠI CHỖ", "Ghi nhận đúng nơi, đúng loại phòng và đúng phạm vi."],
               [Camera, "XEM TRƯỚC BẰNG 360°", "Ảnh toàn cảnh được gắn nhãn phòng hoặc vị trí ngắm."],
               [Info, "NÓI CẢ ĐIỂM CHƯA TỐT", "Ưu điểm và điều cần lưu ý cùng xuất hiện khi có dữ liệu."],
               [Compass, "CHUẨN BỊ CẢ CHUYẾN ĐI", "Hệ thống đang mở rộng từng bước; hiện Lưu trú là luồng hoạt động đầy đủ."],
-            ].map(([Icon, title, description]) => <Card key={String(title)} className="p-5"><Icon className="text-copper" aria-hidden="true" /><h3 className="mt-4 text-lg font-bold text-pine">{String(title)}</h3><p className="mt-2 text-sm leading-6 text-muted">{String(description)}</p></Card>)}
+            ]).map(([Icon, title, description]) => <Card key={String(title)} className="p-5"><Icon className="text-copper" aria-hidden="true" /><h3 className="mt-4 text-lg font-bold text-pine">{String(title)}</h3><p className="mt-2 text-sm leading-6 text-muted">{String(description)}</p></Card>)}
           </div>
         </div>
-      </section>
+      </section> : null}
 
-      <section id="verified-stays" className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
+      {verifiedRooms ? <section id="verified-stays" className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <div><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">Dữ liệu thật đang công khai</p><h2 className="mt-2 text-3xl font-bold text-pine sm:text-5xl">Homestay & phòng Tà Xùa đã thẩm định</h2><p className="mt-3 max-w-3xl leading-7 text-muted">Chỉ hiển thị phòng có hồ sơ Cloud View còn hiệu lực trong dữ liệu công khai. Không có dữ liệu thì không tạo thẻ mẫu.</p></div>
-            <Link href={PUBLIC_ROUTES.stay} className="inline-flex min-h-11 items-center font-bold text-pine hover:text-copper-strong">Xem toàn bộ Lưu trú →</Link>
+            <div><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">{verifiedRooms?.eyebrow}</p><h2 className="mt-2 text-3xl font-bold text-pine sm:text-5xl">{verifiedRooms?.heading}</h2><p className="mt-3 max-w-3xl leading-7 text-muted">{verifiedRooms?.body}</p></div>
+            <Link href={verifiedRooms?.cta_href ?? PUBLIC_ROUTES.stay} className="inline-flex min-h-11 items-center font-bold text-pine hover:text-copper-strong">{verifiedRooms?.cta_label ?? "Xem toàn bộ Lưu trú"} →</Link>
           </div>
           {cloudRooms.length ? <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">{cloudRooms.map((result) => <VerifiedStayCard key={result.room.id} result={result} />)}</div> : <div className="mt-8"><EmptyState title={roomResponse.status === "error" ? "Dữ liệu hiện chưa tải được" : "Chưa có phòng Cloud View đang công khai"} description={roomResponse.status === "unconfigured" ? "Nguồn dữ liệu Lưu trú chưa được cấu hình. Trang vẫn hoạt động và không hiển thị dữ liệu thay thế." : "Khi có hồ sơ thẩm định còn hiệu lực, phòng sẽ xuất hiện tại đây. Chúng tôi không tạo điểm hoặc thẻ mẫu."} action={<Link href={PUBLIC_ROUTES.stay} className={buttonVariants({ variant: "secondary" })}>Mở Lưu trú</Link>} /></div>}
         </div>
-      </section>
+      </section> : null}
 
       <section id="services" className="bg-white px-5 py-16 sm:px-8 sm:py-20">
         <div className="mx-auto max-w-7xl">
@@ -157,13 +205,13 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
-        <div className="mx-auto max-w-5xl text-center"><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">Nguyên tắc thương hiệu</p><h2 className="mt-4 text-4xl font-bold text-pine sm:text-6xl">Không bán cái đẹp.<br />Bán cái phù hợp.</h2><p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-muted">Lựa chọn tốt không phải lúc nào cũng nổi bật nhất trên ảnh. Đó là lựa chọn phù hợp với cách bạn muốn đi và những điều bạn sẵn sàng đánh đổi.</p></div>
-      </section>
+      {brandStatement ? <section className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
+        <div className="mx-auto max-w-5xl text-center"><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">{brandStatement?.eyebrow}</p><h2 className="mt-4 whitespace-pre-line text-4xl font-bold text-pine sm:text-6xl">{brandStatement?.heading}</h2><p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-muted">{brandStatement?.body}</p></div>
+      </section> : null}
 
-      <section id="final-cta" className="trip-detail-hero px-5 py-16 text-white sm:px-8 sm:py-20">
-        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-7 md:flex-row md:items-center"><div><p className="text-sm font-bold uppercase tracking-[0.14em] text-white/70">Tà Xùa, trước khi bạn đến.</p><h2 className="mt-3 text-4xl font-bold sm:text-5xl">Phần phức tạp để chúng tôi lo.</h2><p className="mt-4 max-w-2xl leading-7 text-white/80">Bắt đầu bằng nơi lưu trú phù hợp. Các phần còn lại của chuyến sẽ chỉ được mở khi có dữ liệu và quy trình thật.</p></div><Link href={PUBLIC_ROUTES.stay} className={buttonVariants({ variant: "secondary", size: "lg", className: "shrink-0 border-white/30 bg-white text-pine" })}>Bắt đầu tìm chuyến<ArrowRight size={18} aria-hidden="true" /></Link></div>
-      </section>
+      {finalCta ? <section id="final-cta" className="trip-detail-hero px-5 py-16 text-white sm:px-8 sm:py-20">
+        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-7 md:flex-row md:items-center"><div><p className="text-sm font-bold uppercase tracking-[0.14em] text-white/70">{finalCta?.eyebrow}</p><h2 className="mt-3 text-4xl font-bold sm:text-5xl">{finalCta?.heading}</h2><p className="mt-4 max-w-2xl leading-7 text-white/80">{finalCta?.body}</p></div><Link href={finalCta?.cta_href ?? PUBLIC_ROUTES.stay} className={buttonVariants({ variant: "secondary", size: "lg", className: "shrink-0 border-white/30 bg-white text-pine" })}>{finalCta?.cta_label ?? "Bắt đầu tìm chuyến"}<ArrowRight size={18} aria-hidden="true" /></Link></div>
+      </section> : null}
     </main>
   );
 }
