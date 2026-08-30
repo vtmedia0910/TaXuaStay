@@ -1,6 +1,6 @@
 # V2 Phase 2.6 — CMS, Media & Content Operations
 
-Status: implemented by additive migration `202608290011_v2_cms_media_content_operations.sql`, narrow hardening migrations 012–014, and application code. This phase does not start V2 Phase 3.
+Status: implemented by additive migration `202608290011_v2_cms_media_content_operations.sql`, narrow hardening migrations 012–014, and application code. The separately authorized Phase 2.6H hardening adds migration 015 and the visual Admin operations layer described in `V2_PHASE_2_6H_CMS_ADMIN_UX_HARDENING.md`. This phase does not start V2 Phase 3.
 
 ## Purpose and boundary
 
@@ -40,7 +40,7 @@ Draft and public data are separate columns in the same normalized records:
 4. The RPC records `published_at` and `published_by = auth.uid()` and changes the editorial status to `published`.
 5. If any statement fails, the public snapshot remains unchanged. There is no partial section publish.
 
-Both `admin` and `staff` may edit drafts, publish and archive. This matches the existing content-operations role boundary. RLS and the RPC independently require `app_metadata.role` to be `admin` or `staff`; neither workflow uses a service-role key. Archiving website media also permits both roles, but the database RPC refuses while any draft or published reference remains. Archiving a CMS page removes its snapshot from the CMS public view, so the application serves the approved code fallback. Further draft edits keep the page archived until an explicit publish.
+After Phase 2.6H, both `admin` and `staff` may view CMS content, upload/update media, edit/save drafts, reorder content and preview drafts. Only `admin` may publish, archive a page or archive media. Application actions explicitly request the narrow role, and migration 015 repeats that decision inside the RPC/trigger boundary so hiding a button is never the security control. Neither workflow uses a service-role key. Media archive remains reference-safe across draft and published columns. Archiving a CMS page removes its snapshot from the CMS public view, so the application serves the approved code fallback.
 
 Phase 2.6 does not add revision history beyond the durable previous published snapshot. A future revision table must be an additive, separately authorized change.
 
@@ -52,7 +52,7 @@ Phase 2.6 does not add revision history beyond the durable previous published sn
 - `/admin/content/preview?page=home|stay`: protected draft preview reusing public render components and real operational data;
 - `/admin/site-media`: Storage upload, external HTTPS image registration, metadata/focal point and safe archive.
 
-Editors can change structured copy, order by integer, enable/disable a block, maintain structured items, select independent desktop/mobile images and select a real Room Type or Physical Room reference. The public verified-room block uses selected real room IDs only as presentation ordering/filtering; the current Cloud View resolver remains authoritative. If no entity is selected, it uses the current real query order. It never creates placeholder room cards.
+Editors change structured copy through collapsed, context-specific section cards. Normal UI uses move-up/move-down actions instead of exposing integer sort values; transactional RPCs lock the relevant list and normalize ordering. Editors can enable/disable a block, maintain structured items, select independent desktop/mobile images and select a real Room Type or Physical Room reference. The public verified-room block uses selected real room IDs only as presentation ordering/filtering; the current Cloud View resolver remains authoritative. If no entity is selected, it uses the current real query order. It never creates placeholder room cards.
 
 ## Media lifecycle and Storage
 
@@ -64,7 +64,7 @@ Migration 011 creates one public bucket named `site-content` with:
 - public reads, because all stored assets are public website presentation media;
 - authenticated `admin`/`staff` insert/update/delete policies only.
 
-Every `cms_media_assets` row requires a meaningful `alt_text`, role, focal X/Y values from 0–100 and exactly one source: `site-content` plus a validated path, or an external HTTPS URL. Width and height are stored when known. Uploads accept the allow-listed MIME types and roll back the object if metadata insertion fails.
+Every `cms_media_assets` row requires a meaningful `alt_text`, role, focal X/Y values from 0–100 and exactly one source: `site-content` plus a validated path, or an external HTTPS URL. Upload dimensions are detected from bounded JPEG, PNG, WebP or AVIF header parsing and are never trusted from user input. Uploads roll back the object if metadata insertion fails. The accessible focal-point control supports click/tap plus horizontal and vertical keyboard sliders.
 
 External images deliberately use a normal lazy `<img>` instead of opening Next Image `remotePatterns` to arbitrary hosts. Storage images use Next Image and the environment-specific Supabase hostname already allow-listed in `next.config.ts`.
 

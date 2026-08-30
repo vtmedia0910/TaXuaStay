@@ -17,8 +17,7 @@ export const cmsSectionSchema = z.object({
   id: z.uuid(), page_key: z.enum(CMS_PAGE_KEYS), eyebrow: optionalText(100),
   heading: optionalText(180), body: optionalText(1200), cta_label: optionalText(80),
   cta_href: optionalLink, desktop_media_id: optionalUuid, mobile_media_id: optionalUuid,
-  sort_order: z.coerce.number().int().min(0).max(1000), is_enabled: checkbox,
-  max_items: optionalInteger(1, 24),
+  is_enabled: checkbox, max_items: optionalInteger(1, 24),
 });
 
 export const cmsItemSchema = z.object({
@@ -27,16 +26,25 @@ export const cmsItemSchema = z.object({
   item_type: z.enum(["content", "link", "faq", "room_reference"]),
   title: z.string().trim().min(1).max(180), body: optionalText(1000), label: optionalText(80),
   href: optionalLink, media_id: optionalUuid, room_type_id: optionalUuid, physical_room_id: optionalUuid,
-  sort_order: z.coerce.number().int().min(0).max(1000), is_enabled: checkbox,
+  is_enabled: checkbox,
 }).refine((data) => !(data.room_type_id && data.physical_room_id), { message: "Choose one room entity" });
 
 const mediaBase = z.object({
   title: z.string().trim().min(2).max(160), alt_text: z.string().trim().min(2).max(300),
   caption: optionalText(500), role: z.enum(["hero", "card", "gallery", "banner", "og", "icon", "general"]),
-  width: optionalInteger(1, 20000), height: optionalInteger(1, 20000),
   focal_x: z.coerce.number().int().min(0).max(100), focal_y: z.coerce.number().int().min(0).max(100),
 });
 
 export const externalCmsMediaSchema = mediaBase.extend({ external_url: z.url({ protocol: /^https$/ }).max(2048) });
 export const uploadCmsMediaSchema = mediaBase.extend({ folder: z.enum(["homepage", "stay", "about", "banners", "og", "general"]) });
+export const updateCmsMediaSchema = mediaBase.extend({ id: z.uuid() });
+export const cmsMediaQuerySchema = z.object({
+  query: z.string().trim().max(80).default(""),
+  role: z.enum(["all", "hero", "card", "gallery", "banner", "og", "icon", "general"]).default("all"),
+  page: z.coerce.number().int().min(1).max(10_000).default(1),
+  pageSize: z.coerce.number().int().min(1).max(48).default(24),
+});
+export const cmsMoveSchema = z.object({
+  page_key: z.enum(CMS_PAGE_KEYS), id: z.uuid(), direction: z.enum(["up", "down"]),
+});
 export const cmsIdSchema = z.uuid();

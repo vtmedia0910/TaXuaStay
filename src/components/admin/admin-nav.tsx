@@ -31,6 +31,9 @@ const contentLinks = [
   { label: "Hồ sơ phòng", href: "/admin/room-profiles", icon: ListChecks },
   { label: "Giá", href: "/admin/rates", icon: BadgeDollarSign },
   { label: "Tình trạng", href: "/admin/availability", icon: CalendarCheck },
+] as const;
+
+const cmsLinks = [
   { label: "Nội dung web", href: "/admin/content", icon: FilePenLine },
   { label: "Media website", href: "/admin/site-media", icon: ImageIcon },
 ] as const;
@@ -39,7 +42,8 @@ const adminLinks = [{ label: "Cấu hình", href: "/admin/settings", icon: Setti
 const publicLink = { label: "Trang chủ", href: "/", icon: ExternalLink } as const;
 
 export function AdminNav({ role }: { role: AdminRole }) {
-  const links = role === "admin" ? [...contentLinks, ...adminLinks, publicLink] : [...contentLinks, publicLink];
+  const links = role === "admin" ? [...contentLinks, ...cmsLinks, ...adminLinks, publicLink] : [...contentLinks, ...cmsLinks, publicLink];
+  const tailLinks = role === "admin" ? [...adminLinks, publicLink] : [publicLink];
 
   return (
     <>
@@ -49,7 +53,7 @@ export function AdminNav({ role }: { role: AdminRole }) {
           TÀ XÙA TRIP
         </Link>
         <nav className="mt-6 grid gap-1" aria-label="Admin">
-          {links.map(({ label, href, icon: Icon }) => (
+          {contentLinks.map(({ label, href, icon: Icon }) => (
             <Link
               key={href}
               href={href}
@@ -58,6 +62,13 @@ export function AdminNav({ role }: { role: AdminRole }) {
               <Icon size={20} aria-hidden="true" />
               {label}
             </Link>
+          ))}
+          <p className="mt-4 px-3 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-white/45">Nội dung website</p>
+          {cmsLinks.map(({ label, href, icon: Icon }) => (
+            <Link key={`group-${href}`} href={href} className="flex min-h-12 items-center gap-3 rounded-2xl px-3 font-bold text-white/85 hover:bg-white/10"><Icon size={20} aria-hidden="true" />{label}</Link>
+          ))}
+          {tailLinks.map(({ label, href, icon: Icon }) => (
+            <Link key={`tail-${href}`} href={href} className="flex min-h-12 items-center gap-3 rounded-2xl px-3 font-bold text-white/85 hover:bg-white/10"><Icon size={20} aria-hidden="true" />{label}</Link>
           ))}
         </nav>
         <form className="mt-8" action={logoutAction}>

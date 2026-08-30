@@ -21,6 +21,23 @@ export interface CmsMediaAsset {
   focal_y: number;
   is_active?: boolean;
   created_at?: string;
+  updated_at?: string;
+  usages?: CmsMediaUsage[];
+}
+
+export interface CmsMediaUsage {
+  key: string;
+  label: string;
+}
+
+export interface CmsMediaPage {
+  items: CmsMediaAsset[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  query: string;
+  role: CmsMediaRole | "all";
 }
 export interface CmsSectionItem {
   id: string;
@@ -37,6 +54,7 @@ export interface CmsSectionItem {
   sort_order: number;
   is_enabled?: boolean;
   media?: CmsMediaAsset | null;
+  has_draft_changes?: boolean;
 }
 
 export interface CmsSection {
@@ -57,6 +75,7 @@ export interface CmsSection {
   desktop_media?: CmsMediaAsset | null;
   mobile_media?: CmsMediaAsset | null;
   items: CmsSectionItem[];
+  has_draft_changes?: boolean;
 }
 
 export interface CmsPage {
@@ -70,6 +89,14 @@ export interface CmsPage {
   published_at: string | null;
   og_media?: CmsMediaAsset | null;
   sections: CmsSection[];
+  has_draft_changes?: boolean;
+}
+
+export interface CmsPageSummary {
+  page_key: CmsPageKey;
+  status: CmsPageStatus;
+  published_at: string | null;
+  updated_at: string;
 }
 
 export interface CmsRoomOption {

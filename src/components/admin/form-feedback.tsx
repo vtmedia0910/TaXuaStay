@@ -20,24 +20,38 @@ const ERROR_MESSAGES: Record<string, string> = {
   "inventory-save": "Không thể cập nhật tình trạng phòng. Hãy kiểm tra khoảng ngày, số phòng vật lý, nguồn và giá vận hành tùy chọn.",
   "cms-page-invalid": "Nội dung trang hoặc metadata chưa hợp lệ.",
   "cms-page-save": "Không thể lưu bản nháp trang.",
-  "cms-page-archive": "Không thể lưu trữ trang CMS.",
-  "cms-section-invalid": "Section chưa hợp lệ. Liên kết chỉ được là đường dẫn nội bộ hoặc HTTPS.",
-  "cms-section-save": "Không thể lưu section.",
+  "cms-page-archive": "Không thể lưu trữ trang nội dung.",
+  "cms-section-invalid": "Mục nội dung chưa hợp lệ. Liên kết chỉ được là đường dẫn nội bộ hoặc HTTPS.",
+  "cms-section-save": "Không thể lưu mục nội dung.",
   "cms-item-invalid": "Mục con chưa hợp lệ; chỉ chọn một loại phòng hoặc một Room ID.",
   "cms-item-save": "Không thể lưu mục con.",
   "cms-publish": "Không thể xuất bản nguyên tử toàn trang. Bản công khai cũ không bị thay đổi.",
-  "cms-media-invalid": "Media chưa hợp lệ. Alt text là bắt buộc; chỉ dùng HTTPS hoặc ảnh đúng định dạng/kích thước.",
+  "cms-publish-forbidden": "Bạn không có quyền xuất bản. Hãy nhờ tài khoản Admin kiểm tra và xác nhận bản nháp.",
+  "cms-archive-forbidden": "Bạn không có quyền lưu trữ trang. Đây là thao tác chỉ dành cho Admin.",
+  "cms-reorder": "Không thể thay đổi vị trí. Thứ tự cũ vẫn được giữ nguyên.",
+  "cms-media-invalid": "Ảnh website chưa hợp lệ. Alt text là bắt buộc; chỉ dùng HTTPS hoặc ảnh đúng định dạng/kích thước.",
+  "cms-media-metadata": "Không thể đọc kích thước ảnh. Tệp có thể hỏng hoặc không đúng định dạng đã chọn.",
   "cms-media-upload": "Không thể tải ảnh lên bucket site-content.",
-  "cms-media-save": "Không thể lưu metadata media.",
-  "cms-media-archive": "Không thể lưu trữ media.",
-  "cms-media-referenced": "Media vẫn đang được tham chiếu trong bản nháp hoặc bản công khai. Hãy thay media trong nội dung trước.",
+  "cms-media-save": "Không thể lưu thông tin ảnh website.",
+  "cms-media-archive": "Không thể lưu trữ ảnh website.",
+  "cms-media-archive-forbidden": "Bạn không có quyền lưu trữ ảnh website. Đây là thao tác chỉ dành cho Admin.",
+  "cms-media-referenced": "Ảnh vẫn đang được tham chiếu trong bản nháp hoặc bản công khai. Hãy thay ảnh trong nội dung trước.",
 };
 
 export function FormFeedback({ saved, error }: { saved?: string; error?: string }) {
   if (saved) {
+    const savedMessages: Record<string, string> = {
+      draft: "✓ Đã lưu bản nháp. Website công khai chưa thay đổi.",
+      published: "✓ Đã xuất bản. Website công khai đã được cập nhật.",
+      archived: "✓ Đã lưu trữ.",
+      reordered: "✓ Đã cập nhật vị trí trong bản nháp. Website công khai chưa thay đổi.",
+      upload: "✓ Đã tải ảnh lên và tự động ghi nhận kích thước.",
+      external: "✓ Đã thêm ảnh HTTPS vào thư viện.",
+      media: "✓ Đã cập nhật thông tin và điểm lấy nét của ảnh.",
+    };
     return (
       <p className="mb-5 rounded-2xl bg-pine-soft p-3 text-sm font-bold text-success" role="status">
-        ✓ Đã cập nhật
+        {savedMessages[saved] ?? "✓ Đã cập nhật."}
       </p>
     );
   }

@@ -6,6 +6,7 @@ const sql = readFileSync(resolve(process.cwd(), "supabase/migrations/20260829001
 const correctiveSql = readFileSync(resolve(process.cwd(), "supabase/migrations/202608290012_fix_cms_public_view_grants.sql"), "utf8");
 const storageHardeningSql = readFileSync(resolve(process.cwd(), "supabase/migrations/202608290013_harden_cms_storage_delete.sql"), "utf8");
 const lifecycleHardeningSql = readFileSync(resolve(process.cwd(), "supabase/migrations/202608290014_enforce_cms_archive_lifecycle.sql"), "utf8");
+const permissionHardeningSql = readFileSync(resolve(process.cwd(), "supabase/migrations/202608290015_harden_cms_publishing_permissions.sql"), "utf8");
 
 describe("V2 Phase 2.6 CMS migration", () => {
   it("creates only the structured CMS and website media domain", () => {
@@ -65,5 +66,25 @@ describe("V2 Phase 2.6 CMS migration", () => {
     for (const table of ["cms_pages", "cms_sections", "cms_section_items", "cms_media_assets"]) {
       expect(lifecycleHardeningSql).toMatch(new RegExp(`revoke delete on table public\\.${table} from authenticated`, "i"));
     }
+  });
+
+  it("reserves published snapshots and lifecycle operations for admin at the database boundary", () => {
+    expect(permissionHardeningSql).toMatch(/create or replace function public\.is_cms_admin\(\)/i);
+    expect(permissionHardeningSql).toMatch(/app_metadata'[\s\S]*?role'[\s\S]*?= 'admin'/i);
+    expect(permissionHardeningSql).toMatch(/create trigger cms_pages_lifecycle_guard/i);
+    expect(permissionHardeningSql).toMatch(/create trigger cms_sections_lifecycle_guard/i);
+    expect(permissionHardeningSql).toMatch(/create trigger cms_items_lifecycle_guard/i);
+    expect(permissionHardeningSql).toMatch(/create trigger cms_media_lifecycle_guard/i);
+    expect(permissionHardeningSql).toMatch(/CMS publish requires admin/i);
+    expect(permissionHardeningSql).toMatch(/CMS page archive requires admin/i);
+    expect(permissionHardeningSql).toMatch(/CMS media archive requires admin/i);
+  });
+
+  it("normalizes section and item order in locked transactional RPCs", () => {
+    expect(permissionHardeningSql).toMatch(/create or replace function public\.reorder_cms_section\(/i);
+    expect(permissionHardeningSql).toMatch(/create or replace function public\.reorder_cms_section_item\(/i);
+    expect(permissionHardeningSql).toMatch(/order by sort_order, id for update/i);
+    expect(permissionHardeningSql).toMatch(/set sort_order = position \* 10/i);
+    expect(permissionHardeningSql).toMatch(/CMS reorder requires staff or admin/i);
   });
 });

@@ -1,27 +1,53 @@
-import { Archive, ImagePlus, Link2, Upload } from "lucide-react";
+import { Link2, Upload } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { CmsMediaLibrary } from "@/components/admin/cms-media-library";
 import { FormFeedback } from "@/components/admin/form-feedback";
+import { MediaUploadForm } from "@/components/admin/media-upload-form";
 import { SubmitButton } from "@/components/admin/submit-button";
-import { CmsImage } from "@/components/cms/cms-image";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { addExternalCmsMediaAction, archiveCmsMediaAction, uploadCmsMediaAction } from "@/features/cms/actions";
-import { getAdminCmsMedia } from "@/features/cms/data";
+import { requireAdminUser } from "@/features/admin/auth";
+import { addExternalCmsMediaAction } from "@/features/cms/actions";
+import { getAdminCmsMediaPage } from "@/features/cms/data";
+import { CMS_MEDIA_ROLE_LABELS } from "@/features/cms/ui";
 
-function CommonFields({ prefix }: { prefix: string }) {
-  return <><div className="grid gap-4 sm:grid-cols-2"><Field label="Tên nội bộ" htmlFor={`${prefix}-title`}><Input id={`${prefix}-title`} name="title" minLength={2} maxLength={160} required /></Field><Field label="Vai trò" htmlFor={`${prefix}-role`}><Select id={`${prefix}-role`} name="role" defaultValue="general"><option value="hero">Hero</option><option value="card">Card</option><option value="gallery">Gallery</option><option value="banner">Banner</option><option value="og">Open Graph</option><option value="icon">Icon</option><option value="general">Chung</option></Select></Field></div><Field label="Alt text bắt buộc" htmlFor={`${prefix}-alt`} hint="Mô tả ảnh cho người không nhìn thấy ảnh."><Input id={`${prefix}-alt`} name="alt_text" minLength={2} maxLength={300} required /></Field><Field label="Chú thích" htmlFor={`${prefix}-caption`}><Textarea id={`${prefix}-caption`} name="caption" maxLength={500} /></Field><div className="grid gap-4 sm:grid-cols-4"><Field label="Rộng px" htmlFor={`${prefix}-width`}><Input id={`${prefix}-width`} name="width" type="number" min={1} max={20000} /></Field><Field label="Cao px" htmlFor={`${prefix}-height`}><Input id={`${prefix}-height`} name="height" type="number" min={1} max={20000} /></Field><Field label="Tiêu điểm X" htmlFor={`${prefix}-x`}><Input id={`${prefix}-x`} name="focal_x" type="number" min={0} max={100} defaultValue={50} required /></Field><Field label="Tiêu điểm Y" htmlFor={`${prefix}-y`}><Input id={`${prefix}-y`} name="focal_y" type="number" min={0} max={100} defaultValue={50} required /></Field></div></>;
-}
-export default async function AdminSiteMediaPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string }> }) {
-  const [media, feedback] = await Promise.all([getAdminCmsMedia(), searchParams]);
-  return <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6"><AdminPageHeader title="Media website" description="Thư viện ảnh cho trang marketing, tách biệt hoàn toàn với bằng chứng xác minh phòng." /><FormFeedback saved={feedback.saved} error={feedback.error} />
-    <div className="grid gap-5 lg:grid-cols-2">
-      <Card className="p-5 sm:p-6"><details open><summary className="cursor-pointer text-xl font-bold text-pine"><span className="inline-flex items-center gap-2"><Upload size={20} /> Tải ảnh lên site-content</span></summary><form action={uploadCmsMediaAction} className="mt-5 grid gap-4"><CommonFields prefix="upload" /><div className="grid gap-4 sm:grid-cols-2"><Field label="Nhóm thư mục" htmlFor="folder"><Select id="folder" name="folder" defaultValue="general"><option value="homepage">Trang chủ</option><option value="stay">Lưu trú</option><option value="about">Giới thiệu</option><option value="banners">Banner</option><option value="og">Open Graph</option><option value="general">Chung</option></Select></Field><Field label="Tệp ảnh" htmlFor="file" hint="JPEG, PNG, WebP hoặc AVIF; tối đa 10 MB."><Input id="file" name="file" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required /></Field></div><SubmitButton label="Tải lên" icon={<ImagePlus size={18} />} /></form></details></Card>
-      <Card className="p-5 sm:p-6"><details><summary className="cursor-pointer text-xl font-bold text-pine"><span className="inline-flex items-center gap-2"><Link2 size={20} /> Thêm ảnh HTTPS bên ngoài</span></summary><form action={addExternalCmsMediaAction} className="mt-5 grid gap-4"><CommonFields prefix="external" /><Field label="URL HTTPS" htmlFor="external_url"><Input id="external_url" name="external_url" type="url" placeholder="https://..." maxLength={2048} required /></Field><SubmitButton label="Lưu URL" /></form></details></Card>
-    </div>
-    <section className="mt-8"><h2 className="text-2xl font-bold text-pine">Thư viện đang hoạt động ({media.length})</h2>{media.length ? <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{media.map((asset) => <Card key={asset.id} className="overflow-hidden"><div className="relative aspect-[4/3] bg-mist"><CmsImage media={asset} sizes="(min-width: 1024px) 320px, 50vw" /></div><div className="p-4"><div className="flex items-start justify-between gap-2"><h3 className="font-bold text-pine">{asset.title}</h3><Badge>{asset.role}</Badge></div><p className="mt-2 text-sm leading-6 text-muted">Alt: {asset.alt_text}</p><p className="mt-2 text-xs text-muted">Tiêu điểm {asset.focal_x}/{asset.focal_y} · {asset.width ?? "?"}×{asset.height ?? "?"}</p><form action={archiveCmsMediaAction} className="mt-4"><input type="hidden" name="id" value={asset.id} /><SubmitButton label="Lưu trữ nếu không còn dùng" icon={<Archive size={16} />} variant="secondary" /></form></div></Card>)}</div> : <p className="mt-5 rounded-3xl border border-line bg-surface p-5 text-muted">Chưa có media website. Public UI vẫn dùng fallback an toàn trong code.</p>}</section>
-  </main>;
+export default async function AdminSiteMediaPage({ searchParams }: {
+  searchParams: Promise<{ saved?: string; error?: string; search?: string; role?: string; page?: string }>;
+}) {
+  const [user, params] = await Promise.all([requireAdminUser(), searchParams]);
+  const media = await getAdminCmsMediaPage({ query: params.search ?? "", role: params.role ?? "all", page: params.page ?? 1, pageSize: 24 });
+  return (
+    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <AdminPageHeader title="Media website" description="Thư viện ảnh marketing, tách biệt hoàn toàn với media phòng và bằng chứng xác minh." />
+      <FormFeedback saved={params.saved} error={params.error} />
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Card className="p-5 sm:p-6">
+          <details open>
+            <summary className="cursor-pointer text-xl font-bold text-pine"><span className="inline-flex items-center gap-2"><Upload size={20} /> Tải ảnh mới</span></summary>
+            <MediaUploadForm />
+          </details>
+        </Card>
+        <Card className="p-5 sm:p-6">
+          <details>
+            <summary className="cursor-pointer text-xl font-bold text-pine"><span className="inline-flex items-center gap-2"><Link2 size={20} /> Thêm ảnh HTTPS bên ngoài</span></summary>
+            <form action={addExternalCmsMediaAction} className="mt-5 grid gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Tên ảnh" htmlFor="external-title"><Input id="external-title" name="title" minLength={2} maxLength={160} required /></Field>
+                <Field label="Vai trò" htmlFor="external-role"><Select id="external-role" name="role" defaultValue="general">{Object.entries(CMS_MEDIA_ROLE_LABELS).map(([role, label]) => <option key={role} value={role}>{label}</option>)}</Select></Field>
+              </div>
+              <Field label="Alt text" htmlFor="external-alt"><Input id="external-alt" name="alt_text" minLength={2} maxLength={300} required /></Field>
+              <Field label="Chú thích (không bắt buộc)" htmlFor="external-caption"><Textarea id="external-caption" name="caption" maxLength={500} /></Field>
+              <Field label="URL HTTPS" htmlFor="external-url" hint="Chỉ dùng nguồn ảnh đã được phép sử dụng."><Input id="external-url" name="external_url" type="url" placeholder="https://…" maxLength={2048} required /></Field>
+              <input type="hidden" name="focal_x" value="50" /><input type="hidden" name="focal_y" value="50" />
+              <div><SubmitButton label="Lưu ảnh bên ngoài" /></div>
+            </form>
+          </details>
+        </Card>
+      </div>
+      <CmsMediaLibrary result={media} isAdmin={user.role === "admin"} />
+    </main>
+  );
 }

@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { SearchEntryForm } from "@/components/search/search-entry-form";
 import { CmsImage } from "@/components/cms/cms-image";
 import { VerifiedStayCard } from "@/components/trip/verified-stay-card";
@@ -71,7 +72,7 @@ export function HomeExperience({ settings, roomResponse, cms, preview = false }:
   const verifiedRooms = findCmsSection(cms, "verified_rooms");
   const brandStatement = findCmsSection(cms, "brand_statement");
   const finalCta = findCmsSection(cms, "final_cta");
-  const selectedRoomIds = verifiedRooms?.items.map((item) => item.room_type_id).filter(Boolean) as string[] | undefined;
+  const selectedRoomIds = verifiedRooms?.items.filter((item) => item.is_enabled !== false).map((item) => item.room_type_id).filter(Boolean) as string[] | undefined;
   const allCloudRooms = roomResponse.items.filter((item) => item.cloudView);
   const orderedCloudRooms = selectedRoomIds?.length
     ? selectedRoomIds.flatMap((id) => allCloudRooms.filter((item) => item.room.id === id))
@@ -79,10 +80,21 @@ export function HomeExperience({ settings, roomResponse, cms, preview = false }:
   const cloudRooms = orderedCloudRooms.slice(0, verifiedRooms?.max_items ?? 3);
   const desktopHero = hero?.desktop_media;
   const mobileHero = hero?.mobile_media ?? desktopHero;
+  const heroSecondary = hero?.items.find((item) => item.item_key === "secondary_cta" && item.is_enabled !== false);
+  const differentiatorDefaults: { Icon: LucideIcon; title: string; description: string; media?: CmsPage["sections"][number]["items"][number]["media"] }[] = [
+    { Icon: ShieldCheck, title: "THẨM ĐỊNH TẠI CHỖ", description: "Ghi nhận đúng nơi, đúng loại phòng và đúng phạm vi." },
+    { Icon: Camera, title: "XEM TRƯỚC BẰNG 360°", description: "Ảnh toàn cảnh được gắn nhãn phòng hoặc vị trí ngắm." },
+    { Icon: Info, title: "NÓI CẢ ĐIỂM CHƯA TỐT", description: "Ưu điểm và điều cần lưu ý cùng xuất hiện khi có dữ liệu." },
+    { Icon: Compass, title: "CHUẨN BỊ CẢ CHUYẾN ĐI", description: "Hệ thống đang mở rộng từng bước; hiện Lưu trú là luồng hoạt động đầy đủ." },
+  ];
+  const enabledDifferentiators = differentiators?.items.filter((item) => item.is_enabled !== false) ?? [];
+  const differentiatorCards = enabledDifferentiators.length
+    ? enabledDifferentiators.map((item, index) => ({ Icon: [ShieldCheck, Camera, Info, Compass][index % 4], title: item.title, description: item.body ?? "", media: item.media }))
+    : differentiatorDefaults;
 
   return (
     <main>
-      {preview ? <div className="sticky top-0 z-50 bg-copper px-5 py-3 text-center text-sm font-bold text-white">Bản xem trước nội dung nháp · không công khai</div> : null}
+      {preview ? <div className="sticky top-0 z-50 bg-copper px-5 py-3 text-center text-sm font-bold text-white">Bản xem trước nội dung nháp · không công khai · SEO: {cms.seo_title ?? cms.title}</div> : null}
       {settings.announcement_enabled && settings.announcement ? (
         <div className="bg-pine px-5 py-3 text-center text-sm font-bold text-white" role="status">
           {settings.announcement}
@@ -100,7 +112,7 @@ export function HomeExperience({ settings, roomResponse, cms, preview = false }:
             <p className="mt-6 max-w-3xl text-lg leading-8 text-ink sm:text-xl">{hero?.body}</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href={hero?.cta_href ?? PUBLIC_ROUTES.stay} className={buttonVariants({ size: "lg" })}>{hero?.cta_label ?? "Tìm chuyến đi phù hợp"}<ArrowRight size={18} aria-hidden="true" /></Link>
-              <Link href="/#verified-stays" className={buttonVariants({ variant: "secondary", size: "lg" })}>Xem phòng đã thẩm định</Link>
+              <Link href={heroSecondary?.href ?? "/#verified-stays"} className={buttonVariants({ variant: "secondary", size: "lg" })}>{heroSecondary?.title ?? "Xem phòng đã thẩm định"}</Link>
             </div>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-muted">Hiện tại luồng tìm kiếm hoạt động cho Lưu trú. Combo, xe khách và xe máy được ghi rõ trạng thái, không giả lập đặt dịch vụ.</p>
           </div>
@@ -138,7 +150,7 @@ export function HomeExperience({ settings, roomResponse, cms, preview = false }:
       {why ? <section id="about" className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
           <div><p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">{why?.eyebrow}</p><h2 className="mt-3 text-4xl font-bold text-pine sm:text-5xl">{why?.heading}</h2></div>
-          <Card className="p-6 sm:p-8"><p className="text-lg leading-8 text-ink">Một dòng “view núi” chưa cho bạn biết có nhìn thấy cảnh từ giường, góc nhìn có bị che, đường vào có khó, phòng có khớp ảnh hay dữ liệu còn mới không.</p><p className="mt-4 leading-7 text-muted">{why?.body}</p></Card>
+          <Card className="overflow-hidden">{why.desktop_media ? <div className="relative aspect-[16/8] bg-mist"><CmsImage media={why.desktop_media} sizes="(min-width: 1024px) 700px, 100vw" /></div> : null}<div className="p-6 sm:p-8"><p className="text-lg leading-8 text-ink">Một dòng “view núi” chưa cho bạn biết có nhìn thấy cảnh từ giường, góc nhìn có bị che, đường vào có khó, phòng có khớp ảnh hay dữ liệu còn mới không.</p><p className="mt-4 leading-7 text-muted">{why?.body}</p></div></Card>
         </div>
       </section> : null}
 
@@ -147,12 +159,7 @@ export function HomeExperience({ settings, roomResponse, cms, preview = false }:
           <p className="text-sm font-bold uppercase tracking-[0.14em] text-copper-strong">{differentiators?.eyebrow}</p>
           <h2 className="mt-3 max-w-3xl text-4xl font-bold text-pine sm:text-5xl">{differentiators?.heading}</h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {(differentiators?.items.length ? differentiators.items.map((item, index) => [[ShieldCheck, Camera, Info, Compass][index % 4], item.title, item.body ?? ""]) : [
-              [ShieldCheck, "THẨM ĐỊNH TẠI CHỖ", "Ghi nhận đúng nơi, đúng loại phòng và đúng phạm vi."],
-              [Camera, "XEM TRƯỚC BẰNG 360°", "Ảnh toàn cảnh được gắn nhãn phòng hoặc vị trí ngắm."],
-              [Info, "NÓI CẢ ĐIỂM CHƯA TỐT", "Ưu điểm và điều cần lưu ý cùng xuất hiện khi có dữ liệu."],
-              [Compass, "CHUẨN BỊ CẢ CHUYẾN ĐI", "Hệ thống đang mở rộng từng bước; hiện Lưu trú là luồng hoạt động đầy đủ."],
-            ]).map(([Icon, title, description]) => <Card key={String(title)} className="p-5"><Icon className="text-copper" aria-hidden="true" /><h3 className="mt-4 text-lg font-bold text-pine">{String(title)}</h3><p className="mt-2 text-sm leading-6 text-muted">{String(description)}</p></Card>)}
+            {differentiatorCards.map(({ Icon, title, description, media }) => <Card key={title} className="overflow-hidden">{media ? <div className="relative aspect-[4/3] bg-mist"><CmsImage media={media} sizes="(min-width: 1024px) 300px, 50vw" /></div> : null}<div className="p-5"><Icon className="text-copper" aria-hidden="true" /><h3 className="mt-4 text-lg font-bold text-pine">{title}</h3><p className="mt-2 text-sm leading-6 text-muted">{description}</p></div></Card>)}
           </div>
         </div>
       </section> : null}

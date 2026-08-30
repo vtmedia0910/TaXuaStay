@@ -23,9 +23,10 @@ Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the appl
 202608290012
 202608290013
 202608290014
+202608290015
 ```
 
-After the Phase 2.6 hardening migrations, `migration list` must report 001–014 Local = Remote and linked database lint must report no schema errors. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
+After the Phase 2.6H hardening migration, `migration list` must report 001–015 Local = Remote. Linked database lint reports no errors; the two reorder RPCs currently produce non-functional `shadowed_variables`/unused declaration warnings from PL/pgSQL's integer-loop variable. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
 
 ## V2 migration lineage
 
@@ -33,7 +34,7 @@ Migrations 001–008 are the **Legacy Foundation Completed**. They remain immuta
 
 Migration `202608290009_v2_destination_and_physical_rooms.sql` is **V2 Phase 1 — Architecture Alignment**. Migration `202608290010_v2_verified_room_profile.sql` is **V2 Phase 2 — Verified Room Profile**. It adds Room Quality, factual strengths/caveats, and stronger exact-room resolution without changing pricing, pooled availability, search, Road Verified, or the Cloud View rubric.
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. Migration `202608290011_v2_cms_media_content_operations.sql` implements **V2 Phase 2.6 — CMS, Media & Content Operations** with structured draft/public snapshots, public-safe views, website media and the `site-content` bucket. V2 Phase 3 has not started.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. Migrations 011–014 implement **V2 Phase 2.6 — CMS, Media & Content Operations** with structured draft/public snapshots, public-safe views, website media and the `site-content` bucket. Migration `202608290015_harden_cms_publishing_permissions.sql` implements **V2 Phase 2.6H** by enforcing admin-only publish/archive and transactional staff/admin reorder. V2 Phase 3 has not started.
 
 ## Migration order
 
@@ -54,6 +55,7 @@ supabase/migrations/202608290011_v2_cms_media_content_operations.sql
 supabase/migrations/202608290012_fix_cms_public_view_grants.sql
 supabase/migrations/202608290013_harden_cms_storage_delete.sql
 supabase/migrations/202608290014_enforce_cms_archive_lifecycle.sql
+supabase/migrations/202608290015_harden_cms_publishing_permissions.sql
 ```
 
 Never reapply or edit a migration already present remotely. Migration `202608290003` is the additive corrective migration that preserves immutable migration `202608290002`; migration `202608290004` adds the normalized Verified Standard without seeding verification data; migration `202608290005` preserves immutable 004 while rejecting future/expired verified cycles, refreshing normal re-verification dates, and limiting anonymous Cloud/Road reads to public-view columns.

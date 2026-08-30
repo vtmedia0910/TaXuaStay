@@ -32,7 +32,7 @@ Technical domain      Stay
 Technical namespace   /stay
 ```
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented at application level with no database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented with additive migration 011 plus narrow corrective migrations 012–014. Historical routes remain compatibility pages with `/stay` canonicals. V2 Phase 3 has not started and requires a separate owner task.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented at application level with no database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented with migrations 011–014, and **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** with migration 015. Historical routes remain compatibility pages with `/stay` canonicals. V2 Phase 3 has not started and requires a separate owner task.
 
 ## Currently implemented — legacy foundation completed
 
@@ -98,13 +98,15 @@ Anonymous users can read only current public quality and explicitly public notes
 
 ## V2 Phase 2.6 — CMS, Media & Content Operations implemented
 
-Migration 011 adds `cms_pages`, `cms_sections`, `cms_section_items` and website-only `cms_media_assets`. Draft fields remain private while one staff/admin RPC copies the full normalized page into explicit `published_*` snapshots in one transaction. Public `security_invoker` views and column grants expose only current published content and referenced active media; audit users, draft values and anonymous mutations remain protected by grants plus RLS. Corrective migration 012 adds only the two view-filter column privileges required for `status` and `is_active`; RLS continues to hide draft/inactive rows. Migration 013 limits Storage deletion to orphan objects with no CMS metadata row, and migration 014 revokes direct CMS table deletes in favor of archive/disable lifecycle.
+Migration 011 adds `cms_pages`, `cms_sections`, `cms_section_items` and website-only `cms_media_assets`. Draft fields remain private while one atomic RPC copies the full normalized page into explicit `published_*` snapshots. Public `security_invoker` views and column grants expose only current published content and referenced active media; audit users, draft values and anonymous mutations remain protected by grants plus RLS. Corrective migration 012 adds only the two view-filter column privileges required for `status` and `is_active`; migration 013 limits Storage deletion to orphan objects; migration 014 revokes direct CMS table deletes. Phase 2.6H migration 015 makes publish/page archive/media archive admin-only at the DB boundary, protects published snapshot columns with lifecycle triggers, and adds transactional staff/admin reorder RPCs that normalize sort values to deterministic multiples of ten.
 
-The public `site-content` Storage bucket accepts only JPEG, PNG, WebP and AVIF up to 10 MB in fixed website folders. Staff/admin writes use the authenticated user and Storage RLS, never a service-role client. Every media row requires alt text, focal point and exactly one Storage path or external HTTPS URL. Archive is blocked while any draft or published reference remains. Existing accommodation/evidence `media_assets` are unchanged and separate.
+The public `site-content` Storage bucket accepts only JPEG, PNG, WebP and AVIF up to 10 MB in fixed website folders. Staff/admin writes use the authenticated user and Storage RLS, never a service-role client. Every media row requires alt text, focal point and exactly one Storage path or external HTTPS URL. Image dimensions are detected from bounded server-side file-header parsing rather than accepted from form input. Archive is admin-only and blocked while any draft or published reference remains. Existing accommodation/evidence `media_assets` are unchanged and separate.
 
 Homepage, Stay intro/SEO and footer copy read published CMS content with approved code fallbacks. Operational facts — rooms, evidence, verification, Cloud View, prices and availability — remain live domain queries rather than copied CMS values. Editors control SEO title/description/OG media only; canonical, robots, sitemap, schema and staging noindex remain code-owned. Publishing revalidates the affected public/Admin paths so content changes do not require a redeploy.
 
-See `docs/V2_PHASE_2_6_CMS_MEDIA_CONTENT_OPS.md` for the tables, role decision, publish workflow, media lifecycle, seeded copy and operations checklist.
+The Admin editor presents collapsed, named section cards, a page outline, context-specific fields, visual media selection and clear draft/public state. Staff may edit/save/upload/preview but not publish or archive; admins own lifecycle transitions. The media library uses a bounded server query, filters, pagination, usage references, automatic dimensions and an accessible visual focal-point picker.
+
+See `docs/V2_PHASE_2_6_CMS_MEDIA_CONTENT_OPS.md` and `docs/V2_PHASE_2_6H_CMS_ADMIN_UX_HARDENING.md` for the data contract, role boundary and operating workflow.
 
 ## Legacy Phase 0 baseline
 
@@ -207,7 +209,7 @@ Public inventory is read through a `security_invoker` allow-listed view backed b
 
 ## V2 roadmap boundary
 
-The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is implemented by migration 009, Verified Room Profile by migration 010, application-only brand/UX by V2 Phase 2.5, and structured website operations by migrations 011–014 / V2 Phase 2.6. Only separately authorized later phases may add supplier/partner foundations, private commercial economics, motorbike service integration, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
+The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is implemented by migration 009, Verified Room Profile by migration 010, application-only brand/UX by V2 Phase 2.5, structured website operations by migrations 011–014 / V2 Phase 2.6, and CMS Admin/publishing hardening by migration 015 / V2 Phase 2.6H. Only separately authorized later phases may add supplier/partner foundations, private commercial economics, motorbike service integration, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
 
 ## Future Biker relationship
 
