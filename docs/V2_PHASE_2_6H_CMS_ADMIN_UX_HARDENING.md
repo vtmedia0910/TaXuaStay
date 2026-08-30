@@ -59,4 +59,4 @@ Operational acceptance for a real authenticated account is:
 5. canonical and temporary-host noindex remain unchanged;
 6. admin can archive only unreferenced media.
 
-No Supplier, Partner, commercial contract, service catalog, package, unified booking, payment or Trip Dashboard domain was added. V2 Phase 3 has not been started.
+Phase 2.6H added no Supplier, Partner, commercial contract, service catalog, package, unified booking, payment or Trip Dashboard domain. V2 Phase 3 was later implemented under separate authorization and remains outside CMS.

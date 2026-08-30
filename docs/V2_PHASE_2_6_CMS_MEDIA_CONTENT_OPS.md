@@ -104,4 +104,4 @@ Storage and external-image availability remain external dependencies; the UI deg
 
 ## Explicit exclusions
 
-V2 Phase 2.6 adds no Supplier/Partner, contract, commission, payout, generic service, package, transport, motorbike integration, booking, payment or Trip Dashboard domain. V2 Phase 3 has not been started.
+V2 Phase 2.6 added no Supplier/Partner, contract, commission, payout, generic service, package, transport, motorbike integration, booking, payment or Trip Dashboard domain. V2 Phase 3 was later implemented under separate authorization and remains outside CMS ownership.

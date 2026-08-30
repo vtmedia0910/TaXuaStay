@@ -126,4 +126,4 @@ The SEO moat is first-party verified data—Cloud View, View From Bed, 360, Room
 
 ## Phase boundary
 
-Phase 2.5 was completed at application level. The separately authorized V2 Phase 2.6 extension adds a bounded structured CMS and website-media workflow through migration 011; it does not turn this direction into a page builder or transfer operational facts/technical SEO into editable content. Supplier/Partner Phase 3 has not started and still requires separate owner authorization.
+Phase 2.5 was completed at application level. The separately authorized V2 Phase 2.6 extension adds a bounded structured CMS and website-media workflow; it does not turn this direction into a page builder or transfer operational facts/technical SEO into editable content. V2 Phase 3 is now separately implemented as a private Supplier/Partner foundation. It adds no public Partner badge, supplier page, sponsored ranking, or change to this public UX direction.

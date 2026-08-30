@@ -32,7 +32,7 @@ Technical domain      Stay
 Technical namespace   /stay
 ```
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented at application level with no database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented with migrations 011–014, and **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** with migration 015. Historical routes remain compatibility pages with `/stay` canonicals. V2 Phase 3 has not started and requires a separate owner task.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented at application level with no database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented with migrations 011–014, **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** with migration 015, and **V2 Phase 3 — Supplier + Partner Foundation** with migration 016. Historical routes remain compatibility pages with `/stay` canonicals. V2 Phase 4 has not started and requires a separate owner task.
 
 ## Currently implemented — legacy foundation completed
 
@@ -47,8 +47,9 @@ The current repository actually implements:
 - a published Tà Xùa Destination, required property destination ownership, stable physical-room identity, and exact-room-compatible media/verification targets;
 - Verified Room Profile V2 with independent Room Quality dimensions, factual strengths/caveats, and richer exact-room presentation.
 - structured website copy/media operations with protected preview, atomic page publish and public-safe fallbacks.
+- private Supplier identities, normalized contacts, historical many-to-many Property links, Partner relationship lifecycle/tier, and immutable external-system references.
 
-There is currently no supplier or partner domain, generic services, package commerce, unified trip booking, booking items, payment, bus inventory, supplier confirmation workflow, or Trip Dashboard.
+There is currently no private commercial economics, generic service catalog, package commerce, unified trip booking, booking items, payment, bus inventory, supplier confirmation workflow, or Trip Dashboard.
 
 ## V2 accommodation hierarchy — Phase 1 implemented
 
@@ -107,6 +108,16 @@ Homepage, Stay intro/SEO and footer copy read published CMS content with approve
 The Admin editor presents collapsed, named section cards, a page outline, context-specific fields, visual media selection and clear draft/public state. Staff may edit/save/upload/preview but not publish or archive; admins own lifecycle transitions. The media library uses a bounded server query, filters, pagination, usage references, automatic dimensions and an accessible visual focal-point picker.
 
 See `docs/V2_PHASE_2_6_CMS_MEDIA_CONTENT_OPS.md` and `docs/V2_PHASE_2_6H_CMS_ADMIN_UX_HARDENING.md` for the data contract, role boundary and operating workflow.
+
+## V2 Phase 3 — Supplier + Partner Foundation implemented
+
+Migration 016 adds a private supply-side domain without changing public accommodation DTOs. `suppliers` holds stable immutable `SUP-...` operational codes and a lifecycle that supports accommodation, motorbike, bus, transport, activity, food, guide, and other providers. `supplier_contacts` normalizes private operational contacts and requires at least one phone/email/Zalo method. `supplier_properties` links Suppliers to Properties many-to-many with explicit roles and dated history; it does not add `properties.supplier_id`.
+
+`partner_relationships` is a separate Trip-to-Supplier lifecycle. Its standard/verified/preferred/cloud_partner/exclusive tier is private and commercial/relational only. It never changes verification, Cloud View, Room Quality, Road Verified, price confidence, availability, or public ranking. `supplier_external_refs` stores only immutable opaque external identities and bounded non-secret metadata, preparing a future adapter without Biker database access or copied fleet/rental data.
+
+All five tables use RLS, explicit authenticated grants, audit fields, and zero anonymous access. Staff can manage operational contacts and Property links; Admin owns Supplier lifecycle, Partner relationship/tier, external references, and archive. Critical saves and archive closure use `security invoker` transaction RPCs. `/admin/suppliers` provides the private workflow, while Property Admin shows only an authenticated summary. No Supplier/Partner data is published or merged into CMS.
+
+See `docs/V2_PHASE_3_SUPPLIER_PARTNER_FOUNDATION.md` for schema, lifecycle, role, privacy, trust, Biker, and Phase 4 boundaries.
 
 ## Legacy Phase 0 baseline
 
@@ -209,7 +220,7 @@ Public inventory is read through a `security_invoker` allow-listed view backed b
 
 ## V2 roadmap boundary
 
-The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is implemented by migration 009, Verified Room Profile by migration 010, application-only brand/UX by V2 Phase 2.5, structured website operations by migrations 011–014 / V2 Phase 2.6, and CMS Admin/publishing hardening by migration 015 / V2 Phase 2.6H. Only separately authorized later phases may add supplier/partner foundations, private commercial economics, motorbike service integration, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
+The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is migration 009, Verified Room Profile migration 010, brand/UX V2 Phase 2.5, website operations migrations 011–014, CMS hardening migration 015, and Supplier/Partner foundation migration 016. Only separately authorized later phases may add private commercial economics, motorbike service integration, services, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
 
 ## Future Biker relationship
 

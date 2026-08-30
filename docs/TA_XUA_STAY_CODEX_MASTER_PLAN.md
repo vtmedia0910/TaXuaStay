@@ -7,7 +7,7 @@
 **Target repository:** `vtmedia0910/TaXuaStay`  
 **Read-only technical reference:** `vtmedia0910/taxuabiker2`  
 **Canonical target file trong repo sau khi áp dụng:** `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md`
-**Current product state:** Legacy Foundation 001–008 + V2 Phase 1 / migration 009 + V2 Phase 2 / migration 010 + application-only V2 Phase 2.5 + V2 Phase 2.6 / migrations 011–014 + V2 Phase 2.6H / migration 015 đã hoàn thành. V2 Phase 3 chưa bắt đầu và chỉ được thực hiện khi có task riêng.
+**Current product state:** Legacy Foundation 001–008 + V2 Phase 1 / migration 009 + V2 Phase 2 / migration 010 + application-only V2 Phase 2.5 + V2 Phase 2.6 / migrations 011–014 + V2 Phase 2.6H / migration 015 + V2 Phase 3 / migration 016 đã hoàn thành. V2 Phase 4 — Commercial Economics chưa bắt đầu và chỉ được thực hiện khi có task riêng.
 
 ---
 
@@ -3480,13 +3480,13 @@ Trip Finder can be P1 if needed.
 
 # 177. V2.1 IMPLEMENTATION ORDER
 
-Immediate:
+Completed under separate owner authorization:
 
 ```text
-V2 Phase 3 — only after separate owner authorization
+V2 Phase 3 — Supplier + Partner Foundation / migration 016
 ```
 
-Phase 2.5, the separately authorized Phase 2.6 content-operations extension, and Phase 2.6H Admin/publishing hardening are complete. Do not start Supplier automatically.
+Phase 2.5, Phase 2.6, Phase 2.6H, and the separately authorized Phase 3 Supplier/Partner foundation are complete. The next separately authorized phase is V2 Phase 4 — Commercial Economics.
 
 ---
 
@@ -3541,13 +3541,13 @@ they should understand within seconds:
 
 # 183. NEXT IMPLEMENTATION
 
-V2 Phase 2 / migration 010, V2 Phase 2.5, V2 Phase 2.6 / migrations 011–014, and V2 Phase 2.6H / migration 015 are complete.
+V2 Phase 2 / migration 010, V2 Phase 2.5, V2 Phase 2.6 / migrations 011–014, V2 Phase 2.6H / migration 015, and V2 Phase 3 / migration 016 are complete.
 
 The next separately authorized implementation is:
 
-# V2 PHASE 3 — SUPPLIER + PARTNER FOUNDATION
+# V2 PHASE 4 — COMMERCIAL ECONOMICS
 
-This next phase is not authorized by completion of Phase 2.6 or Phase 2.6H.
+This next phase is not authorized by completion of Phase 3.
 
 ---
 
@@ -3677,9 +3677,9 @@ Temporary Vercel noindex unchanged.
 
 ---
 
-# 189. V2 PHASE 3 — AFTER UX REVIEW
+# 189. V2 PHASE 3 — IMPLEMENTATION STATUS
 
-Phase 3 has not started. Phase 2.6H hardening does not authorize it; start only under a separate owner task.
+Phase 3 is complete through migration 016 and the private `/admin/suppliers` workflow. Supplier/Property/Partner/Verification remain separate; anonymous access is zero; no Supplier rows were seeded; Biker remains an external source of truth with no runtime integration. See `docs/V2_PHASE_3_SUPPLIER_PARTNER_FOUNDATION.md`.
 
 ---
 

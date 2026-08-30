@@ -100,4 +100,4 @@ Both new tables have RLS. Anonymous users have no mutation grants and can read o
 
 Pricing remains room-type-level. Availability remains pooled and room-type-level. Search remains room-type-first with no quality threshold filters or major ranking change. Road Verified and the Cloud View rubric are unchanged. No Supplier, Partner, commercial economics, package, booking, payment, motorbike integration, bus, or Trip Dashboard domain is added.
 
-V2 Phase 3 has not started.
+At completion of V2 Phase 2, V2 Phase 3 had not started. It is now separately implemented by migration 016; its private Partner tier remains prohibited from changing any Room Quality score or note.

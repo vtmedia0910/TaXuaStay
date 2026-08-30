@@ -24,9 +24,10 @@ Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the appl
 202608290013
 202608290014
 202608290015
+202608290016
 ```
 
-After the Phase 2.6H hardening migration, `migration list` must report 001–015 Local = Remote. Linked database lint reports no errors; the two reorder RPCs currently produce non-functional `shadowed_variables`/unused declaration warnings from PL/pgSQL's integer-loop variable. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
+After V2 Phase 3, `migration list` must report 001–016 Local = Remote. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
 
 ## V2 migration lineage
 
@@ -34,7 +35,7 @@ Migrations 001–008 are the **Legacy Foundation Completed**. They remain immuta
 
 Migration `202608290009_v2_destination_and_physical_rooms.sql` is **V2 Phase 1 — Architecture Alignment**. Migration `202608290010_v2_verified_room_profile.sql` is **V2 Phase 2 — Verified Room Profile**. It adds Room Quality, factual strengths/caveats, and stronger exact-room resolution without changing pricing, pooled availability, search, Road Verified, or the Cloud View rubric.
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. Migrations 011–014 implement **V2 Phase 2.6 — CMS, Media & Content Operations** with structured draft/public snapshots, public-safe views, website media and the `site-content` bucket. Migration `202608290015_harden_cms_publishing_permissions.sql` implements **V2 Phase 2.6H** by enforcing admin-only publish/archive and transactional staff/admin reorder. V2 Phase 3 has not started.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. Migrations 011–014 implement **V2 Phase 2.6 — CMS, Media & Content Operations**. Migration 015 implements **V2 Phase 2.6H**. Migration `202608290016_v2_supplier_partner_foundation.sql` implements **V2 Phase 3** with private Suppliers, contacts, Property relationships, Partner lifecycle/tier, external references and zero anonymous access. V2 Phase 4 has not started.
 
 ## Migration order
 
@@ -56,6 +57,7 @@ supabase/migrations/202608290012_fix_cms_public_view_grants.sql
 supabase/migrations/202608290013_harden_cms_storage_delete.sql
 supabase/migrations/202608290014_enforce_cms_archive_lifecycle.sql
 supabase/migrations/202608290015_harden_cms_publishing_permissions.sql
+supabase/migrations/202608290016_v2_supplier_partner_foundation.sql
 ```
 
 Never reapply or edit a migration already present remotely. Migration `202608290003` is the additive corrective migration that preserves immutable migration `202608290002`; migration `202608290004` adds the normalized Verified Standard without seeding verification data; migration `202608290005` preserves immutable 004 while rejecting future/expired verified cycles, refreshing normal re-verification dates, and limiting anonymous Cloud/Road reads to public-view columns.
@@ -143,6 +145,20 @@ Migration 012 is a minimal additive correction created after the first anonymous
 Migration 013 replaces the original authenticated Storage delete policy with an orphan-only policy. A `site-content` object cannot be deleted while a matching CMS media metadata row exists. The upload rollback can still remove an object when metadata insertion failed and therefore no row exists. This prevents direct Storage operations from silently breaking CMS references.
 
 Migration 014 revokes authenticated table DELETE on all four CMS tables. Content uses page archive, section/item disable and reference-safe media archive instead of hard deletion. Staff/admin retain authenticated SELECT/INSERT/UPDATE and atomic publish RPC access.
+
+Migration 015 keeps CMS draft editing available to staff while making publish and archive transitions Admin-only at the database boundary. Its reorder RPCs lock and normalize order atomically. The linked linter's two `shadowed_variables`/unused-loop-variable warnings belong to these pre-existing reorder functions and are non-functional; migration 016 adds no lint issue.
+
+Migration 016 adds `suppliers`, `supplier_contacts`, `supplier_properties`, `partner_relationships`, and `supplier_external_refs` as a private supply-side foundation. After applying it, verify additionally:
+
+1. RLS is enabled on all five tables and no table/view exposes them publicly.
+2. Anonymous SELECT/INSERT/UPDATE/DELETE is denied; Supplier RPC role checks reject anonymous callers without mutation.
+3. Authenticated staff/admin can read the private domain; staff mutation is limited to contacts and Property links, while Admin controls Supplier lifecycle, Partner relationship/tier, external identity and archive.
+4. Supplier codes and external system identities cannot change; phone/email are normalized; each contact has a contact method; relationship dates and uniqueness constraints reject overlapping duplicates.
+5. Archiving ends/disables current operational children without deleting history.
+6. The migration inserts no Supplier, contact, Property link, Partner relationship, or external-reference row.
+7. No public Property/room DTO, verification resolver, pricing resolver, availability resolver, CMS projection, or search ranking reads Partner data.
+
+The post-016 remote smoke test found all five tables and an exact count of zero for each. Anonymous REST selection of every new table and anonymous insert/update/delete requests returned HTTP 401. An anonymous archive RPC returned the expected `Supplier archive requires admin` guard error and changed no row. Migrations 001–016 were Local = Remote. Linked lint reported no Phase 3 issue and only the two existing migration-015 reorder warnings described above. No smoke-test row was retained. The privileged count read used only an ephemeral CLI-managed key in process memory; no service-role client, key, environment variable, or application code was added.
 
 ## Environment configuration
 

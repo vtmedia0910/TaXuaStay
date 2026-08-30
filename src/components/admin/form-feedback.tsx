@@ -36,6 +36,18 @@ const ERROR_MESSAGES: Record<string, string> = {
   "cms-media-archive": "Không thể lưu trữ ảnh website.",
   "cms-media-archive-forbidden": "Bạn không có quyền lưu trữ ảnh website. Đây là thao tác chỉ dành cho Admin.",
   "cms-media-referenced": "Ảnh vẫn đang được tham chiếu trong bản nháp hoặc bản công khai. Hãy thay ảnh trong nội dung trước.",
+  "supplier-invalid": "Hồ sơ nhà cung cấp chưa hợp lệ. Kiểm tra mã, loại, trạng thái, URL và liên hệ ban đầu.",
+  "supplier-save": "Không thể lưu hồ sơ và liên hệ ban đầu. Toàn bộ giao dịch đã được hoàn tác.",
+  "supplier-archive": "Không thể lưu trữ nhà cung cấp hoặc đóng các quan hệ đang mở.",
+  "supplier-contact-invalid": "Liên hệ chưa hợp lệ. Cần tên và ít nhất điện thoại, email hoặc Zalo.",
+  "supplier-contact-save": "Không thể lưu liên hệ. Nhà cung cấp có thể đã lưu trữ hoặc dữ liệu bị trùng.",
+  "supplier-property-invalid": "Liên kết cơ sở chưa hợp lệ. Kiểm tra vai trò và khoảng hiệu lực.",
+  "supplier-property-save": "Không thể lưu liên kết cơ sở. Kiểm tra quan hệ đang mở, đầu mối chính và trạng thái nhà cung cấp.",
+  "partner-forbidden": "Chỉ Admin được thay đổi quan hệ đối tác hoặc tham chiếu hệ thống.",
+  "partner-invalid": "Quan hệ đối tác chưa hợp lệ. Kiểm tra trạng thái, tier và các ngày vòng đời.",
+  "partner-save": "Không thể lưu quan hệ đối tác. Mỗi nhà cung cấp chỉ có một quan hệ chưa kết thúc.",
+  "supplier-ref-invalid": "Tham chiếu hệ thống chưa hợp lệ. Metadata phải là JSON object và không được chứa dữ liệu bí mật.",
+  "supplier-ref-save": "Không thể lưu tham chiếu. Danh tính hệ thống là bất biến và phải duy nhất.",
 };
 
 export function FormFeedback({ saved, error }: { saved?: string; error?: string }) {
@@ -48,6 +60,11 @@ export function FormFeedback({ saved, error }: { saved?: string; error?: string 
       upload: "✓ Đã tải ảnh lên và tự động ghi nhận kích thước.",
       external: "✓ Đã thêm ảnh HTTPS vào thư viện.",
       media: "✓ Đã cập nhật thông tin và điểm lấy nét của ảnh.",
+      supplier: "✓ Đã lưu hồ sơ nhà cung cấp.",
+      contact: "✓ Đã lưu liên hệ.",
+      property: "✓ Đã lưu liên kết cơ sở.",
+      partner: "✓ Đã lưu quan hệ đối tác.",
+      reference: "✓ Đã lưu tham chiếu hệ thống.",
     };
     return (
       <p className="mb-5 rounded-2xl bg-pine-soft p-3 text-sm font-bold text-success" role="status">

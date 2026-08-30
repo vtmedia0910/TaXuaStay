@@ -15,6 +15,7 @@ import {
   ListChecks,
   FilePenLine,
   Sparkles,
+  Handshake,
 } from "lucide-react";
 import { logoutAction } from "@/features/admin/auth-actions";
 import type { AdminRole } from "@/features/admin/authz";
@@ -31,6 +32,7 @@ const contentLinks = [
   { label: "Hồ sơ phòng", href: "/admin/room-profiles", icon: ListChecks },
   { label: "Giá", href: "/admin/rates", icon: BadgeDollarSign },
   { label: "Tình trạng", href: "/admin/availability", icon: CalendarCheck },
+  { label: "Nhà cung cấp", href: "/admin/suppliers", icon: Handshake },
 ] as const;
 
 const cmsLinks = [
