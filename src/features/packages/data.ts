@@ -162,7 +162,7 @@ export async function getPublicPackageQuotes(input: {
   quoteInput: Omit<PackageQuoteInput, "package_id">;
 }): Promise<Map<string, PublicPackageQuote>> {
   if (!input.packages.length) return new Map();
-  const facts = await getPublicPackageFacts(input.packages.map((item) => item.id));
+  const facts = await getPublicPackageFactsByIds(input.packages.map((item) => item.id));
   const roomTypeIds = [...new Set(facts.components.flatMap((component) => component.room_type_id ? [component.room_type_id] : []))];
   const [roomAvailabilityQuotes, motorbikeCatalog] = await Promise.all([
     getPublicAvailabilityQuotes({ roomTypeIds, checkIn: input.quoteInput.check_in, checkOut: input.quoteInput.check_out, requestedRooms: input.quoteInput.rooms }),

@@ -50,7 +50,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="vi" className={`${beVietnamPro.variable} ${allura.variable}`}>
+    <html lang="vi" className={`${beVietnamPro.variable} ${allura.variable}`} data-scroll-behavior="smooth">
       <body>{children}</body>
     </html>
   );

@@ -7,7 +7,7 @@
 **Target repository:** `vtmedia0910/TaXuaStay`  
 **Read-only technical reference:** `vtmedia0910/taxuabiker2`  
 **Canonical target file trong repo sau khi áp dụng:** `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md`
-**Current product state:** Legacy Foundation 001–008 + V2 Phase 1 / migration 009 + V2 Phase 2 / migration 010 + application-only V2 Phase 2.5 + V2 Phase 2.6 / migrations 011–014 + V2 Phase 2.6H / migration 015 + V2 Phase 3 / migration 016 + corrective V2 Phase 3H / migration 017 + V2 Phase 4 / migrations 018–020 + V2 Phase 5 / migrations 021–022 + V2 Phase 6 / migration 023 đã hoàn thành. Phase 5 dùng manual/reference integration và không sao chép vận hành Biker. Phase 6 có Package domain, explicit sell-price authority, private economics và inquiry flow nhưng không tạo Booking/Payment. V2 Phase 7 — Trip Finder chưa bắt đầu và chỉ được thực hiện khi có task riêng.
+**Current product state:** Legacy Foundation 001–008 + V2 Phase 1 / migration 009 + V2 Phase 2 / migration 010 + application-only V2 Phase 2.5 + V2 Phase 2.6 / migrations 011–014 + V2 Phase 2.6H / migration 015 + V2 Phase 3 / migration 016 + corrective V2 Phase 3H / migration 017 + V2 Phase 4 / migrations 018–020 + V2 Phase 5 / migrations 021–022 + V2 Phase 6 / migration 023 + application-only V2 Phase 7 đã hoàn thành. Phase 5 dùng manual/reference integration và không sao chép vận hành Biker. Phase 6 có Package domain, explicit sell-price authority, private economics và inquiry flow nhưng không tạo Booking/Payment. Phase 7 thêm `/trip-finder` với deterministic `phase7-trip-finder-v1`, không migration, không commercial-bias ranking và không tạo Booking/Payment.
 
 ---
 
@@ -3470,9 +3470,11 @@ V2 Phase 3 — Supplier + Partner Foundation / migration 016
 V2 Phase 3H — Supplier Lifecycle Hardening / migration 017
 V2 Phase 4 — Commercial Economics / migrations 018–020
 V2 Phase 5 — Motorbike Integration / migrations 021–022
+V2 Phase 6 — Package Commerce / migration 023
+V2 Phase 7 — Trip Finder / application only, no migration
 ```
 
-Phase 2.5, Phase 2.6, Phase 2.6H, Phase 3 Supplier/Partner foundation, Phase 3H hardening, Phase 4 Commercial Economics, and Phase 5 Motorbike Integration are complete. The next separately authorized phase is V2 Phase 6 — Package Commerce.
+Phase 2.5, Phase 2.6, Phase 2.6H, Phase 3 Supplier/Partner foundation, Phase 3H hardening, Phase 4 Commercial Economics, Phase 5 Motorbike Integration, Phase 6 Package Commerce, and Phase 7 Trip Finder are complete. A later V2 phase requires separate owner authorization.
 
 ---
 
@@ -3527,13 +3529,7 @@ they should understand within seconds:
 
 # 183. NEXT IMPLEMENTATION
 
-V2 Phase 2 / migration 010, V2 Phase 2.5, V2 Phase 2.6 / migrations 011–014, V2 Phase 2.6H / migration 015, and V2 Phase 3 / migration 016 are complete.
-
-The next separately authorized implementation is:
-
-# V2 PHASE 5 — MOTORBIKE INTEGRATION
-
-This next phase is not authorized by completion of Phase 4.
+V2 Phase 2 / migration 010 through application-only V2 Phase 7 are complete under separate owner tasks. Any later implementation requires new, explicit authorization.
 
 ---
 
@@ -3685,7 +3681,11 @@ Phase 5 is complete through migrations 021–022, the manual/reference `Motorbik
 
 Phase 6 is complete through migration 023, the pure `phase6-package-v1` resolver, public `/packages`, and private `/admin/packages`. Package composition is generic but activates only current ROOM, MOTORBIKE and CUSTOM sources. Sell price comes only from explicit current Package rules; missing/stale/conflicting authority displays `Cần xác nhận giá`. Package economics stays private, production remains unseeded, and no Booking, Booking Item, hold, Payment, Deposit, Bus Integration or Trip Finder domain was created. See `docs/V2_PHASE_6_PACKAGE_COMMERCE.md`.
 
-The next separately authorized phase is V2 Phase 7 — Trip Finder. It has not started.
+## 189E. V2 PHASE 7 — TRIP FINDER STATUS
+
+Phase 7 is complete without a migration through public `/trip-finder`, the pure deterministic `phase7-trip-finder-v1` resolver, and existing public Stay/Verification/Room Quality/Road/Pricing/Availability/Motorbike/Package sources. Hard constraints and preferences remain separate, `unknown != false`, public results expose explanations rather than scores, and private economics/Supplier/Partner tier cannot affect ranking. No fake candidate or production data, Booking, Payment, Checkout, My Trip, Bus Integration or later phase was added. See `docs/V2_PHASE_7_TRIP_FINDER.md`.
+
+A later V2 phase has not started and requires separate owner authorization.
 
 ---
 

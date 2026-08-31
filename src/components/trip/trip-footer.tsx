@@ -21,6 +21,7 @@ export function TripFooter({ cms, packagesAvailable = false }: { cms?: CmsPage; 
         <div>
           <h2 className="font-bold tracking-[0.12em] text-white">DỊCH VỤ</h2>
           <div className="mt-4 grid gap-3">
+            <Link href={PUBLIC_ROUTES.tripFinder} className="hover:text-white">Tìm chuyến đi</Link>
             <Link href={PUBLIC_ROUTES.stay} className="hover:text-white">Lưu trú</Link>
             {packagesAvailable ? <Link href={PUBLIC_ROUTES.packages} className="hover:text-white">Combo · cần xác nhận</Link> : <Planned>Combo</Planned>}
             <Planned>Xe khách</Planned>

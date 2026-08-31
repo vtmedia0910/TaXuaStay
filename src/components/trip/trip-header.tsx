@@ -30,7 +30,7 @@ export function TripHeader() {
           ))}
         </nav>
 
-        <Link href={PUBLIC_ROUTES.stay} className={buttonVariants({ size: "sm", className: "trip-site-search-cta max-sm:hidden" })}>
+        <Link href={PUBLIC_ROUTES.tripFinder} className={buttonVariants({ size: "sm", className: "trip-site-search-cta max-sm:hidden" })}>
           <Search size={17} aria-hidden="true" />Tìm chuyến đi
         </Link>
 
@@ -47,7 +47,7 @@ export function TripHeader() {
                 </Link>
               ))}
             </nav>
-            <Link href={PUBLIC_ROUTES.stay} className={buttonVariants({ className: "mt-3 w-full sm:hidden" })}>
+            <Link href={PUBLIC_ROUTES.tripFinder} className={buttonVariants({ className: "mt-3 w-full sm:hidden" })}>
               Tìm chuyến đi
             </Link>
           </div>

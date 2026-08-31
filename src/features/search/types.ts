@@ -96,6 +96,12 @@ export interface RoomSearchResponse {
   status: "ready" | "unconfigured" | "error";
 }
 
+export interface TripFinderRoomCandidateResponse {
+  items: RoomSearchResult[];
+  total: number;
+  status: "ready" | "empty" | "unconfigured" | "error";
+}
+
 export interface SearchOptions {
   areas: string[];
 }

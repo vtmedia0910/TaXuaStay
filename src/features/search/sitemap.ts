@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import type { PublicSitemapData } from "@/features/search/types";
 
 export function buildStaticSitemapPaths(landingSlugs: string[], indexingEnabled: boolean) {
-  return ["/", "/stay", "/motorbike", "/packages", ...landingSlugs.map((slug) => `/${slug}`), ...(indexingEnabled ? ["/verified"] : [])];
+  return ["/", "/trip-finder", "/stay", "/motorbike", "/packages", ...landingSlugs.map((slug) => `/${slug}`), ...(indexingEnabled ? ["/verified"] : [])];
 }
 
 export function buildPublicSitemap(

@@ -22,6 +22,7 @@ import type {
   SearchOptions,
   SearchPreset,
   SearchPropertyDto,
+  TripFinderRoomCandidateResponse,
 } from "@/features/search/types";
 import { SEARCH_PAGE_SIZE } from "@/features/search/types";
 import type { PublicRoomTypeDto } from "@/features/rooms/types";
@@ -262,6 +263,32 @@ export async function searchPublicRooms(
     totalPages: Math.ceil(total / SEARCH_PAGE_SIZE),
     status: "ready",
   };
+}
+
+const TRIP_FINDER_ROOM_CANDIDATE_LIMIT = 200;
+
+export async function getPublicTripFinderRoomCandidates(
+  params: RoomSearchParams,
+): Promise<TripFinderRoomCandidateResponse> {
+  const supabase = createPublicSupabaseClient();
+  if (!supabase) return { items: [], total: 0, status: "unconfigured" };
+
+  const { data, error, count } = await supabase
+    .from("room_types")
+    .select(SEARCH_ROOM_WITH_PROPERTY_QUERY, { count: "exact" })
+    .order("max_guests")
+    .order("name")
+    .order("id")
+    .limit(TRIP_FINDER_ROOM_CANDIDATE_LIMIT)
+    .overrideTypes<SearchRoomRow[], { merge: false }>();
+
+  const total = count ?? 0;
+  if (error || total > TRIP_FINDER_ROOM_CANDIDATE_LIMIT) {
+    return { items: [], total, status: "error" };
+  }
+
+  const items = await enrichSearchRows((data ?? []).filter((row) => row.property), params);
+  return { items, total, status: items.length ? "ready" : "empty" };
 }
 
 export async function getPublicSearchOptions(): Promise<SearchOptions> {
