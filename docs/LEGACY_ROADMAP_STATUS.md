@@ -8,7 +8,7 @@ The former accommodation-oriented 11-phase Master Plan and earlier V2 direction 
 - New implementation numbering restarts at **V2 Phase 1 — Architecture Alignment**.
 - Migration `202608290009` completed **V2 Phase 1 — Architecture Alignment**.
 - Migration `202608290010` completed **V2 Phase 2 — Verified Room Profile V2**.
-- The next separately authorized implementation is **V2 Phase 2.5 — Master Brand + Public UX Migration**. It has not been implemented.
-- **V2 Phase 3 — Supplier + Partner Foundation** is complete under separate owner authorization with migration 016; Phase 3H uses migration 017; **V2 Phase 4 — Commercial Economics** is complete with migrations 018–020. V2 Phase 5 Motorbike Integration has not started.
+- **V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a migration; V2 Phase 2.6 uses migrations 011–014 and V2 Phase 2.6H uses migration 015.
+- **V2 Phase 3 — Supplier + Partner Foundation** is complete under separate owner authorization with migration 016; Phase 3H uses migration 017; **V2 Phase 4 — Commercial Economics** is complete with migrations 018–020; **V2 Phase 5 — Motorbike Integration** is complete with migrations 021–022 and a bounded manual/reference adapter. V2 Phase 6 Package Commerce has not started.
 
 The sole canonical roadmap is [TA_XUA_STAY_CODEX_MASTER_PLAN.md](./TA_XUA_STAY_CODEX_MASTER_PLAN.md). Brand and public UX references live under [`docs/brand`](./brand/BRAND_SYSTEM.md). The current user task always controls execution scope.

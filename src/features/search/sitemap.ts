@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import type { PublicSitemapData } from "@/features/search/types";
 
 export function buildStaticSitemapPaths(landingSlugs: string[], indexingEnabled: boolean) {
-  return ["/", "/stay", ...landingSlugs.map((slug) => `/${slug}`), ...(indexingEnabled ? ["/verified"] : [])];
+  return ["/", "/stay", "/motorbike", ...landingSlugs.map((slug) => `/${slug}`), ...(indexingEnabled ? ["/verified"] : [])];
 }
 
 export function buildPublicSitemap(
@@ -31,5 +31,12 @@ export function buildPublicSitemap(
     priority: 0.75,
   }));
 
-  return [...staticEntries, ...properties, ...rooms];
+  const motorbikes: MetadataRoute.Sitemap = data.motorbikes.map((offering) => ({
+    url: absolute(`/motorbike/${offering.slug}`),
+    lastModified: offering.updated_at,
+    changeFrequency: "weekly",
+    priority: 0.65,
+  }));
+
+  return [...staticEntries, ...properties, ...rooms, ...motorbikes];
 }

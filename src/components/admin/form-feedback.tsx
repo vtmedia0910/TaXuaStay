@@ -56,6 +56,9 @@ const ERROR_MESSAGES: Record<string, string> = {
   "partner-save": "Không thể lưu quan hệ đối tác. Mỗi nhà cung cấp chỉ có một quan hệ chưa kết thúc.",
   "supplier-ref-invalid": "Tham chiếu hệ thống chưa hợp lệ. Metadata phải là JSON object và không được chứa dữ liệu bí mật.",
   "supplier-ref-save": "Không thể lưu tham chiếu. Danh tính hệ thống là bất biến và phải duy nhất.",
+  "motorbike-forbidden": "Chỉ Admin được thay đổi catalog xe máy công khai.",
+  "motorbike-invalid": "Lựa chọn xe máy chưa hợp lệ. Kiểm tra nguồn Biker, giá, độ mới, URL xác nhận và trạng thái.",
+  "motorbike-save": "Không thể lưu lựa chọn xe máy. Giao dịch đã hoàn tác; kiểm tra Supplier, mapping taxua_biker và điều kiện công khai.",
 };
 
 export function FormFeedback({ saved, error }: { saved?: string; error?: string }) {
@@ -75,6 +78,7 @@ export function FormFeedback({ saved, error }: { saved?: string; error?: string 
       reference: "✓ Đã lưu tham chiếu hệ thống.",
       "economics-plan": "✓ Đã lưu bảng chi phí riêng tư.",
       "economics-rule": "✓ Đã lưu quy tắc chi phí riêng tư.",
+      motorbike: "✓ Đã lưu lựa chọn xe máy phía Trip.",
     };
     return (
       <p className="mb-5 rounded-2xl bg-pine-soft p-3 text-sm font-bold text-success" role="status">

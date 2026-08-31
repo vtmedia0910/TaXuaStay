@@ -49,7 +49,8 @@ describe("V2 Phase 2.5 public brand and UX", () => {
     const homepage = source("src/app/(public)/page.tsx");
     expect(homepage).toContain("Sắp có");
     expect(homepage).toContain("chưa nhận đặt trên website");
-    expect(homepage).toContain("chưa có tích hợp đặt xe");
+    expect(homepage).toContain("giá và tình trạng thực tế được xác nhận thủ công");
+    expect(homepage).toContain("PUBLIC_ROUTES.motorbike");
     for (const forbidden of ["Đặt xe ngay", "Đặt combo ngay", "1.190.000", "5.000+", "99% hài lòng"]) {
       expect(homepage).not.toContain(forbidden);
     }

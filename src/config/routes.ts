@@ -1,6 +1,7 @@
 export const PUBLIC_ROUTES = {
   home: "/",
   stay: "/stay",
+  motorbike: "/motorbike",
   legacyStaySearch: "/tim-phong",
   verification: "/verified",
 } as const;
@@ -18,4 +19,8 @@ export function buildPropertyPath(propertySlug: string) {
 
 export function buildRoomPath(propertySlug: string, roomSlug: string) {
   return `/stay/${propertySlug}/${roomSlug}`;
+}
+
+export function buildMotorbikePath(slug: string) {
+  return `/motorbike/${slug}`;
 }

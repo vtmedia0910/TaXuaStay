@@ -1,6 +1,6 @@
 # V2 current-state mapping
 
-This document bridges the **Legacy Foundation Completed** (migrations 001–008) and completed V2 Phases 1–3 to the target architecture in Master Plan V2.1. “Target” means planned future capability, not current application behavior.
+This document bridges the **Legacy Foundation Completed** (migrations 001–008) and completed V2 Phases 1–5 to the target architecture in Master Plan V2.1. “Target” means planned future capability, not current application behavior.
 
 ## Current implementation → V2 target
 
@@ -18,7 +18,7 @@ This document bridges the **Legacy Foundation Completed** (migrations 001–008)
 | `room_rate_rules.price_vnd` and the resolver provide public sell price; `commercial_rate_plans` / `room_commercial_rules` provide private accommodation economics | Sell-price engine plus private Net Cost, Market Reference, and later package economics | Sell pricing remains authoritative; Phase 4 private cost/market/contribution is implemented separately. Package economics is not. |
 | `room_inventory` provides latest pooled room-type availability by lodging night | Pooled availability remains; future modes may add exact-unit, allotment, and manual-confirmation models | Pooled mode is implemented. Exact-unit/allotment modes are not. |
 | Room-first search, SEO landings, Verified Standard, price and availability summaries | Search remains; later deterministic Trip Finder composes verified trip options | Room search is implemented. Trip Finder and package recommendations are not. |
-| Biker is a read-only technical/operations reference with no Stay runtime integration | Motorbike service adapter using API/manual confirmation/external reference while Biker remains the fleet/rental source of truth | No motorbike commerce integration exists today. Direct database access remains forbidden. |
+| Biker is a read-only technical/operations reference; no safe public/server API contract was found | Motorbike service adapter using API/manual confirmation/external reference while Biker remains the fleet/rental source of truth | Implemented in V2 Phase 5 as a bounded `manual_reference` adapter. Trip publishes only reviewed catalog snapshots linked through `supplier_external_refs`; there is no Biker runtime/DB dependency or live-availability claim. |
 | `suppliers`, contacts, Property links, Partner lifecycle/tier and external refs | Private Suppliers, commercial Partners, future terms, confirmation methods, and service ownership | Identity and relationship foundation implemented in V2 Phase 3; Phase 3H makes archive child-first/atomic and preserves the current primary-contact ID on ordinary profile edits. Economics, terms, confirmation and generic Service ownership remain future. Public Property is not overloaded. |
 | No generic service catalog or package | Generic service components and flexible `trip_packages` / `package_components` | Not implemented. Room + bike + bus must not be hard-coded as the only package shape. |
 | No customer/trip booking tables | Trip-level Booking + Booking Items + Supplier Confirmation + supplier tasks | Not implemented. Browsing availability still creates no hold or booking. |
@@ -34,10 +34,11 @@ This document bridges the **Legacy Foundation Completed** (migrations 001–008)
 - room-first search, public property/room routes, SEO landings, sitemap, robots, and temporary-host `noindex` safety.
 - structured Homepage/Stay/Footer editorial content, website media, protected draft preview and atomic page publishing, with code fallbacks.
 - private Supplier identities, contacts, Property roles/history, Partner lifecycle/tier, and opaque external-system references with no anonymous access; Phase 3H adds one canonical archive RPC, direct-archive protection, non-reopening reactivation, and stable primary-contact edits.
+- a small Trip-owned motorbike catalog projection, manual/reference provider adapter, `/motorbike`, and Admin controls linked to a real motorbike Supplier plus `taxua_biker` external reference; no production rows are seeded.
 
 ## Explicitly not implemented
 
-Private supplier economics, commercial terms, generic Services, motorbike service integration, Bus, Packages, Trip Finder, unified Booking, Booking Items, Supplier Confirmation, supplier tasks, Payment, Trip Operations, and Trip Dashboard do not exist. Transport and Combo appear only as clearly marked future services; there is no booking simulation. Supplier/Partner status does not change verification, price confidence, availability, or ranking.
+Generic Services, motorbike fleet operations/live integration, Bus, Packages, Trip Finder, unified Booking, Booking Items, Supplier Confirmation, supplier tasks, Payment, Trip Operations, and Trip Dashboard do not exist. The Phase 5 motorbike projection creates no request record, hold, booking or payment. Transport and Combo remain clearly marked future services. Supplier/Partner status does not change accommodation verification, price confidence, availability, or ranking.
 
 ## Numbering and next step
 
@@ -53,4 +54,4 @@ The completed V2 implementation is:
 
 **V2 Phase 2.6 — CMS + Media + Content Operations** is complete. Migrations 011–014 add structured draft/published content, website-only media, atomic publishing, public-safe projections and archive-focused lifecycle hardening. **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** is complete with the visual operations UI and migration 015. Product truth and page structure remain code-controlled.
 
-**V2 Phase 3 — Supplier + Partner Foundation** is complete with migration 016 and the private Admin workflow. **V2 Phase 3H — Supplier Lifecycle Hardening** is complete with corrective migration 017. **V2 Phase 4 — Commercial Economics** is complete with migrations 018–020, the private `phase4-economics-v1` resolver and `/admin/economics`. V2 Phase 5 — Motorbike Integration has not started.
+**V2 Phase 3 — Supplier + Partner Foundation** is complete with migration 016 and the private Admin workflow. **V2 Phase 3H — Supplier Lifecycle Hardening** is complete with corrective migration 017. **V2 Phase 4 — Commercial Economics** is complete with migrations 018–020, the private `phase4-economics-v1` resolver and `/admin/economics`. **V2 Phase 5 — Motorbike Integration** is complete with migrations 021–022, the `manual_reference` adapter, `/motorbike`, and `/admin/motorbike`. V2 Phase 6 — Package Commerce has not started.

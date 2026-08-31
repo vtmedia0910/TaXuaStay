@@ -4,7 +4,7 @@
 
 This direction was implemented by **V2 Phase 2.5 — Master Brand + Public UX Migration**. See `docs/V2_PHASE_2_5_MASTER_BRAND_PUBLIC_UX.md` for the exact route and truthfulness contract.
 
-The current public implementation uses the Tà Xùa Trip shell and canonical `/stay` accommodation vertical. Future services remain explicitly marked and non-bookable.
+The current public implementation uses the Tà Xùa Trip shell and canonical `/stay` accommodation vertical. `/motorbike` is now a truthful manual/reference service experience; later services remain explicitly marked and non-bookable.
 
 ## Target information architecture
 
@@ -16,7 +16,7 @@ The current public implementation uses the Tà Xùa Trip shell and canonical `/s
 /trip-finder                           future guided decision flow
 /combo                                 future trip packages
 /bus                                   future bus/transport entry
-/motorbike                             future motorbike service entry
+/motorbike                             manual/reference motorbike service entry
 /cloud                                 future cloud guide/intelligence
 /guide                                 future destination guide
 /blog                                  future editorial content
@@ -93,7 +93,7 @@ Hero direction:
 - Primary action: `Tìm chuyến đi phù hợp`
 - Secondary action: `Xem phòng đã thẩm định`
 
-Until Trip Finder and service backends exist, tabs or service cards must be functional, honestly disabled/previewed, linked to a truthful overview, or omitted. Never simulate booking, inventory, price, packages, reviews, or metrics.
+Until Trip Finder and later service backends exist, tabs or service cards must be functional, honestly disabled/previewed, linked to a truthful overview, or omitted. The Phase 5 motorbike card links to `/motorbike`, where availability and price are never inferred. Never simulate booking, inventory, price, packages, reviews, or metrics.
 
 ## `/stay` target
 
@@ -126,4 +126,4 @@ The SEO moat is first-party verified data—Cloud View, View From Bed, 360, Room
 
 ## Phase boundary
 
-Phase 2.5 was completed at application level. The separately authorized V2 Phase 2.6 extension adds a bounded structured CMS and website-media workflow; it does not turn this direction into a page builder or transfer operational facts/technical SEO into editable content. V2 Phase 3 is now separately implemented as a private Supplier/Partner foundation. It adds no public Partner badge, supplier page, sponsored ranking, or change to this public UX direction.
+Phase 2.5 was completed at application level. The separately authorized V2 Phase 2.6 extension adds a bounded structured CMS and website-media workflow; it does not turn this direction into a page builder or transfer operational facts/technical SEO into editable content. V2 Phase 3 is implemented as a private Supplier/Partner foundation. Phase 5 adds only the bounded manual/reference motorbike experience documented in `docs/V2_PHASE_5_MOTORBIKE_INTEGRATION.md`; it adds no public Partner badge, sponsored ranking, fleet workflow, live availability claim, booking, or package commerce.

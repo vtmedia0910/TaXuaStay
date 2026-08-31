@@ -9,7 +9,7 @@ const navigation = [
   { label: "Lưu trú", href: PUBLIC_ROUTES.stay },
   { label: "Combo", href: "/#services" },
   { label: "Xe khách", href: "/#services" },
-  { label: "Xe máy", href: "/#services" },
+  { label: "Xe máy", href: PUBLIC_ROUTES.motorbike },
   { label: "Cẩm nang", href: PUBLIC_ROUTES.verification },
   { label: "Về chúng tôi", href: "/#about" },
 ] as const;

@@ -26,9 +26,14 @@ Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the appl
 202608290015
 202608290016
 202608290017
+202608290018
+202608290019
+202608290020
+202608290021
+202608290022
 ```
 
-After V2 Phase 3H, `migration list` must report 001–017 Local = Remote. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
+After V2 Phase 5, `migration list` must report 001–022 Local = Remote. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
 
 ## V2 migration lineage
 
@@ -36,7 +41,7 @@ Migrations 001–008 are the **Legacy Foundation Completed**. They remain immuta
 
 Migration `202608290009_v2_destination_and_physical_rooms.sql` is **V2 Phase 1 — Architecture Alignment**. Migration `202608290010_v2_verified_room_profile.sql` is **V2 Phase 2 — Verified Room Profile**. It adds Room Quality, factual strengths/caveats, and stronger exact-room resolution without changing pricing, pooled availability, search, Road Verified, or the Cloud View rubric.
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. Migrations 011–014 implement **V2 Phase 2.6 — CMS, Media & Content Operations**. Migration 015 implements **V2 Phase 2.6H**. Migration `202608290016_v2_supplier_partner_foundation.sql` implements **V2 Phase 3** with private Suppliers, contacts, Property relationships, Partner lifecycle/tier, external references and zero anonymous access. Corrective migration `202608290017_harden_supplier_lifecycle.sql` implements **V2 Phase 3H**. Migrations `202608290018_v2_commercial_economics.sql`, `202608290019_harden_commercial_function_grants.sql` and `202608290020_restore_authenticated_relationship_predicate.sql` implement the private accommodation **V2 Phase 4 — Commercial Economics** foundation and narrow function-ACL corrections. V2 Phase 5 Motorbike Integration has not started.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. Migrations 011–014 implement **V2 Phase 2.6 — CMS, Media & Content Operations**. Migration 015 implements **V2 Phase 2.6H**. Migration `202608290016_v2_supplier_partner_foundation.sql` implements **V2 Phase 3** with private Suppliers, contacts, Property relationships, Partner lifecycle/tier, external references and zero anonymous access. Corrective migration `202608290017_harden_supplier_lifecycle.sql` implements **V2 Phase 3H**. Migrations `202608290018_v2_commercial_economics.sql`, `202608290019_harden_commercial_function_grants.sql` and `202608290020_restore_authenticated_relationship_predicate.sql` implement the private accommodation **V2 Phase 4 — Commercial Economics** foundation and narrow function-ACL corrections. Migration `202608290021_v2_motorbike_integration.sql` implements **V2 Phase 5 — Motorbike Integration** as a bounded manual/reference catalog with no Biker runtime/database dependency and no seeded offering. Corrective migration `202608290022_fix_motorbike_public_ordering.sql` preserves immutable 021 and appends `sort_order` to the public view required by the adapter's stable ordering query.
 
 ## Migration order
 
@@ -60,7 +65,25 @@ supabase/migrations/202608290014_enforce_cms_archive_lifecycle.sql
 supabase/migrations/202608290015_harden_cms_publishing_permissions.sql
 supabase/migrations/202608290016_v2_supplier_partner_foundation.sql
 supabase/migrations/202608290017_harden_supplier_lifecycle.sql
+supabase/migrations/202608290018_v2_commercial_economics.sql
+supabase/migrations/202608290019_harden_commercial_function_grants.sql
+supabase/migrations/202608290020_restore_authenticated_relationship_predicate.sql
+supabase/migrations/202608290021_v2_motorbike_integration.sql
+supabase/migrations/202608290022_fix_motorbike_public_ordering.sql
 ```
+
+Migrations 021–022 add the Phase 5 `motorbike_offerings` projection, explicit anonymous public view/column grants and ordering contract, Admin-only transactional save, CMS media lifecycle guard, and child-first Supplier archive extension. Verify additionally:
+
+1. `public_motorbike_offerings` is anonymously readable and contains only published rows attached to an active motorbike Supplier and active `taxua_biker` reference.
+2. Anonymous users cannot select Supplier/reference IDs, external-reference values, internal notes, audit IDs, Supplier contacts, Partner facts or Commercial Economics through the motorbike path.
+3. Anonymous and staff users cannot mutate offerings; Admin can use `/admin/motorbike` and `save_motorbike_offering`.
+4. Published rows require an approved HTTPS manual-confirmation URL and non-future source freshness; price snapshots are optional but all-or-none and integer VND.
+5. The public application never maps listed or priced to live availability; only needs-confirmation, unknown and unavailable states exist.
+6. An active CMS asset referenced by a non-archived offering cannot be archived.
+7. Supplier archive closes offerings before the external reference and parent, atomically, while preserving Phase 4 economics behavior.
+8. No production Supplier, external reference, bike, price, availability, customer, booking or payment row is seeded.
+
+The 2026-08-31 post-022 remote REST smoke returned HTTP 200 for `public_motorbike_offerings` when selecting and ordering by `sort_order`, plus HTTP 200 for the allow-listed motorbike base columns, with zero public rows because no production bike was seeded. Anonymous requests for offering internal notes, Supplier contacts, private commercial plans/rules, and offering mutation each returned HTTP 401. Migrations 001–022 were Local = Remote. Linked database lint reported no schema errors; its only output was the two pre-existing CMS reorder warnings about the local loop variable `position`. The rollback-only trigger/RLS fixture remains at `supabase/tests/202608290021_motorbike_integration.sql`; the current host could not invoke Supabase pgTAP because Docker Desktop is unavailable, so the remote HTTP smoke plus automated schema/migration tests are the executed security checks.
 
 Never reapply or edit a migration already present remotely. Migration `202608290003` is the additive corrective migration that preserves immutable migration `202608290002`; migration `202608290004` adds the normalized Verified Standard without seeding verification data; migration `202608290005` preserves immutable 004 while rejecting future/expired verified cycles, refreshing normal re-verification dates, and limiting anonymous Cloud/Road reads to public-view columns.
 

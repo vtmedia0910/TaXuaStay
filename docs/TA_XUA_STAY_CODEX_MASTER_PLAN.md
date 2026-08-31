@@ -7,7 +7,7 @@
 **Target repository:** `vtmedia0910/TaXuaStay`  
 **Read-only technical reference:** `vtmedia0910/taxuabiker2`  
 **Canonical target file trong repo sau khi áp dụng:** `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md`
-**Current product state:** Legacy Foundation 001–008 + V2 Phase 1 / migration 009 + V2 Phase 2 / migration 010 + application-only V2 Phase 2.5 + V2 Phase 2.6 / migrations 011–014 + V2 Phase 2.6H / migration 015 + V2 Phase 3 / migration 016 + corrective V2 Phase 3H / migration 017 + V2 Phase 4 / migrations 018–020 đã hoàn thành. V2 Phase 5 — Motorbike Integration chưa bắt đầu và chỉ được thực hiện khi có task riêng.
+**Current product state:** Legacy Foundation 001–008 + V2 Phase 1 / migration 009 + V2 Phase 2 / migration 010 + application-only V2 Phase 2.5 + V2 Phase 2.6 / migrations 011–014 + V2 Phase 2.6H / migration 015 + V2 Phase 3 / migration 016 + corrective V2 Phase 3H / migration 017 + V2 Phase 4 / migrations 018–020 + V2 Phase 5 / migrations 021–022 đã hoàn thành. Phase 5 dùng manual/reference integration và không sao chép vận hành Biker. V2 Phase 6 — Package Commerce chưa bắt đầu và chỉ được thực hiện khi có task riêng.
 
 ---
 
@@ -2369,26 +2369,13 @@ V2 Phase 2 / migration 010 ✅
 V2 Phase 2.5 / no migration ✅
 V2 Phase 2.6 / migrations 011–014 ✅
 V2 Phase 2.6H / migration 015 ✅
-```
-
-Active roadmap:
-
-```text
-V2 Phase 3
-Supplier + Partner Foundation — separate authorization required
+V2 Phase 3 / migration 016 ✅
+V2 Phase 3H / migration 017 ✅
+V2 Phase 4 / migrations 018–020 ✅
+V2 Phase 5 / migrations 021–022 ✅
 ```
 
 Later:
-
-```text
-V2 Phase 4
-Commercial Economics
-```
-
-```text
-V2 Phase 5
-Motorbike Integration
-```
 
 ```text
 V2 Phase 6
@@ -3484,9 +3471,12 @@ Completed under separate owner authorization:
 
 ```text
 V2 Phase 3 — Supplier + Partner Foundation / migration 016
+V2 Phase 3H — Supplier Lifecycle Hardening / migration 017
+V2 Phase 4 — Commercial Economics / migrations 018–020
+V2 Phase 5 — Motorbike Integration / migrations 021–022
 ```
 
-Phase 2.5, Phase 2.6, Phase 2.6H, Phase 3 Supplier/Partner foundation, Phase 3H hardening, and Phase 4 Commercial Economics are complete. The next separately authorized phase is V2 Phase 5 — Motorbike Integration.
+Phase 2.5, Phase 2.6, Phase 2.6H, Phase 3 Supplier/Partner foundation, Phase 3H hardening, Phase 4 Commercial Economics, and Phase 5 Motorbike Integration are complete. The next separately authorized phase is V2 Phase 6 — Package Commerce.
 
 ---
 
@@ -3691,7 +3681,11 @@ Phase 3H is complete through corrective migration 017. Supplier archive is child
 
 Phase 4 is complete through migration 018, corrective function-ACL migrations 019–020, the private `phase4-economics-v1` resolver and `/admin/economics`. Existing public sell pricing remains authoritative. Net cost, market reference, contribution, margin, contract references and commercial notes remain private with zero anonymous access. Supplier archive closes economics atomically without deleting history. See `docs/V2_PHASE_4_COMMERCIAL_ECONOMICS.md`.
 
-The next separately authorized phase is V2 Phase 5 — Motorbike Integration. It has not started.
+## 189C. V2 PHASE 5 — MOTORBIKE INTEGRATION STATUS
+
+Phase 5 is complete through migrations 021–022, the manual/reference `MotorbikeProviderAdapter`, public `/motorbike`, and private `/admin/motorbike`. Migration 022 preserves immutable 021 while adding the public presentation-order column required by the adapter. The read-only Biker audit found no approved integration API, so Trip exposes only intentionally reviewed catalog facts linked through the existing `taxua_biker` external reference. It never claims live availability, seeds fake bikes, or copies fleet, customer, handover, maintenance, authentication, credential, or private Biker data. See `docs/V2_PHASE_5_MOTORBIKE_INTEGRATION.md`.
+
+The next separately authorized phase is V2 Phase 6 — Package Commerce. It has not started.
 
 ---
 

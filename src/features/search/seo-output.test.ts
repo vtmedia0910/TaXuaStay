@@ -12,10 +12,12 @@ describe("Phase 3 SEO output", () => {
       {
         properties: [{ slug: "public-stay", updated_at: "2026-08-29T00:00:00Z" }],
         rooms: [{ slug: "public-room", updated_at: "2026-08-29T00:00:00Z", property: { slug: "public-stay" } }],
+        motorbikes: [{ slug: "public-bike", updated_at: "2026-08-29T00:00:00Z" }],
       },
     );
     expect(sitemap.map((entry) => entry.url)).toContain("https://stay.example/stay/public-stay");
     expect(sitemap.map((entry) => entry.url)).toContain("https://stay.example/stay/public-stay/public-room");
+    expect(sitemap.map((entry) => entry.url)).toContain("https://stay.example/motorbike/public-bike");
     expect(JSON.stringify(sitemap)).not.toContain("/admin");
   });
 

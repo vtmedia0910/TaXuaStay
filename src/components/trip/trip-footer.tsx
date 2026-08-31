@@ -24,7 +24,7 @@ export function TripFooter({ cms }: { cms?: CmsPage }) {
             <Link href={PUBLIC_ROUTES.stay} className="hover:text-white">Lưu trú</Link>
             <Planned>Combo</Planned>
             <Planned>Xe khách</Planned>
-            <Planned>Xe máy</Planned>
+            <Link href={PUBLIC_ROUTES.motorbike} className="hover:text-white">Xe máy · cần xác nhận</Link>
             <Link href="/#cloud-view" className="hover:text-white">Săn mây / Cloud</Link>
           </div>
         </div>

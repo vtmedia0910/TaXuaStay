@@ -131,11 +131,9 @@ export function HomeExperience({ settings, roomResponse, cms, preview = false }:
           <h2 className="mt-3 text-4xl font-bold text-pine sm:text-5xl">Mỗi dịch vụ đều nói rõ trạng thái.</h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card className="p-5"><BedDouble className="text-copper" aria-hidden="true" /><Badge className="mt-4 text-success">Đang hoạt động</Badge><h3 className="mt-3 text-2xl font-bold text-pine">Lưu trú</h3><p className="mt-2 text-sm leading-6 text-muted">Tìm theo phòng, ngày, bằng chứng, giá và tình trạng được ghi nhận.</p><Link href={PUBLIC_ROUTES.stay} className="mt-4 inline-flex min-h-11 items-center font-bold text-pine">Tìm phòng →</Link></Card>
-            {[
-              [BusFront, "Xe khách", "Lịch trình và tồn chỗ chưa được kết nối; chưa nhận đặt trên website."],
-              [Bike, "Xe máy", "Nguồn vận hành tương lai là Tà Xùa Biker; hiện chưa có tích hợp đặt xe."],
-              [Package, "Combo", "Chưa có gói dịch vụ, giá gói hoặc quy trình xác nhận nhà cung cấp."],
-            ].map(([Icon, title, description]) => <Card key={String(title)} className="p-5"><Icon className="text-copper" aria-hidden="true" /><Badge className="mt-4 bg-mist text-muted">Sắp có</Badge><h3 className="mt-3 text-2xl font-bold text-pine">{String(title)}</h3><p className="mt-2 text-sm leading-6 text-muted">{String(description)}</p></Card>)}
+            <Card className="p-5"><BusFront className="text-copper" aria-hidden="true" /><Badge className="mt-4 bg-mist text-muted">Sắp có</Badge><h3 className="mt-3 text-2xl font-bold text-pine">Xe khách</h3><p className="mt-2 text-sm leading-6 text-muted">Lịch trình và tồn chỗ chưa được kết nối; chưa nhận đặt trên website.</p></Card>
+            <Card className="p-5"><Bike className="text-copper" aria-hidden="true" /><Badge className="mt-4 bg-amber-50 text-warning">Cần xác nhận</Badge><h3 className="mt-3 text-2xl font-bold text-pine">Xe máy</h3><p className="mt-2 text-sm leading-6 text-muted">Xem thông tin công khai từ Tà Xùa Biker; giá và tình trạng thực tế được xác nhận thủ công.</p><Link href={PUBLIC_ROUTES.motorbike} className="mt-4 inline-flex min-h-11 items-center font-bold text-pine">Xem dịch vụ →</Link></Card>
+            <Card className="p-5"><Package className="text-copper" aria-hidden="true" /><Badge className="mt-4 bg-mist text-muted">Sắp có</Badge><h3 className="mt-3 text-2xl font-bold text-pine">Combo</h3><p className="mt-2 text-sm leading-6 text-muted">Chưa có gói dịch vụ, giá gói hoặc quy trình xác nhận nhà cung cấp.</p></Card>
           </div>
         </div>
       </section>

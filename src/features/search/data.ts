@@ -281,9 +281,9 @@ export async function getPublicSearchOptions(): Promise<SearchOptions> {
 
 export async function getPublicSitemapData(): Promise<PublicSitemapData> {
   const supabase = createPublicSupabaseClient();
-  if (!supabase) return { properties: [], rooms: [] };
+  if (!supabase) return { properties: [], rooms: [], motorbikes: [] };
 
-  const [propertiesResult, roomsResult] = await Promise.all([
+  const [propertiesResult, roomsResult, motorbikesResult] = await Promise.all([
     supabase
       .from("properties")
       .select("slug,updated_at")
@@ -296,11 +296,18 @@ export async function getPublicSitemapData(): Promise<PublicSitemapData> {
       .order("slug")
       .limit(10000)
       .overrideTypes<PublicSitemapRoom[], { merge: false }>(),
+    supabase
+      .from("public_motorbike_offerings")
+      .select("slug,updated_at")
+      .order("slug")
+      .limit(1000)
+      .overrideTypes<Array<{ slug: string; updated_at: string }>, { merge: false }>(),
   ]);
 
-  if (propertiesResult.error || roomsResult.error) return { properties: [], rooms: [] };
+  if (propertiesResult.error || roomsResult.error) return { properties: [], rooms: [], motorbikes: [] };
   return {
     properties: propertiesResult.data ?? [],
     rooms: (roomsResult.data ?? []).filter((room) => room.property),
+    motorbikes: motorbikesResult.error ? [] : motorbikesResult.data ?? [],
   };
 }

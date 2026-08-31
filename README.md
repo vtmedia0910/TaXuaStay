@@ -6,15 +6,15 @@ This repository is the independent accommodation technical foundation and the li
 
 The public application now uses the Tà Xùa Trip brand shell while preserving the Destination → Property → Room Type → Physical Room identity hierarchy, verified evidence, Cloud View, Road Verified, pricing, pooled availability, room-first search, SEO, and authorized operations. Master Plan V2.1 combines four product pillars—**VERIFY, BUNDLE, OPERATE, DISTRIBUTE**—without rewriting that foundation.
 
-Private suppliers, normalized contacts, Property relationships, Partner lifecycle/tier, and opaque external identities are implemented as the V2 Phase 3 supply-side foundation. Phase 3H migration 017 hardens atomic archive ordering and ID-preserving primary-contact edits. Phase 4 migrations 018–020 add private accommodation net cost, market reference and internal contribution/margin diagnostics while preserving the existing public sell-price engine and denying anonymous helper execution. Services, packages, unified trip booking, payments, bus integration, Motorbike Integration and the Trip Dashboard remain future architecture only. Tà Xùa Biker remains an independent product and source of truth for motorbike operations.
+Private suppliers, normalized contacts, Property relationships, Partner lifecycle/tier, and opaque external identities are implemented as the V2 Phase 3 supply-side foundation. Phase 3H migration 017 hardens atomic archive ordering and ID-preserving primary-contact edits. Phase 4 migrations 018–020 add private accommodation net cost, market reference and internal contribution/margin diagnostics while preserving the existing public sell-price engine and denying anonymous helper execution. Phase 5 migrations 021–022 add a bounded manual/reference motorbike catalog, its public ordering contract, and `/motorbike`; they do not copy fleet operations or claim live availability. Packages, unified trip booking, payments, bus integration and the Trip Dashboard remain future architecture only. Tà Xùa Biker remains independent and the source of truth for motorbike operations.
 
 ## Roadmap status
 
 Migrations 001–008 and their historical phase documents are the **Legacy Foundation Completed**. Migration 009 implements **V2 Phase 1 — Architecture Alignment**. Migration 010 implements **V2 Phase 2 — Verified Room Profile** with separate Room Type Verified, Exact Room Verified, Room Quality dimensions, and factual strengths/caveats.
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented without a database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented by migrations 011–014. **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** adds the visual section editor/media library and migration 015. **V2 Phase 3 — Supplier + Partner Foundation** is implemented by migration 016 and the private Supplier Admin; **V2 Phase 3H — Supplier Lifecycle Hardening** is implemented by corrective migration 017; **V2 Phase 4 — Commercial Economics** is implemented by migrations 018–020 and `/admin/economics`. `/stay` is canonical; compatibility routes remain available. V2 Phase 5 — Motorbike Integration has not been started.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented without a database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented by migrations 011–014. **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** adds the visual section editor/media library and migration 015. **V2 Phase 3 — Supplier + Partner Foundation** is implemented by migration 016 and the private Supplier Admin; **V2 Phase 3H — Supplier Lifecycle Hardening** is implemented by corrective migration 017; **V2 Phase 4 — Commercial Economics** is implemented by migrations 018–020 and `/admin/economics`; **V2 Phase 5 — Motorbike Integration** is implemented by migrations 021–022, `/motorbike`, and `/admin/motorbike`. `/stay` is canonical; compatibility routes remain available. V2 Phase 6 — Package Commerce has not been started.
 
-The focused **Mobile Hero Experience** keeps the accepted desktop Hero from 1024 px, while smaller viewports use a photography-first campaign layout and an accessible search bottom sheet. Both layouts reuse the existing CMS media/focal-point pipeline and `/stay` search semantics. This application-only UX pass adds no migration and does not start V2 Phase 5.
+The focused **Mobile Hero Experience** keeps the accepted desktop Hero from 1024 px, while smaller viewports use a photography-first campaign layout and an accessible search bottom sheet. Both layouts reuse the existing CMS media/focal-point pipeline and `/stay` search semantics. The persistent cross-phase standard is `docs/product/MOBILE_FIRST_PRODUCT_UI_STANDARD.md`.
 
 ## Local development
 
@@ -45,6 +45,11 @@ supabase/migrations/202608290014_enforce_cms_archive_lifecycle.sql
 supabase/migrations/202608290015_harden_cms_publishing_permissions.sql
 supabase/migrations/202608290016_v2_supplier_partner_foundation.sql
 supabase/migrations/202608290017_harden_supplier_lifecycle.sql
+supabase/migrations/202608290018_v2_commercial_economics.sql
+supabase/migrations/202608290019_harden_commercial_function_grants.sql
+supabase/migrations/202608290020_restore_authenticated_relationship_predicate.sql
+supabase/migrations/202608290021_v2_motorbike_integration.sql
+supabase/migrations/202608290022_fix_motorbike_public_ordering.sql
 ```
 
 The public page remains usable with safe local defaults when Supabase environment variables are absent or settings cannot be read.

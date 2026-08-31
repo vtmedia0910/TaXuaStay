@@ -114,4 +114,5 @@ export interface PublicSitemapRoom {
 export interface PublicSitemapData {
   properties: PublicSitemapProperty[];
   rooms: PublicSitemapRoom[];
+  motorbikes: Array<{ slug: string; updated_at: string }>;
 }

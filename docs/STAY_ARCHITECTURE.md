@@ -32,7 +32,7 @@ Technical domain      Stay
 Technical namespace   /stay
 ```
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented at application level with no database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented with migrations 011–014, **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** with migration 015, **V2 Phase 3 — Supplier + Partner Foundation** with migration 016, corrective **V2 Phase 3H — Supplier Lifecycle Hardening** with migration 017, and **V2 Phase 4 — Commercial Economics** with migrations 018–020. Historical routes remain compatibility pages with `/stay` canonicals. V2 Phase 5 Motorbike Integration has not started and requires a separate owner task.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented at application level with no database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented with migrations 011–014, **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** with migration 015, **V2 Phase 3 — Supplier + Partner Foundation** with migration 016, corrective **V2 Phase 3H — Supplier Lifecycle Hardening** with migration 017, **V2 Phase 4 — Commercial Economics** with migrations 018–020, and **V2 Phase 5 — Motorbike Integration** with migrations 021–022. Historical routes remain compatibility pages with `/stay` canonicals. V2 Phase 6 Package Commerce has not started and requires a separate owner task.
 
 ## Currently implemented — legacy foundation completed
 
@@ -48,8 +48,9 @@ The current repository actually implements:
 - Verified Room Profile V2 with independent Room Quality dimensions, factual strengths/caveats, and richer exact-room presentation.
 - structured website copy/media operations with protected preview, atomic page publish and public-safe fallbacks.
 - private Supplier identities, normalized contacts, historical many-to-many Property links, Partner relationship lifecycle/tier, and immutable external-system references.
+- a bounded manual/reference motorbike catalog, public `/motorbike` discovery and private Admin controls without a Biker runtime/database dependency.
 
-Private accommodation commercial economics now exists as a protected internal domain. There is still no commission/settlement engine, generic service catalog, package commerce, unified trip booking, booking items, payment, bus inventory, supplier confirmation workflow, Motorbike Integration, or Trip Dashboard.
+Private accommodation commercial economics now exists as a protected internal domain. There is still no commission/settlement engine, generic service catalog, package commerce, unified trip booking, booking items, payment, bus inventory, supplier confirmation workflow, live motorbike integration/fleet operations, or Trip Dashboard.
 
 ## V2 accommodation hierarchy — Phase 1 implemented
 
@@ -220,10 +221,18 @@ Public inventory is read through a `security_invoker` allow-listed view backed b
 
 `/admin/availability` lets authorized staff select a property and room, inspect a 14-night warning horizon, and atomically upsert one through 365 inclusive lodging-night dates. Normal saves use the current timestamp. Manual inputs support partner, Admin, and import sources; `booking_engine` is reserved in the database contract for a later automated integration. The optional integer-VND inventory override is stored for future audited integration and is excluded from public reads; Phase 5 remains the only active public price resolver.
 
+## V2 Phase 5 — Motorbike Integration implemented
+
+Migration 021 adds `motorbike_offerings`, a deliberately small Trip-side public catalog projection linked to a real motorbike Supplier and its existing opaque `taxua_biker` external reference. Corrective migration 022 appends `sort_order` to the public view so its stable presentation order is part of the public query contract without modifying already-applied migration 021. The read-only Biker audit found no approved public/server integration contract, so the application uses `MotorbikeProviderAdapter` with a `manual_reference` implementation. There is no background sync, direct Biker database read, service-role dependency, scraping, or credential sharing.
+
+The public security-invoker view exposes only reviewed descriptive facts, optional current integer-VND price snapshots, deliberately non-live confirmation states, freshness, an approved HTTPS request URL, and controlled CMS media. Supplier IDs, external-reference values/metadata, contacts, Partner tier, economics, internal notes and audit identities remain private. Published does not mean available; price does not mean available; request does not mean confirmation. Source facts older than seven days are visibly stale, and absent/expired prices become `Cần xác nhận giá`.
+
+`/motorbike` and `/motorbike/[slug]` are server-first, mobile-first public surfaces. `/admin/motorbike` is Admin-only and manages the Trip projection rather than Biker fleet operations. Production is intentionally empty until the owner links a real motorbike Supplier/reference and enters reviewed facts. No booking, hold, payment, customer intent row, package, or sample bike is created. See `docs/V2_PHASE_5_MOTORBIKE_INTEGRATION.md`.
+
 ## V2 roadmap boundary
 
-The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is migration 009, Verified Room Profile migration 010, brand/UX V2 Phase 2.5, website operations migrations 011–014, CMS hardening migration 015, Supplier/Partner foundation migration 016, Supplier lifecycle hardening migration 017, and private Commercial Economics migrations 018–020. Only separately authorized later phases may add motorbike service integration, services, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
+The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is migration 009, Verified Room Profile migration 010, brand/UX V2 Phase 2.5, website operations migrations 011–014, CMS hardening migration 015, Supplier/Partner foundation migration 016, Supplier lifecycle hardening migration 017, private Commercial Economics migrations 018–020, and bounded Motorbike Integration migrations 021–022. Only separately authorized later phases may add services, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
 
-## Future Biker relationship
+## Biker relationship
 
-Tà Xùa Biker remains a separate repository, database, Auth boundary, deployment, and source of truth for motorbike fleet/rental operations. Trip/Stay must never query the Biker database directly or share a service-role key. A future V2 motorbike service adapter may use a safe API, signed server-to-server call, manual confirmation, webhook, or opaque external reference. Trip may later record its own booking-item/external-confirmation state, but it must not copy fleet ownership or claim a Biker reservation without confirmation from Biker operations.
+Tà Xùa Biker remains a separate repository, database, Auth boundary, deployment, and source of truth for motorbike fleet/rental operations. Trip/Stay must never query the Biker database directly or share a service-role key. Phase 5 uses manual confirmation plus an opaque external reference because no safe API contract exists. A later separately authorized adapter may use a documented public API, signed server-to-server call or webhook. Trip may later record its own booking-item/external-confirmation state, but it must not copy fleet ownership or claim a Biker reservation without confirmation from Biker operations.
