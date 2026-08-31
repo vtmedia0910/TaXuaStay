@@ -106,4 +106,19 @@ describe("Phase 3 room filtering", () => {
     result.availabilityQuote = { state: "verified_today" } as RoomSearchResult["availabilityQuote"];
     expect(matchesRoomSearch(result, params({ availableOnly: true }))).toBe(true);
   });
+
+  it("maps Hero verification preferences only to current public verification facts", () => {
+    const result = makeResult();
+    expect(matchesRoomSearch(result, params({ verifiedOnly: true }))).toBe(false);
+    expect(matchesRoomSearch(result, params({ viewFromBedOnly: true }))).toBe(false);
+
+    result.road = { property_id: "property-1" } as RoomSearchResult["road"];
+    expect(matchesRoomSearch(result, params({ verifiedOnly: true }))).toBe(true);
+    expect(matchesRoomSearch(result, params({ viewFromBedOnly: true }))).toBe(false);
+
+    result.cloudView = { view_from_bed: "partial" } as RoomSearchResult["cloudView"];
+    expect(matchesRoomSearch(result, params({ viewFromBedOnly: true }))).toBe(true);
+    result.cloudView = { view_from_bed: "no" } as RoomSearchResult["cloudView"];
+    expect(matchesRoomSearch(result, params({ viewFromBedOnly: true }))).toBe(false);
+  });
 });

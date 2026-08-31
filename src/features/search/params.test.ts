@@ -71,4 +71,22 @@ describe("Phase 3 search params", () => {
     expect(missingDates.params.availableOnly).toBe(false);
     expect(missingDates.issues).toContain("Chỉ có thể lọc phòng đang xác nhận còn khi đã chọn đủ ngày hợp lệ.");
   });
+
+  it("normalizes only truthful Hero preference parameters", () => {
+    const result = parseRoomSearchParams({
+      verified: "1",
+      view_from_bed: "true",
+      car_access: "yes",
+      cloud_guaranteed: "1",
+    });
+    expect(result.params).toMatchObject({
+      verifiedOnly: true,
+      viewFromBedOnly: true,
+      carAccess: "yes",
+    });
+    expect(result.normalizedQuery).toContain("verified=1");
+    expect(result.normalizedQuery).toContain("view_from_bed=1");
+    expect(result.normalizedQuery).toContain("car_access=yes");
+    expect(result.normalizedQuery).not.toContain("cloud_guaranteed");
+  });
 });

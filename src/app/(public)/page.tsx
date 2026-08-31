@@ -5,22 +5,20 @@ import {
   BedDouble,
   Bike,
   BusFront,
-  CalendarCheck,
   Camera,
   CheckCircle2,
   CloudSun,
   Compass,
   Eye,
   Info,
-  MapPinned,
   Package,
   Route,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { SearchEntryForm } from "@/components/search/search-entry-form";
 import { CmsImage } from "@/components/cms/cms-image";
+import { TripHero } from "@/components/trip/trip-hero";
 import { VerifiedStayCard } from "@/components/trip/verified-stay-card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -78,9 +76,6 @@ export function HomeExperience({ settings, roomResponse, cms, preview = false }:
     ? selectedRoomIds.flatMap((id) => allCloudRooms.filter((item) => item.room.id === id))
     : allCloudRooms;
   const cloudRooms = orderedCloudRooms.slice(0, verifiedRooms?.max_items ?? 3);
-  const desktopHero = hero?.desktop_media;
-  const mobileHero = hero?.mobile_media ?? desktopHero;
-  const heroSecondary = hero?.items.find((item) => item.item_key === "secondary_cta" && item.is_enabled !== false);
   const differentiatorDefaults: { Icon: LucideIcon; title: string; description: string; media?: CmsPage["sections"][number]["items"][number]["media"] }[] = [
     { Icon: ShieldCheck, title: "THẨM ĐỊNH TẠI CHỖ", description: "Ghi nhận đúng nơi, đúng loại phòng và đúng phạm vi." },
     { Icon: Camera, title: "XEM TRƯỚC BẰNG 360°", description: "Ảnh toàn cảnh được gắn nhãn phòng hoặc vị trí ngắm." },
@@ -101,51 +96,7 @@ export function HomeExperience({ settings, roomResponse, cms, preview = false }:
         </div>
       ) : null}
 
-      {hero ? <section className="trip-hero relative isolate overflow-hidden px-5 py-16 sm:px-8 sm:py-24">
-        {desktopHero ? <div className="absolute inset-0 -z-20 hidden sm:block"><CmsImage media={desktopHero} priority sizes="100vw" /></div> : null}
-        {mobileHero ? <div className="absolute inset-0 -z-20 sm:hidden"><CmsImage media={mobileHero} priority sizes="100vw" /></div> : null}
-        {desktopHero || mobileHero ? <div className="absolute inset-0 -z-10 bg-white/72 backdrop-blur-[1px]" /> : null}
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
-          <div>
-            <Badge className="bg-white/80 uppercase tracking-[0.14em] text-copper-strong">{hero?.eyebrow}</Badge>
-            <h1 className="mt-5 max-w-4xl text-5xl font-bold leading-[0.98] tracking-[-0.045em] text-pine sm:text-7xl">{hero?.heading}</h1>
-            <p className="mt-6 max-w-3xl text-lg leading-8 text-ink sm:text-xl">{hero?.body}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={hero?.cta_href ?? PUBLIC_ROUTES.stay} className={buttonVariants({ size: "lg" })}>{hero?.cta_label ?? "Tìm chuyến đi phù hợp"}<ArrowRight size={18} aria-hidden="true" /></Link>
-              <Link href={heroSecondary?.href ?? "/#verified-stays"} className={buttonVariants({ variant: "secondary", size: "lg" })}>{heroSecondary?.title ?? "Xem phòng đã thẩm định"}</Link>
-            </div>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-muted">Hiện tại luồng tìm kiếm hoạt động cho Lưu trú. Combo, xe khách và xe máy được ghi rõ trạng thái, không giả lập đặt dịch vụ.</p>
-          </div>
-          <Card className="border-white/70 bg-white/88 p-6 shadow-xl shadow-pine/10 backdrop-blur-sm">
-            <p className="text-sm font-bold uppercase tracking-[0.13em] text-copper-strong">Trước khi đặt, bạn biết</p>
-            <div className="mt-5 grid gap-4">
-              {[
-                [BedDouble, "Đúng loại phòng", "Thông tin không bị trộn với phòng khác."],
-                [Eye, "View thực tế", "Bằng chứng có phạm vi và ngày xác minh."],
-                [Route, "Đường vào", "Có, Không và Chưa xác nhận được tách rõ."],
-                [Info, "Điều cần lưu ý", "Điểm chưa tốt không bị giấu đi."],
-              ].map(([Icon, title, copy]) => (
-                <div key={String(title)} className="flex gap-3 rounded-2xl bg-mist/75 p-3">
-                  <Icon className="mt-0.5 shrink-0 text-copper" size={20} aria-hidden="true" />
-                  <div><p className="font-bold text-pine">{String(title)}</p><p className="mt-1 text-sm leading-6 text-muted">{String(copy)}</p></div>
-                </div>
-              ))}
-            </div>
-          </Card>
-          <div className="lg:col-span-2"><SearchEntryForm /></div>
-        </div>
-      </section> : null}
-
-      <section className="border-y border-line bg-white px-5 py-6 sm:px-8" aria-label="Cam kết quy trình">
-        <div className="mx-auto grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            [MapPinned, "Thẩm định tại chỗ"],
-            [Camera, "Video / ảnh 360°"],
-            [Info, "Nói cả ưu & nhược điểm"],
-            [CalendarCheck, "Dữ liệu có ngày xác minh"],
-          ].map(([Icon, label]) => <div key={String(label)} className="flex items-center gap-3 font-semibold text-pine"><span className="grid size-10 place-items-center rounded-2xl bg-pine-soft"><Icon size={19} aria-hidden="true" /></span>{String(label)}</div>)}
-        </div>
-      </section>
+      <TripHero hero={hero} />
 
       {why ? <section id="about" className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">

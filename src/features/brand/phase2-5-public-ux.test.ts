@@ -12,7 +12,7 @@ describe("V2 Phase 2.5 public brand and UX", () => {
     const homepage = source("src/app/(public)/page.tsx");
     const defaults = source("src/features/cms/defaults.ts");
     expect(defaults).toContain("Đi thật. Biết trước.");
-    expect(defaults).toContain("TÀ XÙA • VERIFIED LOCAL TRAVEL");
+    expect(defaults).toContain("TÀ XÙA TRIP");
     expect(homepage).toContain("getPublicCmsPage");
     expect(homepage).not.toContain("TÀ XÙA STAY");
   });

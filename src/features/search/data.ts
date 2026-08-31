@@ -189,6 +189,28 @@ export async function searchPublicRooms(
 
   const from = (params.page - 1) * SEARCH_PAGE_SIZE;
   const to = from + SEARCH_PAGE_SIZE - 1;
+  if (params.verifiedOnly || params.viewFromBedOnly) {
+    const { data, error, count } = await query
+      .order("max_guests")
+      .order("name")
+      .order("id")
+      .limit(1000)
+      .overrideTypes<SearchRoomRow[], { merge: false }>();
+    if (error || (count ?? 0) > 1000) return emptyResponse(params, "error");
+    const enriched = await enrichSearchRows((data ?? []).filter((row) => row.property), params);
+    const matched = rankRoomSearchResults(
+      enriched.filter((result) => matchesRoomSearch(result, params, preset)),
+      params,
+    );
+    return {
+      items: matched.slice(from, to + 1),
+      total: matched.length,
+      page: params.page,
+      pageSize: SEARCH_PAGE_SIZE,
+      totalPages: Math.ceil(matched.length / SEARCH_PAGE_SIZE),
+      status: "ready",
+    };
+  }
   if (params.availableOnly && params.checkIn && params.checkOut) {
     const { data, error, count } = await query
       .order("max_guests")

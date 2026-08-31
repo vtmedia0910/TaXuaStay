@@ -119,6 +119,8 @@ export function SearchForm({ params, options }: {
               {VIEW_TYPES.map((value) => <option key={value} value={value}>{VIEW_TYPE_LABELS[value]}</option>)}
             </Select>
           </FormField>
+          <FacilityCheckbox name="verified" label="Có thẩm định đang hiệu lực" checked={params.verifiedOnly} />
+          <FacilityCheckbox name="view_from_bed" label="Có view từ giường đã thẩm định" checked={params.viewFromBedOnly} />
         </fieldset>
 
         <fieldset className="grid gap-4 sm:grid-cols-3">

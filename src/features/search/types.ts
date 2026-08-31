@@ -26,6 +26,8 @@ export interface RoomSearchParams {
   restaurant: boolean;
   bbq: boolean;
   availableOnly: boolean;
+  verifiedOnly: boolean;
+  viewFromBedOnly: boolean;
   page: number;
 }
 

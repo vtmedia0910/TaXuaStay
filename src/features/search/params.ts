@@ -16,6 +16,8 @@ export const DEFAULT_ROOM_SEARCH_PARAMS: RoomSearchParams = {
   restaurant: false,
   bbq: false,
   availableOnly: false,
+  verifiedOnly: false,
+  viewFromBedOnly: false,
   page: 1,
 };
 
@@ -79,6 +81,8 @@ export function normalizeRoomSearchParams(params: RoomSearchParams) {
   if (params.restaurant) query.set("restaurant", "1");
   if (params.bbq) query.set("bbq", "1");
   if (params.availableOnly) query.set("available", "1");
+  if (params.verifiedOnly) query.set("verified", "1");
+  if (params.viewFromBedOnly) query.set("view_from_bed", "1");
   if (params.page > 1) query.set("page", String(params.page));
   return query.toString();
 }
@@ -167,6 +171,8 @@ export function parseRoomSearchParams(raw: RawSearchParams): ParsedRoomSearch {
     restaurant: parseFlag(firstValue(raw.restaurant)),
     bbq: parseFlag(firstValue(raw.bbq)),
     availableOnly,
+    verifiedOnly: parseFlag(firstValue(raw.verified)),
+    viewFromBedOnly: parseFlag(firstValue(raw.view_from_bed)),
     page: page.value,
   };
 
@@ -193,5 +199,7 @@ export function countActiveSearchFilters(params: RoomSearchParams) {
     params.restaurant,
     params.bbq,
     params.availableOnly,
+    params.verifiedOnly,
+    params.viewFromBedOnly,
   ].filter(Boolean).length;
 }

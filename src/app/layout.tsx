@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Be_Vietnam_Pro } from "next/font/google";
+import { Allura, Be_Vietnam_Pro } from "next/font/google";
 import { getPublicPageRobots } from "@/config/seo";
 import { getSiteUrl, SITE } from "@/config/site";
 import "./globals.css";
@@ -9,6 +9,13 @@ const beVietnamPro = Be_Vietnam_Pro({
   weight: ["400", "600", "700"],
   display: "swap",
   variable: "--font-be-vietnam-pro",
+});
+
+const allura = Allura({
+  subsets: ["vietnamese", "latin"],
+  weight: "400",
+  display: "swap",
+  variable: "--font-trip-script",
 });
 
 export const metadata: Metadata = {
@@ -43,7 +50,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="vi" className={beVietnamPro.variable}>
+    <html lang="vi" className={`${beVietnamPro.variable} ${allura.variable}`}>
       <body>{children}</body>
     </html>
   );
