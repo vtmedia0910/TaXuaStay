@@ -158,10 +158,10 @@ Runtime still needs only:
 
 ```text
 NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 ```
 
-`NEXT_PUBLIC_SITE_URL` remains intentionally unset until the final brand domain is selected. No runtime code uses `SUPABASE_SERVICE_ROLE_KEY`; the owner should remove it from Vercel if it still exists.
+`NEXT_PUBLIC_SITE_URL` controls canonical indexing when the final brand domain is selected. No runtime code uses `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY`; neither belongs in Vercel.
 
 ## Explicit scope stop
 

@@ -237,10 +237,10 @@ The application currently requires these public variable names:
 
 ```text
 NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 ```
 
-No current application call site uses a service-role client, and the unused client factory and environment-template placeholder have been removed. Do not configure `SUPABASE_SERVICE_ROLE_KEY` locally or in Vercel for the current application. If that variable already exists in the Vercel project, the owner should remove it. Keep only the two public Supabase variables above, then redeploy after any environment change.
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` is the only supported public credential path. There is no runtime fallback to the legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY`. No current application call site uses a privileged client; do not configure `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` locally or in Vercel. Redeploy after any public environment change because Next.js inlines `NEXT_PUBLIC_` variables at build time.
 
 ## Storage architecture
 

@@ -155,10 +155,10 @@ Correct production canonical and data behavior require these public environment 
 ```text
 NEXT_PUBLIC_SITE_URL
 NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 ```
 
-No runtime code uses a service-role client. Do not configure `SUPABASE_SERVICE_ROLE_KEY` for the current application; the owner should remove that variable from Vercel and retain only the public variables above. After changing Vercel environment values, redeploy production so the Next.js build and runtime receive them.
+No runtime code uses a service-role client. Do not configure `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` for the current application; retain only the public variables above. After changing Vercel environment values, redeploy production so the Next.js build and runtime receive them.
 
 ### Indexing safety before the final brand domain
 

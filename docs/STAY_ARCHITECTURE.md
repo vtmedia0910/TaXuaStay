@@ -176,7 +176,7 @@ Seven intent landing pages reuse deterministic current facts for homestay, view,
 
 Indexing is environment-aware. A valid explicit HTTPS brand domain in `NEXT_PUBLIC_SITE_URL` enables normal public indexing. Local hosts, technical `*.vercel.app` hosts, and deployments that rely only on `VERCEL_PROJECT_PRODUCTION_URL` remain usable but emit public `noindex` metadata; `robots.ts` blocks crawling and does not advertise the sitemap. The sitemap route still builds and contains public static routes plus RLS-visible property and room URLs, falling back to static routes if Supabase is unavailable. Property JSON-LD uses factual `LodgingBusiness`/`Hotel` fields only and omits ratings, reviews, prices, and availability.
 
-No runtime call site requires a service-role client. The tracked environment template contains only the final canonical URL and the two public Supabase variables. Any existing `SUPABASE_SERVICE_ROLE_KEY` in Vercel is unnecessary for the current application and should be removed by the owner.
+No runtime call site requires a service-role client. The tracked environment template contains only the final canonical URL, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Neither `SUPABASE_SERVICE_ROLE_KEY` nor `SUPABASE_SECRET_KEY` belongs in the application or Vercel environment.
 
 ## Legacy Phase 4 Verified Standard
 

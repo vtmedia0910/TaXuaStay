@@ -7,7 +7,7 @@ export function createPublicSupabaseClient() {
   const config = getSupabasePublicConfig();
   if (!config) return null;
 
-  return createClient(config.url, config.anonKey, {
+  return createClient(config.url, config.publishableKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
