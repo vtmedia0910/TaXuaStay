@@ -19,6 +19,7 @@ import {
   ChartNoAxesCombined,
   Bike,
   Package,
+  ClipboardCheck,
 } from "lucide-react";
 import { logoutAction } from "@/features/admin/auth-actions";
 import type { AdminRole } from "@/features/admin/authz";
@@ -39,6 +40,7 @@ const contentLinks = [
   { label: "Nhà cung cấp", href: "/admin/suppliers", icon: Handshake },
   { label: "Xe máy", href: "/admin/motorbike", icon: Bike },
   { label: "Gói dịch vụ", href: "/admin/packages", icon: Package },
+  { label: "Yêu cầu chuyến đi", href: "/admin/bookings", icon: ClipboardCheck },
 ] as const;
 
 const cmsLinks = [

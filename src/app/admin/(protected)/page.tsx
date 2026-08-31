@@ -38,9 +38,9 @@ export default async function AdminHomePage({
         <Card className="p-5">
           <Layers3 className="text-pine" aria-hidden="true" />
           <h2 className="mt-4 font-display text-xl font-bold text-pine">Phạm vi hiện tại</h2>
-          <Badge className="mt-3 text-success">V2 PHASE 6</Badge>
+          <Badge className="mt-3 text-success">V2 PHASE 8</Badge>
           <p className="mt-3 text-sm leading-6 text-muted">
-            Lưu trú, xe máy và gói dịch vụ đã có nền tảng thật; đặt chỗ, thanh toán và hồ sơ chuyến đi chưa được triển khai.
+            Yêu cầu chuyến đi hợp nhất và xác nhận từng nhà cung cấp đã có nền tảng thật; thanh toán, đặt cọc và checkout chưa được triển khai.
           </p>
         </Card>
         <Card className="p-5">

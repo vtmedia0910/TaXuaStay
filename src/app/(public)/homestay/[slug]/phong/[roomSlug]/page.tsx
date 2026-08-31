@@ -20,6 +20,7 @@ import { BATHROOM_TYPE_LABELS, VIEW_TYPE_LABELS } from "@/features/search/labels
 import { buildRoomSearchUrl, buildStayContextQuery, DEFAULT_ROOM_SEARCH_PARAMS, parseRoomSearchParams, type RawSearchParams } from "@/features/search/params";
 import { getPublicRoomVerificationBundle } from "@/features/verification/data";
 import { buildPropertyPath, buildRoomPath } from "@/config/routes";
+import { buttonVariants } from "@/components/ui/button";
 
 type RoomParams = Promise<{ slug: string; roomSlug: string }>;
 
@@ -63,6 +64,9 @@ export default async function RoomPage({ params, searchParams }: { params: RoomP
     area: property.area_name,
   });
   const contextQuery = buildStayContextQuery(pricingContext);
+  const bookingQuery = new URLSearchParams({ room: room.id, adults: String(pricingContext.adults), children: String(pricingContext.children), rooms: String(pricingContext.rooms) });
+  if (pricingContext.checkIn) bookingQuery.set("check_in", pricingContext.checkIn);
+  if (pricingContext.checkOut) bookingQuery.set("check_out", pricingContext.checkOut);
 
   return (
     <main className="bg-cream pb-20">
@@ -124,6 +128,7 @@ export default async function RoomPage({ params, searchParams }: { params: RoomP
             <div className="mt-4"><AvailabilitySummary quote={availabilityQuotes.get(room.id)} detailed /></div>
           </Card>
           <p className="rounded-3xl border border-line bg-surface p-4 text-sm leading-6 text-muted">Giá và tình trạng phòng là hai thông tin riêng. Tình trạng có thể thay đổi cho tới khi yêu cầu đặt phòng được xác nhận; trang này không giữ chỗ.</p>
+          <Link href={`/booking/request?${bookingQuery}`} className={buttonVariants({ size: "lg", className: "w-full" })}>Gửi yêu cầu cho phòng này</Link>
           <Link href={relatedSearchUrl} className="inline-flex min-h-12 items-center justify-center rounded-full border border-line bg-surface px-5 text-sm font-bold text-pine hover:bg-mist">Tìm phòng liên quan tại {property.area_name}</Link>
         </aside>
       </div>

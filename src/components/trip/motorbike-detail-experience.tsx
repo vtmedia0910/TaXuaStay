@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Bike, Clock3, ExternalLink, Gauge, HardHat, MapPin, RotateCcw, ShieldQuestion } from "lucide-react";
+import { ArrowLeft, Bike, Clock3, Gauge, HardHat, MapPin, RotateCcw, ShieldQuestion } from "lucide-react";
 import { CmsImage } from "@/components/cms/cms-image";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -61,7 +61,7 @@ export function MotorbikeDetailExperience({ offering }: { offering: PublicMotorb
           </Card>
           <div className="mt-6 hidden lg:block">
             {truth.canRequest
-              ? <a href={offering.public_request_url} target="_blank" rel="nofollow noopener noreferrer" className={buttonVariants({ size: "lg", className: "min-h-13 w-full" })}>Yêu cầu xác nhận <ExternalLink size={18} aria-hidden="true" /></a>
+              ? <Link href={`/booking/request?motorbike=${encodeURIComponent(offering.slug)}`} className={buttonVariants({ size: "lg", className: "min-h-13 w-full" })}>Yêu cầu xác nhận chuyến đi</Link>
               : <p className="rounded-2xl bg-red-50 p-4 text-center font-bold text-danger">Tạm chưa nhận yêu cầu cho lựa chọn này.</p>}
           </div>
           <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-muted"><Clock3 size={16} className="mt-0.5 shrink-0" aria-hidden="true" />Trang này không đọc số xe còn lại trực tiếp từ Biker. Thông tin công khai được kiểm tra thủ công.</p>
@@ -69,7 +69,7 @@ export function MotorbikeDetailExperience({ offering }: { offering: PublicMotorb
       </section>
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/96 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur lg:hidden">
         {truth.canRequest
-          ? <a href={offering.public_request_url} target="_blank" rel="nofollow noopener noreferrer" className={buttonVariants({ size: "lg", className: "min-h-13 w-full" })}>Yêu cầu xác nhận <ExternalLink size={18} aria-hidden="true" /></a>
+          ? <Link href={`/booking/request?motorbike=${encodeURIComponent(offering.slug)}`} className={buttonVariants({ size: "lg", className: "min-h-13 w-full" })}>Yêu cầu xác nhận chuyến đi</Link>
           : <p className="rounded-2xl bg-red-50 p-4 text-center text-sm font-bold text-danger">Tạm chưa nhận yêu cầu</p>}
       </div>
     </main>

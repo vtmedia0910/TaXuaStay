@@ -1,0 +1,19 @@
+import Link from "next/link";
+import { CalendarDays, ChevronRight, ClipboardCheck } from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { FormFeedback } from "@/components/admin/form-feedback";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { BOOKING_CONFIRMATION_LABELS, BOOKING_LIFECYCLE_LABELS, formatBookingVnd } from "@/features/bookings/policy";
+import { getAdminBookings } from "@/features/bookings/data";
+
+export default async function AdminBookingsPage({ searchParams }: { searchParams: Promise<{ error?: string; q?: string; lifecycle?: string; confirmation?: string }> }) {
+  const query = await searchParams;
+  const bookings = await getAdminBookings();
+  const needle = query.q?.trim().toLocaleLowerCase("vi") ?? "";
+  const filtered = bookings.filter((booking) => (!needle || `${booking.booking_code} ${booking.customer_name} ${booking.customer_phone}`.toLocaleLowerCase("vi").includes(needle)) && (!query.lifecycle || booking.lifecycle_status === query.lifecycle) && (!query.confirmation || booking.confirmation_status === query.confirmation));
+  return <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6"><AdminPageHeader title="Yêu cầu chuyến đi" description="Một chuyến đi là một Booking; xác nhận từng nhà cung cấp được theo dõi riêng. Chưa có thanh toán hoặc giữ chỗ." /><FormFeedback error={query.error} /><Card className="mb-5 p-4"><form className="grid gap-3 sm:grid-cols-[1fr_0.7fr_0.7fr_auto]"><Input name="q" defaultValue={query.q} placeholder="Mã, tên hoặc số điện thoại" /><Select name="lifecycle" defaultValue={query.lifecycle ?? ""}><option value="">Mọi vòng đời</option>{Object.entries(BOOKING_LIFECYCLE_LABELS).map(([value,label]) => <option key={value} value={value}>{label}</option>)}</Select><Select name="confirmation" defaultValue={query.confirmation ?? ""}><option value="">Mọi xác nhận</option>{Object.entries(BOOKING_CONFIRMATION_LABELS).map(([value,label]) => <option key={value} value={value}>{label}</option>)}</Select><div className="flex gap-2"><Button type="submit">Lọc</Button><Link href="/admin/bookings" className={buttonVariants({ variant: "secondary" })}>Xóa</Link></div></form></Card>{filtered.length ? <div className="grid gap-4">{filtered.map((booking) => <Link key={booking.id} href={`/admin/bookings/${booking.id}`}><Card className="p-5 transition hover:border-copper"><div className="flex items-start justify-between gap-4"><div><div className="flex flex-wrap gap-2"><Badge>{BOOKING_LIFECYCLE_LABELS[booking.lifecycle_status]}</Badge><Badge className="bg-mist text-pine">{BOOKING_CONFIRMATION_LABELS[booking.confirmation_status]}</Badge></div><h2 className="mt-3 text-2xl font-bold text-pine">{booking.booking_code}</h2><p className="mt-1 font-bold text-ink">{booking.customer_name} · {booking.customer_phone}</p><p className="mt-2 flex items-center gap-2 text-sm text-muted"><CalendarDays size={16} />{booking.check_in} → {booking.check_out}</p><p className="mt-2 text-sm font-bold text-pine">{booking.quoted_sell_total_vnd === null ? "Chưa đủ tổng giá" : formatBookingVnd(booking.quoted_sell_total_vnd)}</p></div><ChevronRight className="shrink-0 text-copper" /></div></Card></Link>)}</div> : <Card className="p-8 text-center"><ClipboardCheck size={46} className="mx-auto text-copper" /><h2 className="mt-4 text-2xl font-bold text-pine">{bookings.length ? "Không có yêu cầu phù hợp" : "Chưa có yêu cầu nào"}</h2><p className="mt-2 text-muted">{bookings.length ? "Hãy đổi bộ lọc để xem yêu cầu khác." : "Không tạo dữ liệu mẫu. Yêu cầu thật sẽ xuất hiện sau khi khách gửi qua website."}</p></Card>}</main>;
+}

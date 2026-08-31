@@ -143,6 +143,10 @@ function buildRoomCandidate(input: {
       label: "XEM PHÒNG",
       href: `/stay/${result.property.slug}/${result.room.slug}?check_in=${encodeURIComponent(input.intent.checkIn)}&check_out=${encodeURIComponent(input.intent.checkOut)}&adults=${input.intent.adults}&children=${input.intent.children}&rooms=${input.intent.rooms}`,
       external: false,
+    }, {
+      label: "YÊU CẦU XÁC NHẬN",
+      href: `/booking/request?room=${result.room.id}&check_in=${encodeURIComponent(input.intent.checkIn)}&check_out=${encodeURIComponent(input.intent.checkOut)}&adults=${input.intent.adults}&children=${input.intent.children}&rooms=${input.intent.rooms}`,
+      external: false,
     }],
   };
 }
@@ -180,8 +184,8 @@ function packageCandidate(input: {
   const priceState: TripPriceState = quote?.sell_price.status === "quoted"
     ? "current" : quote?.sell_price.status === "conflict" ? "conflict" : "unknown";
   const amount = quote?.sell_price.total_vnd ?? null;
-  const requestAction = quote?.can_request && quote.request_url
-    ? [{ label: "YÊU CẦU XÁC NHẬN" as const, href: quote.request_url, external: true }]
+  const requestAction = quote?.can_request
+    ? [{ label: "YÊU CẦU XÁC NHẬN" as const, href: `/booking/request?package=${input.item.id}&check_in=${encodeURIComponent(quote.input.check_in)}&check_out=${encodeURIComponent(quote.input.check_out)}&adults=${quote.input.adults}&children=${quote.input.children}&rooms=${quote.input.rooms}&optional=${encodeURIComponent(quote.input.selected_optional_component_keys.join(","))}`, external: false }]
     : [];
   return {
     id: `package:${input.item.id}`,
@@ -222,7 +226,7 @@ function packageCandidate(input: {
   };
 }
 
-function motorbikeCandidate(offering: PublicMotorbikeOffering): TripFinderCandidate {
+function motorbikeCandidate(offering: PublicMotorbikeOffering, intent: TripFinderIntent): TripFinderCandidate {
   const truth = resolveMotorbikePublicTruth(offering);
   return {
     id: `motorbike:${offering.slug}`,
@@ -258,12 +262,14 @@ function motorbikeCandidate(offering: PublicMotorbikeOffering): TripFinderCandid
     },
     actions: [
       { label: "XEM XE", href: `/motorbike/${offering.slug}`, external: false },
-      ...(truth.canRequest ? [{ label: "YÊU CẦU XÁC NHẬN" as const, href: offering.public_request_url, external: true }] : []),
+      ...(truth.canRequest ? [{ label: "YÊU CẦU XÁC NHẬN" as const, href: `/booking/request?motorbike=${encodeURIComponent(offering.slug)}&check_in=${encodeURIComponent(intent.checkIn)}&check_out=${encodeURIComponent(intent.checkOut)}&adults=${intent.adults}&children=${intent.children}&rooms=${intent.rooms}`, external: false }] : []),
     ],
   };
 }
 
-function compositionCandidate(room: TripFinderCandidate, motorbike: TripFinderCandidate): TripFinderCandidate {
+function compositionCandidate(room: TripFinderCandidate, motorbike: TripFinderCandidate, intent: TripFinderIntent): TripFinderCandidate {
+  const roomId = room.id.replace(/^stay:/, "");
+  const motorbikeSlug = motorbike.id.replace(/^motorbike:/, "");
   return {
     ...room,
     id: `composition:${room.id}:${motorbike.id}`,
@@ -276,7 +282,7 @@ function compositionCandidate(room: TripFinderCandidate, motorbike: TripFinderCa
       ? room.availability
       : { state: "needs_confirmation", label: "Phòng theo dữ liệu ngày đã chọn; xe máy cần xác nhận riêng" },
     confirmation: { state: "manual", label: "Hai dịch vụ được kiểm tra và xác nhận riêng." },
-    actions: [room.actions[0], motorbike.actions[0]].filter(Boolean),
+    actions: [{ label: "YÊU CẦU XÁC NHẬN" as const, href: `/booking/request?room=${roomId}&motorbike=${encodeURIComponent(motorbikeSlug)}&check_in=${encodeURIComponent(intent.checkIn)}&check_out=${encodeURIComponent(intent.checkOut)}&adults=${intent.adults}&children=${intent.children}&rooms=${intent.rooms}`, external: false }, room.actions[0], motorbike.actions[0]].filter(Boolean),
   };
 }
 
@@ -323,9 +329,9 @@ export async function getTripFinderCandidateSet(intent: TripFinderIntent): Promi
     components: packageFacts.components.filter((component) => component.package_id === item.id),
     roomCandidates: roomMap,
   }));
-  const motorbikeCandidates = motorbikeCatalog.offerings.map(motorbikeCandidate);
+  const motorbikeCandidates = motorbikeCatalog.offerings.map((offering) => motorbikeCandidate(offering, intent));
   const compositionCandidates = intent.wantsMotorbike
-    ? roomCandidates.slice(0, 12).flatMap((room) => motorbikeCandidates.slice(0, 2).map((motorbike) => compositionCandidate(room, motorbike)))
+    ? roomCandidates.slice(0, 12).flatMap((room) => motorbikeCandidates.slice(0, 2).map((motorbike) => compositionCandidate(room, motorbike, intent)))
     : [];
   const candidates = [...roomCandidates, ...packageCandidates, ...motorbikeCandidates, ...compositionCandidates];
   const sources = {

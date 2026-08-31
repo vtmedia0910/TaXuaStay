@@ -4,6 +4,7 @@ export const PUBLIC_ROUTES = {
   motorbike: "/motorbike",
   packages: "/packages",
   tripFinder: "/trip-finder",
+  bookingRequest: "/booking/request",
   legacyStaySearch: "/tim-phong",
   verification: "/verified",
 } as const;

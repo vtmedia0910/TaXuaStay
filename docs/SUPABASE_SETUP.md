@@ -44,6 +44,8 @@ Migration `202608290009_v2_destination_and_physical_rooms.sql` is **V2 Phase 1 �
 
 **V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. Migrations 011–014 implement **V2 Phase 2.6 — CMS, Media & Content Operations**. Migration 015 implements **V2 Phase 2.6H**. Migration `202608290016_v2_supplier_partner_foundation.sql` implements **V2 Phase 3** with private Suppliers, contacts, Property relationships, Partner lifecycle/tier, external references and zero anonymous access. Corrective migration `202608290017_harden_supplier_lifecycle.sql` implements **V2 Phase 3H**. Migrations `202608290018_v2_commercial_economics.sql`, `202608290019_harden_commercial_function_grants.sql` and `202608290020_restore_authenticated_relationship_predicate.sql` implement the private accommodation **V2 Phase 4 — Commercial Economics** foundation and narrow function-ACL corrections. Migration `202608290021_v2_motorbike_integration.sql` implements **V2 Phase 5 — Motorbike Integration** as a bounded manual/reference catalog with no Biker runtime/database dependency and no seeded offering. Corrective migration `202608290022_fix_motorbike_public_ordering.sql` preserves immutable 021 and appends `sort_order` to the public view required by the adapter's stable ordering query. Migration `202608290023_v2_package_commerce.sql` implements **V2 Phase 6 — Package Commerce** with generic ROOM/MOTORBIKE/CUSTOM composition, explicit Package sell-price authority, private economics, public-safe projections, and no Booking/Payment domain or seeded Package.
 
+Migration `202608290024_v2_unified_booking_supplier_confirmation.sql` implements **V2 Phase 8 — Unified Booking + Supplier Confirmation**. Corrective migration `202608290025_fix_phase8_booking_code_generation.sql` resolves pgcrypto from Supabase's managed, non-writable `extensions` schema after linked DB lint; corrective migration `202608290026_fix_phase8_selected_component_aggregation.sql` makes every traveler-selected Package component participate in confirmation aggregation. Applied migrations remain immutable. Together they add private Bookings, immutable Booking Items/snapshots, separate item confirmations and append-only events. Anonymous users have no table access; only bounded creation and tokenized safe-status RPCs are executable. No Payment, Deposit, Checkout, Refund, Settlement or hold table is created, and no production Booking/customer row is seeded.
+
 ## Migration order
 
 Apply only missing Stay migrations in filename order:
@@ -66,6 +68,9 @@ supabase/migrations/202608290014_enforce_cms_archive_lifecycle.sql
 supabase/migrations/202608290015_harden_cms_publishing_permissions.sql
 supabase/migrations/202608290016_v2_supplier_partner_foundation.sql
 supabase/migrations/202608290017_harden_supplier_lifecycle.sql
+supabase/migrations/202608290024_v2_unified_booking_supplier_confirmation.sql
+supabase/migrations/202608290025_fix_phase8_booking_code_generation.sql
+supabase/migrations/202608290026_fix_phase8_selected_component_aggregation.sql
 supabase/migrations/202608290018_v2_commercial_economics.sql
 supabase/migrations/202608290019_harden_commercial_function_grants.sql
 supabase/migrations/202608290020_restore_authenticated_relationship_predicate.sql

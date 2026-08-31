@@ -32,7 +32,7 @@ Technical domain      Stay
 Technical namespace   /stay
 ```
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented at application level with no database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented with migrations 011–014, **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** with migration 015, **V2 Phase 3 — Supplier + Partner Foundation** with migration 016, corrective **V2 Phase 3H — Supplier Lifecycle Hardening** with migration 017, **V2 Phase 4 — Commercial Economics** with migrations 018–020, **V2 Phase 5 — Motorbike Integration** with migrations 021–022, **V2 Phase 6 — Package Commerce** with migration 023, and application-only **V2 Phase 7 — Trip Finder** with no migration. Historical routes remain compatibility pages with `/stay` canonicals.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented at application level with no database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented with migrations 011–014, **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** with migration 015, **V2 Phase 3 — Supplier + Partner Foundation** with migration 016, corrective **V2 Phase 3H — Supplier Lifecycle Hardening** with migration 017, **V2 Phase 4 — Commercial Economics** with migrations 018–020, **V2 Phase 5 — Motorbike Integration** with migrations 021–022, **V2 Phase 6 — Package Commerce** with migration 023, application-only **V2 Phase 7 — Trip Finder** with no migration, and **V2 Phase 8 — Unified Booking + Supplier Confirmation** with migrations 024–026. Historical routes remain compatibility pages with `/stay` canonicals.
 
 ## Currently implemented — legacy foundation completed
 
@@ -51,7 +51,7 @@ The current repository actually implements:
 - a bounded manual/reference motorbike catalog, public `/motorbike` discovery and private Admin controls without a Biker runtime/database dependency.
 - generic Package composition with active ROOM/MOTORBIKE/CUSTOM sources, explicit Package pricing, private Package economics, public `/packages`, and private Admin controls.
 
-Private accommodation and Package commercial economics now exist as protected internal domains. Trip Finder now composes only public-safe outputs from existing domains. There is still no commission/settlement engine, generic service catalog beyond bounded Package components, unified trip booking, booking items, payment, bus integration/inventory, supplier confirmation workflow, live motorbike integration/fleet operations, or Trip Dashboard.
+Private accommodation and Package commercial economics now exist as protected internal domains. Trip Finder composes only public-safe outputs. Phase 8 adds private unified Booking, immutable Booking Items, separate Supplier Confirmation and append-only events. There is still no payment/deposit/checkout/refund/settlement engine, hold, full My Trip, generic service catalog beyond bounded Package components, bus integration/inventory, live motorbike integration/fleet operations, or Trip Dashboard.
 
 ## V2 accommodation hierarchy — Phase 1 implemented
 
@@ -248,9 +248,15 @@ The pure `phase7-trip-finder-v1` resolver separates definite hard failures from 
 
 The bounded server data layer reuses Room, Cloud/Road, Room Quality, price, availability, Package and manual-reference Motorbike projections. It may compose a real Room with a real Motorbike option but never sums a fake Package price. No migration, production seed, Admin score control, analytics SDK, customer profile, hold, Booking or Payment domain is added. See `docs/V2_PHASE_7_TRIP_FINDER.md`.
 
+## V2 Phase 8 — Unified Booking + Supplier Confirmation implemented
+
+Migration 024 adds one private traveler-level Booking with many immutable Booking Items, one separate supplier/operator confirmation record per actionable item, and append-only events. Public submission uses a narrow atomic RPC that accepts only source identities and contact intent, then resolves current Stay price, availability, verification, cost and confirmation context inside the database. Anonymous users cannot read or write Booking tables.
+
+Room, Motorbike, Package and Trip Finder now enter `/booking/request`. Package total price stays authoritative and component children never double-count it. The opaque-token status surface `/booking/[bookingCode]` is PII-free and always noindex; `/admin/bookings` and detail operations remain authenticated. Motorbike remains manual/reference with no direct Biker access. No Payment, Deposit, Checkout, Refund, Settlement, hold or full My Trip exists. See `docs/V2_PHASE_8_UNIFIED_BOOKING_SUPPLIER_CONFIRMATION.md`.
+
 ## V2 roadmap boundary
 
-The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is migration 009, Verified Room Profile migration 010, brand/UX V2 Phase 2.5, website operations migrations 011–014, CMS hardening migration 015, Supplier/Partner foundation migration 016, Supplier lifecycle hardening migration 017, private Commercial Economics migrations 018–020, bounded Motorbike Integration migrations 021–022, Package Commerce migration 023, and application-only Trip Finder V2 Phase 7. Only separately authorized later phases may add unified booking, payment, trip operations, bus/transport/add-ons, growth, and multi-destination hardening.
+The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is migration 009, Verified Room Profile migration 010, brand/UX V2 Phase 2.5, website operations migrations 011–014, CMS hardening migration 015, Supplier/Partner foundation migration 016, Supplier lifecycle hardening migration 017, private Commercial Economics migrations 018–020, bounded Motorbike Integration migrations 021–022, Package Commerce migration 023, application-only Trip Finder V2 Phase 7, and Unified Booking + Supplier Confirmation migrations 024–026. Only separately authorized later phases may add payment, checkout, trip operations, bus/transport/add-ons, growth, and multi-destination hardening.
 
 ## Biker relationship
 
