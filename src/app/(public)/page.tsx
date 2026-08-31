@@ -34,6 +34,7 @@ import { searchPublicRooms } from "@/features/search/data";
 import { DEFAULT_ROOM_SEARCH_PARAMS } from "@/features/search/params";
 import type { RoomSearchResponse } from "@/features/search/types";
 import { getPublicSiteSettings } from "@/features/settings/data";
+import { hasPublicPackages } from "@/features/packages/data";
 import type { PublicSiteSettings } from "@/features/settings/types";
 import { CLOUD_VIEW_FROM_BED_LABELS } from "@/features/verification/policy";
 
@@ -50,19 +51,21 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [settings, roomResponse, cms] = await Promise.all([
+  const [settings, roomResponse, cms, packagesAvailable] = await Promise.all([
     getPublicSiteSettings(),
     searchPublicRooms(DEFAULT_ROOM_SEARCH_PARAMS),
     getPublicCmsPage("home"),
+    hasPublicPackages(),
   ]);
-  return <HomeExperience settings={settings} roomResponse={roomResponse} cms={cms} />;
+  return <HomeExperience settings={settings} roomResponse={roomResponse} cms={cms} packagesAvailable={packagesAvailable} />;
 }
 
-export function HomeExperience({ settings, roomResponse, cms, preview = false }: {
+export function HomeExperience({ settings, roomResponse, cms, preview = false, packagesAvailable = false }: {
   settings: PublicSiteSettings;
   roomResponse: RoomSearchResponse;
   cms: CmsPage;
   preview?: boolean;
+  packagesAvailable?: boolean;
 }) {
   const hero = findCmsSection(cms, "hero");
   const why = findCmsSection(cms, "why_choose_us");
@@ -96,7 +99,7 @@ export function HomeExperience({ settings, roomResponse, cms, preview = false }:
         </div>
       ) : null}
 
-      <TripHero hero={hero} />
+      <TripHero hero={hero} packagesAvailable={packagesAvailable} />
 
       {why ? <section id="about" className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
@@ -133,7 +136,7 @@ export function HomeExperience({ settings, roomResponse, cms, preview = false }:
             <Card className="p-5"><BedDouble className="text-copper" aria-hidden="true" /><Badge className="mt-4 text-success">Đang hoạt động</Badge><h3 className="mt-3 text-2xl font-bold text-pine">Lưu trú</h3><p className="mt-2 text-sm leading-6 text-muted">Tìm theo phòng, ngày, bằng chứng, giá và tình trạng được ghi nhận.</p><Link href={PUBLIC_ROUTES.stay} className="mt-4 inline-flex min-h-11 items-center font-bold text-pine">Tìm phòng →</Link></Card>
             <Card className="p-5"><BusFront className="text-copper" aria-hidden="true" /><Badge className="mt-4 bg-mist text-muted">Sắp có</Badge><h3 className="mt-3 text-2xl font-bold text-pine">Xe khách</h3><p className="mt-2 text-sm leading-6 text-muted">Lịch trình và tồn chỗ chưa được kết nối; chưa nhận đặt trên website.</p></Card>
             <Card className="p-5"><Bike className="text-copper" aria-hidden="true" /><Badge className="mt-4 bg-amber-50 text-warning">Cần xác nhận</Badge><h3 className="mt-3 text-2xl font-bold text-pine">Xe máy</h3><p className="mt-2 text-sm leading-6 text-muted">Xem thông tin công khai từ Tà Xùa Biker; giá và tình trạng thực tế được xác nhận thủ công.</p><Link href={PUBLIC_ROUTES.motorbike} className="mt-4 inline-flex min-h-11 items-center font-bold text-pine">Xem dịch vụ →</Link></Card>
-            <Card className="p-5"><Package className="text-copper" aria-hidden="true" /><Badge className="mt-4 bg-mist text-muted">Sắp có</Badge><h3 className="mt-3 text-2xl font-bold text-pine">Combo</h3><p className="mt-2 text-sm leading-6 text-muted">Chưa có gói dịch vụ, giá gói hoặc quy trình xác nhận nhà cung cấp.</p></Card>
+            {packagesAvailable ? <Card className="p-5"><Package className="text-copper" aria-hidden="true" /><Badge className="mt-4 bg-amber-50 text-warning">Cần xác nhận</Badge><h3 className="mt-3 text-2xl font-bold text-pine">Combo</h3><p className="mt-2 text-sm leading-6 text-muted">Xem từng thành phần, giá gói và điều cần xác nhận trước chuyến đi.</p><Link href={PUBLIC_ROUTES.packages} className="mt-4 inline-flex min-h-11 items-center font-bold text-pine">Xem gói dịch vụ →</Link></Card> : <Card className="p-5"><Package className="text-copper" aria-hidden="true" /><Badge className="mt-4 bg-mist text-muted">Sắp có</Badge><h3 className="mt-3 text-2xl font-bold text-pine">Combo</h3><p className="mt-2 text-sm leading-6 text-muted">Chưa có gói dịch vụ thật đang được công khai.</p></Card>}
           </div>
         </div>
       </section>

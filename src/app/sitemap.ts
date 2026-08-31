@@ -11,6 +11,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const data = await getPublicSitemapData();
     return buildPublicSitemap(policy.siteUrl, staticPaths, data);
   } catch {
-    return buildPublicSitemap(policy.siteUrl, staticPaths, { properties: [], rooms: [], motorbikes: [] });
+    return buildPublicSitemap(policy.siteUrl, staticPaths, { properties: [], rooms: [], motorbikes: [], packages: [] });
   }
 }

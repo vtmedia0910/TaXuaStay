@@ -18,7 +18,7 @@ const FOCUSABLE_SELECTOR = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(",");
 
-export function MobileHeroSearch() {
+export function MobileHeroSearch({ packagesAvailable = false }: { packagesAvailable?: boolean }) {
   const [open, setOpen] = useState(false);
   const titleId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -117,7 +117,7 @@ export function MobileHeroSearch() {
               </button>
             </div>
 
-            <HeroServiceTabs mobile />
+            <HeroServiceTabs mobile packagesAvailable={packagesAvailable} />
 
             <form action="/stay" method="get" className="trip-hero-search-form trip-mobile-search-form">
               <input type="hidden" name="children" value="0" />

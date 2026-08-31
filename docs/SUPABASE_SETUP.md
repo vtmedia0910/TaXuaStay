@@ -31,9 +31,10 @@ Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the appl
 202608290020
 202608290021
 202608290022
+202608290023
 ```
 
-After V2 Phase 5, `migration list` must report 001–022 Local = Remote. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
+After V2 Phase 6, `migration list` must report 001–023 Local = Remote. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
 
 ## V2 migration lineage
 
@@ -41,7 +42,7 @@ Migrations 001–008 are the **Legacy Foundation Completed**. They remain immuta
 
 Migration `202608290009_v2_destination_and_physical_rooms.sql` is **V2 Phase 1 — Architecture Alignment**. Migration `202608290010_v2_verified_room_profile.sql` is **V2 Phase 2 — Verified Room Profile**. It adds Room Quality, factual strengths/caveats, and stronger exact-room resolution without changing pricing, pooled availability, search, Road Verified, or the Cloud View rubric.
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. Migrations 011–014 implement **V2 Phase 2.6 — CMS, Media & Content Operations**. Migration 015 implements **V2 Phase 2.6H**. Migration `202608290016_v2_supplier_partner_foundation.sql` implements **V2 Phase 3** with private Suppliers, contacts, Property relationships, Partner lifecycle/tier, external references and zero anonymous access. Corrective migration `202608290017_harden_supplier_lifecycle.sql` implements **V2 Phase 3H**. Migrations `202608290018_v2_commercial_economics.sql`, `202608290019_harden_commercial_function_grants.sql` and `202608290020_restore_authenticated_relationship_predicate.sql` implement the private accommodation **V2 Phase 4 — Commercial Economics** foundation and narrow function-ACL corrections. Migration `202608290021_v2_motorbike_integration.sql` implements **V2 Phase 5 — Motorbike Integration** as a bounded manual/reference catalog with no Biker runtime/database dependency and no seeded offering. Corrective migration `202608290022_fix_motorbike_public_ordering.sql` preserves immutable 021 and appends `sort_order` to the public view required by the adapter's stable ordering query.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. Migrations 011–014 implement **V2 Phase 2.6 — CMS, Media & Content Operations**. Migration 015 implements **V2 Phase 2.6H**. Migration `202608290016_v2_supplier_partner_foundation.sql` implements **V2 Phase 3** with private Suppliers, contacts, Property relationships, Partner lifecycle/tier, external references and zero anonymous access. Corrective migration `202608290017_harden_supplier_lifecycle.sql` implements **V2 Phase 3H**. Migrations `202608290018_v2_commercial_economics.sql`, `202608290019_harden_commercial_function_grants.sql` and `202608290020_restore_authenticated_relationship_predicate.sql` implement the private accommodation **V2 Phase 4 — Commercial Economics** foundation and narrow function-ACL corrections. Migration `202608290021_v2_motorbike_integration.sql` implements **V2 Phase 5 — Motorbike Integration** as a bounded manual/reference catalog with no Biker runtime/database dependency and no seeded offering. Corrective migration `202608290022_fix_motorbike_public_ordering.sql` preserves immutable 021 and appends `sort_order` to the public view required by the adapter's stable ordering query. Migration `202608290023_v2_package_commerce.sql` implements **V2 Phase 6 — Package Commerce** with generic ROOM/MOTORBIKE/CUSTOM composition, explicit Package sell-price authority, private economics, public-safe projections, and no Booking/Payment domain or seeded Package.
 
 ## Migration order
 
@@ -70,7 +71,22 @@ supabase/migrations/202608290019_harden_commercial_function_grants.sql
 supabase/migrations/202608290020_restore_authenticated_relationship_predicate.sql
 supabase/migrations/202608290021_v2_motorbike_integration.sql
 supabase/migrations/202608290022_fix_motorbike_public_ordering.sql
+supabase/migrations/202608290023_v2_package_commerce.sql
 ```
+
+Migration 023 adds the Phase 6 `packages`, `package_components`, and `package_price_rules` domain. Verify additionally:
+
+1. `public_packages` is anonymously readable and contains only current published Packages attached to a public Destination with meaningful components and no inactive required structured source.
+2. Sanitized component/price functions return only allow-listed public facts; anonymous users cannot read component costs, Package economics, internal notes, rule IDs, Supplier/Partner facts, external-reference metadata, or audit identities.
+3. Anonymous and staff users cannot mutate Package aggregates; Admin uses the atomic `save_package_commerce` RPC.
+4. Published Packages require at least one meaningful component and a non-instant confirmation mode. Missing Room, media, approved HTTPS request URL, or active current Package price authority remains an explicit Admin warning and produces a truthful degraded public state instead of invented data.
+5. ROOM sources belong to the same Destination and reuse Stay pricing/availability/economics. MOTORBIKE sources are valid Phase 5 offerings only. CUSTOM remains manual; inactive future component types are rejected.
+6. Package price is an explicit integer-VND total with dated authority and deterministic precedence. The public resolver never manufactures component sums, discounts, savings, or `giá từ`.
+7. Private Package cost remains null when any selected component lacks authoritative current cost; contribution and margin stay private.
+8. CMS media referenced by a non-archived Package cannot be archived.
+9. No Package, component, price, availability, Room, motorbike, customer, booking, hold, payment, or discount row is seeded.
+
+The 2026-08-31 post-023 remote REST smoke returned HTTP 200 with exact count zero for the allow-listed `public_packages` projection and the RLS-filtered safe Package base columns. Sanitized component and price RPCs returned HTTP 200 with empty arrays. Anonymous reads of Package internal notes, component costs, price-rule internal notes, Supplier contacts, and motorbike source mappings, plus anonymous Package mutation, each returned HTTP 401. Existing public Room Type and motorbike projections remained HTTP 200 with their pre-existing exact zero production counts. Migrations 001–023 were Local = Remote. Linked database lint reported no Phase 6 schema errors; its only output was the two pre-existing CMS reorder warnings about the local loop variable `position`. The rollback-only transaction fixture is `supabase/tests/202608290023_package_commerce.sql`; the CLI still attempted to require Docker Desktop even with `supabase test db --linked`, so the executed security checks are the remote REST smoke plus automated migration/schema/resolver tests.
 
 Migrations 021–022 add the Phase 5 `motorbike_offerings` projection, explicit anonymous public view/column grants and ordering contract, Admin-only transactional save, CMS media lifecycle guard, and child-first Supplier archive extension. Verify additionally:
 

@@ -7,7 +7,7 @@
 **Target repository:** `vtmedia0910/TaXuaStay`  
 **Read-only technical reference:** `vtmedia0910/taxuabiker2`  
 **Canonical target file trong repo sau khi áp dụng:** `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md`
-**Current product state:** Legacy Foundation 001–008 + V2 Phase 1 / migration 009 + V2 Phase 2 / migration 010 + application-only V2 Phase 2.5 + V2 Phase 2.6 / migrations 011–014 + V2 Phase 2.6H / migration 015 + V2 Phase 3 / migration 016 + corrective V2 Phase 3H / migration 017 + V2 Phase 4 / migrations 018–020 + V2 Phase 5 / migrations 021–022 đã hoàn thành. Phase 5 dùng manual/reference integration và không sao chép vận hành Biker. V2 Phase 6 — Package Commerce chưa bắt đầu và chỉ được thực hiện khi có task riêng.
+**Current product state:** Legacy Foundation 001–008 + V2 Phase 1 / migration 009 + V2 Phase 2 / migration 010 + application-only V2 Phase 2.5 + V2 Phase 2.6 / migrations 011–014 + V2 Phase 2.6H / migration 015 + V2 Phase 3 / migration 016 + corrective V2 Phase 3H / migration 017 + V2 Phase 4 / migrations 018–020 + V2 Phase 5 / migrations 021–022 + V2 Phase 6 / migration 023 đã hoàn thành. Phase 5 dùng manual/reference integration và không sao chép vận hành Biker. Phase 6 có Package domain, explicit sell-price authority, private economics và inquiry flow nhưng không tạo Booking/Payment. V2 Phase 7 — Trip Finder chưa bắt đầu và chỉ được thực hiện khi có task riêng.
 
 ---
 
@@ -2373,14 +2373,10 @@ V2 Phase 3 / migration 016 ✅
 V2 Phase 3H / migration 017 ✅
 V2 Phase 4 / migrations 018–020 ✅
 V2 Phase 5 / migrations 021–022 ✅
+V2 Phase 6 / migration 023 ✅
 ```
 
 Later:
-
-```text
-V2 Phase 6
-Package Commerce
-```
 
 ```text
 V2 Phase 7
@@ -3685,7 +3681,11 @@ Phase 4 is complete through migration 018, corrective function-ACL migrations 01
 
 Phase 5 is complete through migrations 021–022, the manual/reference `MotorbikeProviderAdapter`, public `/motorbike`, and private `/admin/motorbike`. Migration 022 preserves immutable 021 while adding the public presentation-order column required by the adapter. The read-only Biker audit found no approved integration API, so Trip exposes only intentionally reviewed catalog facts linked through the existing `taxua_biker` external reference. It never claims live availability, seeds fake bikes, or copies fleet, customer, handover, maintenance, authentication, credential, or private Biker data. See `docs/V2_PHASE_5_MOTORBIKE_INTEGRATION.md`.
 
-The next separately authorized phase is V2 Phase 6 — Package Commerce. It has not started.
+## 189D. V2 PHASE 6 — PACKAGE COMMERCE STATUS
+
+Phase 6 is complete through migration 023, the pure `phase6-package-v1` resolver, public `/packages`, and private `/admin/packages`. Package composition is generic but activates only current ROOM, MOTORBIKE and CUSTOM sources. Sell price comes only from explicit current Package rules; missing/stale/conflicting authority displays `Cần xác nhận giá`. Package economics stays private, production remains unseeded, and no Booking, Booking Item, hold, Payment, Deposit, Bus Integration or Trip Finder domain was created. See `docs/V2_PHASE_6_PACKAGE_COMMERCE.md`.
+
+The next separately authorized phase is V2 Phase 7 — Trip Finder. It has not started.
 
 ---
 

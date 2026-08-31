@@ -354,6 +354,15 @@ select {
   color: white;
 }
 
+.trip-hero-service-tab.is-available {
+  color: var(--trip-navy);
+  text-decoration: none;
+}
+
+.trip-hero-service-tab.is-available:hover {
+  background: color-mix(in srgb, var(--trip-teal) 9%, white);
+}
+
 .trip-hero-service-tab.is-active::after {
   position: absolute;
   inset: auto 1.1rem -1px;

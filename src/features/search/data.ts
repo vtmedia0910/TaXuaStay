@@ -281,9 +281,9 @@ export async function getPublicSearchOptions(): Promise<SearchOptions> {
 
 export async function getPublicSitemapData(): Promise<PublicSitemapData> {
   const supabase = createPublicSupabaseClient();
-  if (!supabase) return { properties: [], rooms: [], motorbikes: [] };
+  if (!supabase) return { properties: [], rooms: [], motorbikes: [], packages: [] };
 
-  const [propertiesResult, roomsResult, motorbikesResult] = await Promise.all([
+  const [propertiesResult, roomsResult, motorbikesResult, packagesResult] = await Promise.all([
     supabase
       .from("properties")
       .select("slug,updated_at")
@@ -302,12 +302,19 @@ export async function getPublicSitemapData(): Promise<PublicSitemapData> {
       .order("slug")
       .limit(1000)
       .overrideTypes<Array<{ slug: string; updated_at: string }>, { merge: false }>(),
+    supabase
+      .from("public_packages")
+      .select("slug,updated_at")
+      .order("slug")
+      .limit(1000)
+      .overrideTypes<Array<{ slug: string; updated_at: string }>, { merge: false }>(),
   ]);
 
-  if (propertiesResult.error || roomsResult.error) return { properties: [], rooms: [], motorbikes: [] };
+  if (propertiesResult.error || roomsResult.error) return { properties: [], rooms: [], motorbikes: [], packages: [] };
   return {
     properties: propertiesResult.data ?? [],
     rooms: (roomsResult.data ?? []).filter((room) => room.property),
     motorbikes: motorbikesResult.error ? [] : motorbikesResult.data ?? [],
+    packages: packagesResult.error ? [] : packagesResult.data ?? [],
   };
 }

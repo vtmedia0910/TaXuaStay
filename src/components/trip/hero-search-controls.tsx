@@ -1,4 +1,5 @@
 import type { ComponentProps } from "react";
+import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
   Bike,
@@ -64,28 +65,26 @@ function PreferenceCheckbox({
   );
 }
 
-export function HeroServiceTabs({ mobile = false }: { mobile?: boolean }) {
+export function HeroServiceTabs({ mobile = false, packagesAvailable = false }: { mobile?: boolean; packagesAvailable?: boolean }) {
   return (
     <div
       className={mobile ? "trip-hero-service-tabs trip-mobile-search-services" : "trip-hero-service-tabs"}
       aria-label="Dịch vụ tìm kiếm"
       role="tablist"
     >
-      {HERO_SERVICE_TABS.map(({ label, Icon, active }) => (
-        <div
+      {HERO_SERVICE_TABS.map(({ label, Icon, active }) => {
+        const available = active || (label === "Combo" && packagesAvailable);
+        const content = <><Icon size={17} aria-hidden="true" /><span className="trip-hero-service-label">{label}{!available ? <small className="trip-hero-service-status">Sắp có</small> : null}</span></>;
+        return label === "Combo" && packagesAvailable ? <Link key={label} href="/packages" className="trip-hero-service-tab is-available" role="tab" aria-selected="false">{content}</Link> : <div
           key={label}
           className={active ? "trip-hero-service-tab is-active" : "trip-hero-service-tab"}
           role="tab"
           aria-selected={active}
           aria-disabled={active ? undefined : "true"}
         >
-          <Icon size={17} aria-hidden="true" />
-          <span className="trip-hero-service-label">
-            {label}
-            {!active ? <small className="trip-hero-service-status">Sắp có</small> : null}
-          </span>
-        </div>
-      ))}
+          {content}
+        </div>;
+      })}
     </div>
   );
 }

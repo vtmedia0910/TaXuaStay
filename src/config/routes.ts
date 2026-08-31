@@ -2,6 +2,7 @@ export const PUBLIC_ROUTES = {
   home: "/",
   stay: "/stay",
   motorbike: "/motorbike",
+  packages: "/packages",
   legacyStaySearch: "/tim-phong",
   verification: "/verified",
 } as const;
@@ -23,4 +24,8 @@ export function buildRoomPath(propertySlug: string, roomSlug: string) {
 
 export function buildMotorbikePath(slug: string) {
   return `/motorbike/${slug}`;
+}
+
+export function buildPackagePath(slug: string) {
+  return `/packages/${slug}`;
 }

@@ -32,7 +32,7 @@ Technical domain      Stay
 Technical namespace   /stay
 ```
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented at application level with no database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented with migrations 011–014, **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** with migration 015, **V2 Phase 3 — Supplier + Partner Foundation** with migration 016, corrective **V2 Phase 3H — Supplier Lifecycle Hardening** with migration 017, **V2 Phase 4 — Commercial Economics** with migrations 018–020, and **V2 Phase 5 — Motorbike Integration** with migrations 021–022. Historical routes remain compatibility pages with `/stay` canonicals. V2 Phase 6 Package Commerce has not started and requires a separate owner task.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented at application level with no database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented with migrations 011–014, **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** with migration 015, **V2 Phase 3 — Supplier + Partner Foundation** with migration 016, corrective **V2 Phase 3H — Supplier Lifecycle Hardening** with migration 017, **V2 Phase 4 — Commercial Economics** with migrations 018–020, **V2 Phase 5 — Motorbike Integration** with migrations 021–022, and **V2 Phase 6 — Package Commerce** with migration 023. Historical routes remain compatibility pages with `/stay` canonicals. V2 Phase 7 Trip Finder has not started and requires a separate owner task.
 
 ## Currently implemented — legacy foundation completed
 
@@ -49,8 +49,9 @@ The current repository actually implements:
 - structured website copy/media operations with protected preview, atomic page publish and public-safe fallbacks.
 - private Supplier identities, normalized contacts, historical many-to-many Property links, Partner relationship lifecycle/tier, and immutable external-system references.
 - a bounded manual/reference motorbike catalog, public `/motorbike` discovery and private Admin controls without a Biker runtime/database dependency.
+- generic Package composition with active ROOM/MOTORBIKE/CUSTOM sources, explicit Package pricing, private Package economics, public `/packages`, and private Admin controls.
 
-Private accommodation commercial economics now exists as a protected internal domain. There is still no commission/settlement engine, generic service catalog, package commerce, unified trip booking, booking items, payment, bus inventory, supplier confirmation workflow, live motorbike integration/fleet operations, or Trip Dashboard.
+Private accommodation and Package commercial economics now exist as protected internal domains. There is still no commission/settlement engine, generic service catalog beyond bounded Package components, Trip Finder, unified trip booking, booking items, payment, bus integration/inventory, supplier confirmation workflow, live motorbike integration/fleet operations, or Trip Dashboard.
 
 ## V2 accommodation hierarchy — Phase 1 implemented
 
@@ -229,9 +230,19 @@ The public security-invoker view exposes only reviewed descriptive facts, option
 
 `/motorbike` and `/motorbike/[slug]` are server-first, mobile-first public surfaces. `/admin/motorbike` is Admin-only and manages the Trip projection rather than Biker fleet operations. Production is intentionally empty until the owner links a real motorbike Supplier/reference and enters reviewed facts. No booking, hold, payment, customer intent row, package, or sample bike is created. See `docs/V2_PHASE_5_MOTORBIKE_INTEGRATION.md`.
 
+## V2 Phase 6 — Package Commerce implemented
+
+Migration 023 adds `packages`, generic ordered `package_components`, and explicit `package_price_rules`. The taxonomy can represent ROOM, MOTORBIKE, BUS, TRANSFER, ACTIVITY, MEAL, GUIDE, SERVICE and CUSTOM, while database guards activate only the real current ROOM, MOTORBIKE and CUSTOM sources. ROOM consumes existing Stay identity, price, pooled availability, verification and Commercial Economics. MOTORBIKE consumes only the Phase 5 `manual_reference` projection. CUSTOM remains manual and cannot claim structured live truth.
+
+Package sell price is an explicit current integer-VND rule selected by exact dates, guests, rooms and optional-component set, then priority and specificity. A tie is a conflict. Missing, stale, expired or conflicting authority produces `Cần xác nhận giá`; the application never manufactures a standalone sum, `giá từ`, discount or savings. Required and selected component availability aggregates to recorded-available, needs-confirmation, unknown or unavailable, but all published Packages remain manual/external requests rather than instant confirmation.
+
+Private Package economics reuse Phase 4 principles: authoritative component cost, null rather than zero for missing cost, gross contribution, and integer margin basis points. Costs, contribution, margin, rule identities, Supplier/Partner facts, internal notes and audit identities never enter public DTOs. RLS, explicit grants, a security-invoker view, sanitized read functions and an Admin-only atomic aggregate-save RPC form the database boundary.
+
+`/packages` and `/packages/[slug]` are server-first, mobile-first discovery/detail surfaces with truthful inquiry CTAs and an accessible date/guest/optional-component sheet. `/admin/packages` owns operational editing and private preview. Production remains empty until real Packages, sources, media and price authority are entered. No Booking, Booking Item, hold, Payment, Deposit, Bus, Trip Finder or fake Package data is created. See `docs/V2_PHASE_6_PACKAGE_COMMERCE.md`.
+
 ## V2 roadmap boundary
 
-The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is migration 009, Verified Room Profile migration 010, brand/UX V2 Phase 2.5, website operations migrations 011–014, CMS hardening migration 015, Supplier/Partner foundation migration 016, Supplier lifecycle hardening migration 017, private Commercial Economics migrations 018–020, and bounded Motorbike Integration migrations 021–022. Only separately authorized later phases may add services, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
+The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is migration 009, Verified Room Profile migration 010, brand/UX V2 Phase 2.5, website operations migrations 011–014, CMS hardening migration 015, Supplier/Partner foundation migration 016, Supplier lifecycle hardening migration 017, private Commercial Economics migrations 018–020, bounded Motorbike Integration migrations 021–022, and Package Commerce migration 023. Only separately authorized later phases may add Trip Finder/recommendations, unified booking, payment, trip operations, bus/transport/add-ons, growth, and multi-destination hardening.
 
 ## Biker relationship
 

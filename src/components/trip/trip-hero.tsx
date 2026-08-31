@@ -11,7 +11,7 @@ const brandValues = [
   { Icon: Heart, title: "TRỌN VẸN", copy: "Kết nối cả chuyến đi" },
 ] as const;
 
-export function TripHero({ hero }: { hero: CmsSection | undefined }) {
+export function TripHero({ hero, packagesAvailable = false }: { hero: CmsSection | undefined; packagesAvailable?: boolean }) {
   return (
     <>
       <section className="trip-home-hero" aria-labelledby="trip-hero-title">
@@ -32,7 +32,7 @@ export function TripHero({ hero }: { hero: CmsSection | undefined }) {
               Thông tin thật về nơi ở và hành trình — để bạn biết rõ trước khi lên đường.
             </p>
 
-            <div className="trip-mobile-hero-search"><MobileHeroSearch /></div>
+            <div className="trip-mobile-hero-search"><MobileHeroSearch packagesAvailable={packagesAvailable} /></div>
 
             <div className="trip-home-hero-values" aria-label="Giá trị thương hiệu">
               {brandValues.map(({ Icon, title, copy }) => (
@@ -46,7 +46,7 @@ export function TripHero({ hero }: { hero: CmsSection | undefined }) {
           </div>
 
           <div className="trip-home-hero-search-wrap trip-desktop-hero-search">
-            <HeroSearch />
+            <HeroSearch packagesAvailable={packagesAvailable} />
           </div>
         </div>
       </section>

@@ -59,6 +59,9 @@ const ERROR_MESSAGES: Record<string, string> = {
   "motorbike-forbidden": "Chỉ Admin được thay đổi catalog xe máy công khai.",
   "motorbike-invalid": "Lựa chọn xe máy chưa hợp lệ. Kiểm tra nguồn Biker, giá, độ mới, URL xác nhận và trạng thái.",
   "motorbike-save": "Không thể lưu lựa chọn xe máy. Giao dịch đã hoàn tác; kiểm tra Supplier, mapping taxua_biker và điều kiện công khai.",
+  "package-forbidden": "Chỉ Admin được thay đổi gói dịch vụ, thành phần, giá và kinh tế.",
+  "package-invalid": "Gói chưa hợp lệ. Kiểm tra identity, nguồn thành phần, giá, chi phí, ngày và trạng thái công khai.",
+  "package-save": "Không thể lưu gói. Toàn bộ thông tin, thành phần và quy tắc giá đã được hoàn tác.",
 };
 
 export function FormFeedback({ saved, error }: { saved?: string; error?: string }) {
@@ -79,6 +82,7 @@ export function FormFeedback({ saved, error }: { saved?: string; error?: string 
       "economics-plan": "✓ Đã lưu bảng chi phí riêng tư.",
       "economics-rule": "✓ Đã lưu quy tắc chi phí riêng tư.",
       motorbike: "✓ Đã lưu lựa chọn xe máy phía Trip.",
+      package: "✓ Đã lưu gói dịch vụ, thành phần và quy tắc giá trong một giao dịch.",
     };
     return (
       <p className="mb-5 rounded-2xl bg-pine-soft p-3 text-sm font-bold text-success" role="status">

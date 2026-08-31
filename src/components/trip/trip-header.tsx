@@ -7,7 +7,7 @@ import { PUBLIC_ROUTES } from "@/config/routes";
 const navigation = [
   { label: "Khám phá", href: "/#explore" },
   { label: "Lưu trú", href: PUBLIC_ROUTES.stay },
-  { label: "Combo", href: "/#services" },
+  { label: "Combo", href: PUBLIC_ROUTES.packages },
   { label: "Xe khách", href: "/#services" },
   { label: "Xe máy", href: PUBLIC_ROUTES.motorbike },
   { label: "Cẩm nang", href: PUBLIC_ROUTES.verification },

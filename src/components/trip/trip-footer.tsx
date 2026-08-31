@@ -8,7 +8,7 @@ function Planned({ children }: { children: React.ReactNode }) {
   return <span className="text-white/55">{children} <span className="text-[0.65rem] uppercase tracking-wide">Sắp có</span></span>;
 }
 
-export function TripFooter({ cms }: { cms?: CmsPage }) {
+export function TripFooter({ cms, packagesAvailable = false }: { cms?: CmsPage; packagesAvailable?: boolean }) {
   const intro = cms ? findCmsSection(cms, "footer_intro") : null;
   return (
     <footer className="bg-pine px-5 py-12 text-sm text-white/75 sm:px-8">
@@ -22,7 +22,7 @@ export function TripFooter({ cms }: { cms?: CmsPage }) {
           <h2 className="font-bold tracking-[0.12em] text-white">DỊCH VỤ</h2>
           <div className="mt-4 grid gap-3">
             <Link href={PUBLIC_ROUTES.stay} className="hover:text-white">Lưu trú</Link>
-            <Planned>Combo</Planned>
+            {packagesAvailable ? <Link href={PUBLIC_ROUTES.packages} className="hover:text-white">Combo · cần xác nhận</Link> : <Planned>Combo</Planned>}
             <Planned>Xe khách</Planned>
             <Link href={PUBLIC_ROUTES.motorbike} className="hover:text-white">Xe máy · cần xác nhận</Link>
             <Link href="/#cloud-view" className="hover:text-white">Săn mây / Cloud</Link>

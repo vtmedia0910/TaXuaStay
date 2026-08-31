@@ -122,11 +122,12 @@ export async function getAdminCmsPage(pageKey: CmsPageKey): Promise<CmsPage | nu
 async function attachMediaUsage(client: NonNullable<Awaited<ReturnType<typeof createServerSupabaseClient>>>, media: CmsMediaAsset[]) {
   if (!media.length) return media;
   const ids = new Set(media.map((asset) => asset.id));
-  const [pagesResult, sectionsResult, itemsResult, motorbikeResult] = await Promise.all([
+  const [pagesResult, sectionsResult, itemsResult, motorbikeResult, packagesResult] = await Promise.all([
     client.from("cms_pages").select("id,page_key,title,og_media_id,published_og_media_id"),
     client.from("cms_sections").select("id,page_id,section_key,desktop_media_id,mobile_media_id,published_desktop_media_id,published_mobile_media_id"),
     client.from("cms_section_items").select("id,section_id,title,media_id,published_media_id"),
     client.from("motorbike_offerings").select("id,display_name,image_media_id,publication_status"),
+    client.from("packages").select("id,name,hero_media_id,lifecycle_status"),
   ]);
   const pages = pagesResult.data ?? [];
   const sections = sectionsResult.data ?? [];
@@ -161,6 +162,9 @@ async function attachMediaUsage(client: NonNullable<Awaited<ReturnType<typeof cr
   }
   for (const offering of motorbikeResult.data ?? []) {
     add(offering.image_media_id, `motorbike-${offering.id}`, `Xe máy → ${String(offering.display_name)} → Ảnh công khai`);
+  }
+  for (const item of packagesResult.data ?? []) {
+    add(item.hero_media_id, `package-${item.id}`, `Gói dịch vụ → ${String(item.name)} → Ảnh đại diện`);
   }
   return media.map((asset) => ({
     ...asset,
