@@ -187,8 +187,8 @@ select {
 
 .trip-home-hero-overlay {
   background:
-    linear-gradient(90deg, rgb(3 29 60 / 84%) 0%, rgb(3 34 69 / 68%) 31%, rgb(3 37 72 / 34%) 57%, rgb(3 37 72 / 8%) 78%, transparent 100%),
-    linear-gradient(180deg, rgb(3 25 51 / 22%) 0%, transparent 56%, rgb(3 25 51 / 24%) 100%);
+    linear-gradient(90deg, rgb(3 29 60 / 84%) 0%, rgb(3 34 69 / 62%) 29%, rgb(3 37 72 / 24%) 54%, rgb(3 37 72 / 4%) 73%, transparent 92%),
+    linear-gradient(180deg, rgb(3 25 51 / 16%) 0%, transparent 54%, rgb(3 25 51 / 18%) 100%);
 }
 
 .trip-home-hero-content {
@@ -207,23 +207,23 @@ select {
 }
 
 .trip-home-hero-copy h1 {
-  font-size: clamp(3.25rem, 5.2vw, 5.25rem);
+  font-size: clamp(3.05rem, 4.75vw, 4.8rem);
   font-weight: 700;
-  line-height: 0.94;
-  letter-spacing: -0.045em;
+  line-height: 0.93;
+  letter-spacing: -0.04em;
 }
 
 .trip-home-hero-slogan {
-  margin-top: 0.3rem;
+  margin-top: 0.22rem;
   font-family: var(--font-trip-script), "Segoe Script", cursive;
-  font-size: clamp(3.6rem, 6vw, 6.4rem);
-  line-height: 0.98;
-  letter-spacing: 0.005em;
+  font-size: clamp(3.7rem, 5.75vw, 6.2rem);
+  line-height: 0.95;
+  letter-spacing: 0.008em;
   text-wrap: balance;
 }
 
 .trip-home-hero-tagline {
-  margin-top: 0.95rem;
+  margin-top: 1rem;
   font-size: clamp(1.15rem, 1.5vw, 1.45rem);
   font-weight: 700;
   line-height: 1.35;
@@ -231,7 +231,7 @@ select {
 
 .trip-home-hero-support {
   max-width: 37rem;
-  margin-top: 0.75rem;
+  margin-top: 0.68rem;
   color: rgb(255 255 255 / 88%);
   font-size: clamp(0.95rem, 1.1vw, 1.08rem);
   line-height: 1.65;
@@ -239,10 +239,10 @@ select {
 
 .trip-home-hero-values {
   display: grid;
-  max-width: 43rem;
-  margin-top: 1.45rem;
+  max-width: 41.5rem;
+  margin-top: 1.28rem;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 0.8rem;
 }
 
 .trip-home-hero-values > div {
@@ -279,9 +279,9 @@ select {
 
 .trip-home-hero-values small {
   margin-top: 0.14rem;
-  color: rgb(255 255 255 / 80%);
-  font-size: 0.69rem;
-  line-height: 1.35;
+  color: rgb(255 255 255 / 86%);
+  font-size: 0.73rem;
+  line-height: 1.42;
 }
 
 .trip-home-hero-search-wrap {
@@ -290,7 +290,7 @@ select {
   width: 88%;
   max-width: 88.75rem;
   margin: auto auto 0;
-  transform: translateY(2.75rem);
+  transform: translateY(1.25rem);
 }
 
 .trip-hero-search-panel {
@@ -310,10 +310,9 @@ select {
 }
 
 .trip-hero-service-tab {
-  display: grid;
-  min-height: 3.7rem;
-  padding: 0.5rem 0.8rem;
-  grid-template-columns: auto auto;
+  display: flex;
+  min-height: 3.4rem;
+  padding: 0.38rem 0.75rem;
   align-content: center;
   align-items: center;
   justify-content: center;
@@ -323,12 +322,24 @@ select {
   font-weight: 700;
 }
 
-.trip-hero-service-tab small {
-  grid-column: 1 / -1;
+.trip-hero-service-label {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.38rem;
+}
+
+.trip-hero-service-status {
+  display: inline-flex;
+  padding: 0.13rem 0.38rem;
+  border: 1px solid color-mix(in srgb, var(--trip-border) 82%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--trip-cloud) 74%, white);
   color: var(--trip-muted);
-  font-size: 0.58rem;
+  font-size: 0.52rem;
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
 .trip-hero-service-tab.is-active {
@@ -347,7 +358,7 @@ select {
 }
 
 .trip-hero-search-form {
-  padding: 1rem 1.2rem 0.85rem;
+  padding: 0.78rem 1.2rem 0.62rem;
 }
 
 .trip-hero-search-fields {
@@ -370,7 +381,7 @@ select {
 
 .trip-hero-search-label {
   display: flex;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.25rem;
   align-items: center;
   gap: 0.35rem;
   color: var(--trip-muted);
@@ -411,8 +422,8 @@ select {
 
 .trip-hero-preferences {
   display: flex;
-  margin-top: 0.7rem;
-  padding-top: 0.7rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
   align-items: center;
   gap: 0.7rem;
   border-top: 1px solid color-mix(in srgb, var(--trip-border) 70%, transparent);
@@ -467,7 +478,7 @@ select {
 .trip-hero-trust-strip {
   border-bottom: 1px solid var(--trip-border);
   background: var(--trip-cloud);
-  padding: 4.35rem 1.25rem 1.2rem;
+  padding: 3rem 1.25rem 1.15rem;
 }
 
 .trip-hero-trust-strip > div {
@@ -542,8 +553,8 @@ select {
 
   .trip-home-hero-overlay {
     background:
-      linear-gradient(180deg, rgb(3 28 58 / 78%) 0%, rgb(3 34 69 / 66%) 46%, rgb(3 37 72 / 24%) 72%, rgb(3 25 51 / 38%) 100%),
-      linear-gradient(90deg, rgb(3 29 60 / 42%), transparent 86%);
+      linear-gradient(180deg, rgb(3 28 58 / 76%) 0%, rgb(3 34 69 / 60%) 46%, rgb(3 37 72 / 18%) 72%, rgb(3 25 51 / 34%) 100%),
+      linear-gradient(90deg, rgb(3 29 60 / 40%), transparent 86%);
   }
 
   .trip-home-hero-content {
@@ -599,6 +610,17 @@ select {
     padding-inline: 0.3rem;
     gap: 0.15rem 0.3rem;
     font-size: 0.67rem;
+  }
+
+  .trip-hero-service-label {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.14rem;
+  }
+
+  .trip-hero-service-status {
+    padding: 0.08rem 0.28rem;
+    font-size: 0.48rem;
   }
 
   .trip-hero-service-tab svg {

@@ -112,6 +112,7 @@ describe("locked Tà Xùa Trip Hero", () => {
 
     for (const tab of ["Lưu trú", "Combo", "Xe khách", "Xe máy"]) expect(html).toContain(tab);
     expect(html.match(/Sắp có/g)).toHaveLength(3);
+    expect(html.match(/trip-hero-service-status/g)).toHaveLength(3);
     for (const chip of ["Đã thẩm định", "Săn mây", "View từ giường", "Ô tô vào được"]) {
       expect(html).toContain(chip);
     }

@@ -111,3 +111,26 @@ Visual QA results and final quality-gate counts are recorded in the delivery rep
 | 390 × 844 | Header, brand copy and values remain readable; search uses two field columns, tabs/chips wrap without clipping, trust uses two columns and horizontal overflow is zero. |
 
 The no-CMS local fallback was also checked at all six widths. The deployed CMS-photo pass is repeated after Vercel receives the commit so image contrast, directional overlay and real focal crop are judged against the actual published photograph.
+
+## Hero Visual Polish H1
+
+H1 is a visual-only refinement of the accepted locked Hero. It does not change copy, search parameters, preference semantics, CMS resolution, permissions, SEO policy, or any accommodation domain behavior.
+
+- The directional overlay keeps the left text zone at its previous contrast while reducing navy density through the center and right. The published photograph therefore retains more cloud highlight, sunrise color and mountain separation without a white overlay or artificial image treatment.
+- The desktop brand title scale is reduced by approximately nine percent. The existing Allura slogan remains live text and becomes the clearer emotional signature through relative scale, line-height and spacing rather than a new font or image asset.
+- Copy rhythm and brand-value spacing are tightened modestly. Value microcopy gains a small size, opacity and line-height increase without becoming cards.
+- The desktop search panel falls from approximately 211 px to 191 px high and moves 24 px upward. Input and CTA target sizes are preserved; the reduction comes from tabs and internal whitespace. The trust-strip top transition is reduced to match the shallower overlap.
+- `Sắp có` remains a truthful disabled state and is now a muted capsule beside each future-service label on desktop, with a compact stacked treatment on narrow mobile tabs.
+
+### H1 responsive QA
+
+| Viewport | H1 result |
+| --- | --- |
+| 1920 × 1080 | 860 px Hero; panel and preferences are fully visible before the trust strip; no horizontal overflow. |
+| 1440 × 900 | 760 px Hero; preference row and complete trust transition remain visible; no horizontal overflow. |
+| 1366 × 768 | Panel height is approximately 191 px and the preference row starts around y=728 instead of y=746, making it immediately discoverable; no horizontal overflow. |
+| 1024 × 768 | Header uses the tablet menu, the five-part search row and CTA remain readable, and preferences reach the first-viewport boundary without clipping horizontally. |
+| 768 × 1024 | Search reflows to two field columns, preferences stay on one compact row, and the trust strip remains lightweight. |
+| 390 × 844 | Title, two-line slogan, values, tabs, fields and CTA remain legible; preferences wrap truthfully and there is no horizontal overflow. |
+
+The local environment intentionally exercises the no-CMS color fallback because public Supabase variables are not configured locally. The published CMS photograph and focal crop are therefore visually rechecked on the Vercel deployment after delivery.

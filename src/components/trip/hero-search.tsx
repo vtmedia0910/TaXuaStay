@@ -74,8 +74,10 @@ export function HeroSearch() {
             aria-disabled={active ? undefined : "true"}
           >
             <Icon size={17} aria-hidden="true" />
-            <span>{label}</span>
-            {!active ? <small>Sắp có</small> : null}
+            <span className="trip-hero-service-label">
+              {label}
+              {!active ? <small className="trip-hero-service-status">Sắp có</small> : null}
+            </span>
           </div>
         ))}
       </div>
