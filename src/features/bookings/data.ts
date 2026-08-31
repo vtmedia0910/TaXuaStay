@@ -77,7 +77,11 @@ export async function getBookingRequestReview(input: {
       });
     }
   }
-  return { selections: input.selections, items, status: items.length === input.selections.length ? "ready" : "invalid" };
+  return {
+    selections: input.selections,
+    items,
+    status: input.selections.length > 0 && items.length === input.selections.length ? "ready" : "invalid",
+  };
 }
 
 export async function getPublicBookingStatus(bookingCode: string): Promise<PublicBookingStatusDto | null> {
