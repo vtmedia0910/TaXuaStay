@@ -21,19 +21,22 @@
 
 - Vercel Production publishable key: **PRESENT**.
 - Vercel Preview publishable key: **PRESENT**.
-- Vercel legacy anon key: **PRESENT TEMPORARILY**, pending owner removal after production verification.
+- Vercel legacy anon key: **ABSENT**.
 - Vercel service-role key: **ABSENT**.
 - Vercel secret key: **ABSENT**.
 - Local project service-role key: **ABSENT**.
 
 ## Rotation and closure status
 
-- Legacy Supabase JWT-based API keys remain enabled until the owner completes the staged migration.
+- The owner rotated the exposed legacy `service_role` credential and confirmed that all legacy JWT-based Supabase API keys are disabled.
+- Legacy anon credential: **DISABLED**.
+- Legacy service-role credential: **DISABLED**.
 - Publishable-key production deployment `e249bf8` completed successfully.
 - Public routes `/`, `/stay`, `/motorbike` and `/packages` return successfully without configuration or server-error markers.
 - `/admin/login` is configured and usable; unauthenticated access to `/admin/economics`, `/admin/motorbike` and `/admin/packages` redirects to `/admin/login`.
-- Source audit and automated tests prove that browser, server and Proxy clients read only `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; the still-present legacy anon variable is not a runtime fallback.
+- Direct post-rotation reads of Stay properties, room types, Motorbike public projection, Packages and Supabase Auth return successfully using only `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- Source audit and automated tests prove that browser, server and Proxy clients read only `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; no legacy anon fallback or privileged client exists.
 - No application-route `401`, `403` or `500` regression was observed after deployment.
-- The owner may now remove `NEXT_PUBLIC_SUPABASE_ANON_KEY` from Vercel without replacing it.
-- Legacy-key disablement remains an owner action and must not occur until the Vercel removal is confirmed.
+- Migrations remain `001–023` Local = Remote; this closure required no migration and no database push.
+- Credential incident status: **CLOSED**.
 - V2 Phase 7 is outside this security task and has not been started.
