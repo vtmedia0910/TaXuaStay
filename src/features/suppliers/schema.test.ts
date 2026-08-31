@@ -26,6 +26,7 @@ describe("V2 Phase 3 supplier validation", () => {
       tax_code: "",
       website_url: "",
       internal_notes: "",
+      primary_contact_id: "",
       primary_contact_name: "",
       primary_contact_type: "",
       primary_role_title: "",
@@ -35,6 +36,30 @@ describe("V2 Phase 3 supplier validation", () => {
       primary_notes_internal: "",
     });
     expect(result.success).toBe(true);
+  });
+
+  it("reserves archived transitions for the archive RPC", () => {
+    const profile = {
+      id: "11111111-1111-4111-8111-111111111111",
+      supplier_code: "SUP-TX-0002",
+      supplier_type: "accommodation",
+      display_name: "Nhà cung cấp thử nghiệm",
+      legal_name: "",
+      status: "archived",
+      tax_code: "",
+      website_url: "",
+      internal_notes: "",
+      primary_contact_id: "",
+      primary_contact_name: "",
+      primary_contact_type: "",
+      primary_role_title: "",
+      primary_phone: "",
+      primary_email: "",
+      primary_zalo: "",
+      primary_notes_internal: "",
+    };
+    expect(supplierProfileSchema.safeParse(profile).success).toBe(false);
+    expect(supplierProfileSchema.safeParse({ ...profile, status: "active" }).success).toBe(true);
   });
 
   it("requires a meaningful method for every contact", () => {

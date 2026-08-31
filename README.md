@@ -6,13 +6,13 @@ This repository is the independent accommodation technical foundation and the li
 
 The public application now uses the Tà Xùa Trip brand shell while preserving the Destination → Property → Room Type → Physical Room identity hierarchy, verified evidence, Cloud View, Road Verified, pricing, pooled availability, room-first search, SEO, and authorized operations. Master Plan V2.1 combines four product pillars—**VERIFY, BUNDLE, OPERATE, DISTRIBUTE**—without rewriting that foundation.
 
-Private suppliers, normalized contacts, Property relationships, Partner lifecycle/tier, and opaque external identities are implemented as the V2 Phase 3 supply-side foundation. Commercial economics, services, packages, unified trip booking, payments, bus integration, and the Trip Dashboard remain future architecture only. Tà Xùa Biker remains an independent product and source of truth for motorbike operations.
+Private suppliers, normalized contacts, Property relationships, Partner lifecycle/tier, and opaque external identities are implemented as the V2 Phase 3 supply-side foundation. Phase 3H migration 017 hardens atomic archive ordering and ID-preserving primary-contact edits. Commercial economics, services, packages, unified trip booking, payments, bus integration, and the Trip Dashboard remain future architecture only. Tà Xùa Biker remains an independent product and source of truth for motorbike operations.
 
 ## Roadmap status
 
 Migrations 001–008 and their historical phase documents are the **Legacy Foundation Completed**. Migration 009 implements **V2 Phase 1 — Architecture Alignment**. Migration 010 implements **V2 Phase 2 — Verified Room Profile** with separate Room Type Verified, Exact Room Verified, Room Quality dimensions, and factual strengths/caveats.
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented without a database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented by migrations 011–014. **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** adds the visual section editor/media library and migration 015. **V2 Phase 3 — Supplier + Partner Foundation** is implemented by migration 016 and the private Supplier Admin. `/stay` is canonical; compatibility routes remain available. The next separately authorized phase is **V2 Phase 4 — Commercial Economics**.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented without a database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented by migrations 011–014. **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** adds the visual section editor/media library and migration 015. **V2 Phase 3 — Supplier + Partner Foundation** is implemented by migration 016 and the private Supplier Admin; **V2 Phase 3H — Supplier Lifecycle Hardening** is implemented by corrective migration 017. `/stay` is canonical; compatibility routes remain available. The next separately authorized phase is **V2 Phase 4 — Commercial Economics**.
 
 ## Local development
 
@@ -42,6 +42,7 @@ supabase/migrations/202608290013_harden_cms_storage_delete.sql
 supabase/migrations/202608290014_enforce_cms_archive_lifecycle.sql
 supabase/migrations/202608290015_harden_cms_publishing_permissions.sql
 supabase/migrations/202608290016_v2_supplier_partner_foundation.sql
+supabase/migrations/202608290017_harden_supplier_lifecycle.sql
 ```
 
 The public page remains usable with safe local defaults when Supabase environment variables are absent or settings cannot be read.
@@ -76,5 +77,6 @@ Project references:
 - `docs/V2_PHASE_2_6_CMS_MEDIA_CONTENT_OPS.md` — structured editorial ownership, atomic publish, media lifecycle, Storage, public projections, fallback and operating checklist.
 - `docs/V2_PHASE_2_6H_CMS_ADMIN_UX_HARDENING.md` — visual Admin editor, bounded media library, reorder semantics, image metadata/focal workflow, and staff/admin publishing boundary.
 - `docs/V2_PHASE_3_SUPPLIER_PARTNER_FOUNDATION.md` — private Supplier identity, contacts, Property links, Partner lifecycle/tier, external references, RLS and trust separation.
+- `docs/V2_PHASE_3H_SUPPLIER_LIFECYCLE_HARDENING.md` — child-first atomic archive, inclusive relationship dates, direct-archive guard, reactivation and ID-preserving primary-contact edits.
 - `docs/LEGACY_ROADMAP_STATUS.md` — concise historical status and phase-numbering boundary.
 - `docs/SUPABASE_SETUP.md` — manual migration and future Storage setup.

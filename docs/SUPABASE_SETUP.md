@@ -4,7 +4,7 @@ Use only the dedicated Tà Xùa Stay Supabase project. Never link this repositor
 
 ## Current remote status
 
-Verified again on 2026-08-30 against the dedicated Supabase project returned by the CLI as `TaXuaStay`, project ref `kkrtajdgkinybpwermls`. The repository is linked through Supabase CLI metadata under the gitignored `supabase/.temp/` directory; no credentials or tracked `supabase/config.toml` were added.
+Verified again on 2026-08-31 against the dedicated Supabase project returned by the CLI as `TaXuaStay`, project ref `kkrtajdgkinybpwermls`. The repository is linked through Supabase CLI metadata under the gitignored `supabase/.temp/` directory; no credentials or tracked `supabase/config.toml` were added.
 
 Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the application dependencies were not changed. Remote migration history is reconciled and contains these migrations in order:
 
@@ -25,9 +25,10 @@ Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the appl
 202608290014
 202608290015
 202608290016
+202608290017
 ```
 
-After V2 Phase 3, `migration list` must report 001–016 Local = Remote. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
+After V2 Phase 3H, `migration list` must report 001–017 Local = Remote. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
 
 ## V2 migration lineage
 
@@ -35,7 +36,7 @@ Migrations 001–008 are the **Legacy Foundation Completed**. They remain immuta
 
 Migration `202608290009_v2_destination_and_physical_rooms.sql` is **V2 Phase 1 — Architecture Alignment**. Migration `202608290010_v2_verified_room_profile.sql` is **V2 Phase 2 — Verified Room Profile**. It adds Room Quality, factual strengths/caveats, and stronger exact-room resolution without changing pricing, pooled availability, search, Road Verified, or the Cloud View rubric.
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. Migrations 011–014 implement **V2 Phase 2.6 — CMS, Media & Content Operations**. Migration 015 implements **V2 Phase 2.6H**. Migration `202608290016_v2_supplier_partner_foundation.sql` implements **V2 Phase 3** with private Suppliers, contacts, Property relationships, Partner lifecycle/tier, external references and zero anonymous access. V2 Phase 4 has not started.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. Migrations 011–014 implement **V2 Phase 2.6 — CMS, Media & Content Operations**. Migration 015 implements **V2 Phase 2.6H**. Migration `202608290016_v2_supplier_partner_foundation.sql` implements **V2 Phase 3** with private Suppliers, contacts, Property relationships, Partner lifecycle/tier, external references and zero anonymous access. Corrective migration `202608290017_harden_supplier_lifecycle.sql` implements **V2 Phase 3H**. V2 Phase 4 has not started.
 
 ## Migration order
 
@@ -58,6 +59,7 @@ supabase/migrations/202608290013_harden_cms_storage_delete.sql
 supabase/migrations/202608290014_enforce_cms_archive_lifecycle.sql
 supabase/migrations/202608290015_harden_cms_publishing_permissions.sql
 supabase/migrations/202608290016_v2_supplier_partner_foundation.sql
+supabase/migrations/202608290017_harden_supplier_lifecycle.sql
 ```
 
 Never reapply or edit a migration already present remotely. Migration `202608290003` is the additive corrective migration that preserves immutable migration `202608290002`; migration `202608290004` adds the normalized Verified Standard without seeding verification data; migration `202608290005` preserves immutable 004 while rejecting future/expired verified cycles, refreshing normal re-verification dates, and limiting anonymous Cloud/Road reads to public-view columns.
@@ -159,6 +161,21 @@ Migration 016 adds `suppliers`, `supplier_contacts`, `supplier_properties`, `par
 7. No public Property/room DTO, verification resolver, pricing resolver, availability resolver, CMS projection, or search ranking reads Partner data.
 
 The post-016 remote smoke test found all five tables and an exact count of zero for each. Anonymous REST selection of every new table and anonymous insert/update/delete requests returned HTTP 401. An anonymous archive RPC returned the expected `Supplier archive requires admin` guard error and changed no row. Migrations 001–016 were Local = Remote. Linked lint reported no Phase 3 issue and only the two existing migration-015 reorder warnings described above. No smoke-test row was retained. The privileged count read used only an ephemeral CLI-managed key in process memory; no service-role client, key, environment variable, or application code was added.
+
+Migration 017 removes the faulty migration-016 AFTER archive cascade and makes `archive_supplier` the only archive orchestrator. It locks the Supplier, closes/disables current children, and then archives the parent. Direct authenticated status updates to `archived` are rejected. `valid_until` remains inclusive, reactivation does not reopen history, and `save_supplier_profile_v2` updates the identified current primary contact instead of inserting on every edit. Authenticated execution of the legacy profile RPC is revoked.
+
+After migration 017, verify additionally:
+
+1. A Supplier with an active primary contact, current Property link, open Partner relationship, and active external ref archives successfully in one RPC.
+2. Contacts become inactive/non-primary; current Property links retain history through the inclusive end date and are non-primary; Partner becomes ended with end dates; external refs become inactive.
+3. A forced child constraint failure rolls back every child mutation and the parent transition.
+4. Direct `UPDATE suppliers SET status = 'archived'` is rejected; Admin RPC archive succeeds; staff archive is rejected.
+5. Reactivating an archived Supplier does not reopen any closed child.
+6. Repeated Supplier profile edits preserve the current primary-contact ID and row count; intentional replacement through Contacts preserves the old row as non-primary history.
+7. Anonymous table access remains zero, RLS/role ownership is unchanged, and no service-role client is introduced.
+8. `supabase/tests/202608290017_supplier_lifecycle.sql` completes with every assertion passed and ends in `ROLLBACK`, leaving no fixture row.
+
+The post-017 linked integration run passed all eight reported assertions: full-graph archive, direct-archive blocking, forced child-constraint rollback, intentional contact replacement, primary-contact ID preservation, non-reopening reactivation, repeated-edit count stability, and role/grant regression. Exact counts for all five Supplier tables remained zero after the rollback. Migrations 001–017 were Local = Remote. Linked lint reported no Phase 3H error and only the same migration-015 reorder-function shadowed/unused `position` warnings documented above. No service-role application client, key, fake Supplier, or smoke-test row was added.
 
 ## Environment configuration
 

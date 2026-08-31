@@ -30,7 +30,7 @@ export async function saveSupplierAction(formData: FormData) {
   if (!supabase) redirect(`${suppliersPath}?error=config`);
 
   const value = parsed.data;
-  const { data, error } = await supabase.rpc("save_supplier_profile", {
+  const { data, error } = await supabase.rpc("save_supplier_profile_v2", {
     target_supplier_id: value.id,
     target_supplier_code: value.supplier_code,
     target_supplier_type: value.supplier_type,
@@ -40,6 +40,7 @@ export async function saveSupplierAction(formData: FormData) {
     target_tax_code: value.tax_code,
     target_website_url: value.website_url,
     target_internal_notes: value.internal_notes,
+    primary_contact_id: value.primary_contact_id,
     primary_contact_name: value.primary_contact_name,
     primary_contact_type: value.primary_contact_type,
     primary_role_title: value.primary_role_title,

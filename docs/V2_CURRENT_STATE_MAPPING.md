@@ -19,7 +19,7 @@ This document bridges the **Legacy Foundation Completed** (migrations 001–008)
 | `room_inventory` provides latest pooled room-type availability by lodging night | Pooled availability remains; future modes may add exact-unit, allotment, and manual-confirmation models | Pooled mode is implemented. Exact-unit/allotment modes are not. |
 | Room-first search, SEO landings, Verified Standard, price and availability summaries | Search remains; later deterministic Trip Finder composes verified trip options | Room search is implemented. Trip Finder and package recommendations are not. |
 | Biker is a read-only technical/operations reference with no Stay runtime integration | Motorbike service adapter using API/manual confirmation/external reference while Biker remains the fleet/rental source of truth | No motorbike commerce integration exists today. Direct database access remains forbidden. |
-| `suppliers`, contacts, Property links, Partner lifecycle/tier and external refs | Private Suppliers, commercial Partners, future terms, confirmation methods, and service ownership | Identity and relationship foundation implemented in V2 Phase 3. Economics, terms, confirmation and generic Service ownership remain future. Public Property is not overloaded. |
+| `suppliers`, contacts, Property links, Partner lifecycle/tier and external refs | Private Suppliers, commercial Partners, future terms, confirmation methods, and service ownership | Identity and relationship foundation implemented in V2 Phase 3; Phase 3H makes archive child-first/atomic and preserves the current primary-contact ID on ordinary profile edits. Economics, terms, confirmation and generic Service ownership remain future. Public Property is not overloaded. |
 | No generic service catalog or package | Generic service components and flexible `trip_packages` / `package_components` | Not implemented. Room + bike + bus must not be hard-coded as the only package shape. |
 | No customer/trip booking tables | Trip-level Booking + Booking Items + Supplier Confirmation + supplier tasks | Not implemented. Browsing availability still creates no hold or booking. |
 | No payment, bus, trip operations, or customer dashboard | Item-aware payment/deposit, transport services, Trip Operations, and Trip Dashboard | Not implemented. Payment must remain distinct from supplier/trip confirmation. |
@@ -33,7 +33,7 @@ This document bridges the **Legacy Foundation Completed** (migrations 001–008)
 - pooled room-type inventory, freshness-aware availability, and Admin bulk updates;
 - room-first search, public property/room routes, SEO landings, sitemap, robots, and temporary-host `noindex` safety.
 - structured Homepage/Stay/Footer editorial content, website media, protected draft preview and atomic page publishing, with code fallbacks.
-- private Supplier identities, contacts, Property roles/history, Partner lifecycle/tier, and opaque external-system references with no anonymous access.
+- private Supplier identities, contacts, Property roles/history, Partner lifecycle/tier, and opaque external-system references with no anonymous access; Phase 3H adds one canonical archive RPC, direct-archive protection, non-reopening reactivation, and stable primary-contact edits.
 
 ## Explicitly not implemented
 
@@ -53,4 +53,4 @@ The completed V2 implementation is:
 
 **V2 Phase 2.6 — CMS + Media + Content Operations** is complete. Migrations 011–014 add structured draft/published content, website-only media, atomic publishing, public-safe projections and archive-focused lifecycle hardening. **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** is complete with the visual operations UI and migration 015. Product truth and page structure remain code-controlled.
 
-**V2 Phase 3 — Supplier + Partner Foundation** is complete with migration 016 and the private Admin workflow. **V2 Phase 4 — Commercial Economics** is the next separately authorized phase and has not started.
+**V2 Phase 3 — Supplier + Partner Foundation** is complete with migration 016 and the private Admin workflow. **V2 Phase 3H — Supplier Lifecycle Hardening** is complete with corrective migration 017. **V2 Phase 4 — Commercial Economics** is the next separately authorized phase and has not started.

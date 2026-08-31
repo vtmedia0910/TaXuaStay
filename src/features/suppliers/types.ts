@@ -18,6 +18,14 @@ export const SUPPLIER_STATUSES = [
   "archived",
 ] as const;
 
+export const EDITABLE_SUPPLIER_STATUSES = [
+  "lead",
+  "onboarding",
+  "active",
+  "paused",
+  "inactive",
+] as const;
+
 export const CONTACT_TYPES = [
   "owner",
   "manager",

@@ -23,10 +23,10 @@ import {
 } from "@/features/suppliers/policy";
 import {
   CONTACT_TYPES,
+  EDITABLE_SUPPLIER_STATUSES,
   PARTNER_STATUSES,
   PARTNER_TIERS,
   PROPERTY_RELATIONSHIP_TYPES,
-  SUPPLIER_STATUSES,
   SUPPLIER_TYPES,
   type PartnerRelationshipDto,
   type SupplierContactDto,
@@ -36,11 +36,19 @@ import {
 } from "@/features/suppliers/types";
 import type { PropertyOption } from "@/features/properties/types";
 
-export function SupplierProfileForm({ supplier }: { supplier?: SupplierDto | null }) {
+export function SupplierProfileForm({
+  supplier,
+  primaryContact,
+}: {
+  supplier?: SupplierDto | null;
+  primaryContact?: SupplierContactDto | null;
+}) {
   const editing = Boolean(supplier);
+  const reactivating = supplier?.status === "archived";
   return (
     <form action={saveSupplierAction} className="grid gap-5">
       <input type="hidden" name="id" value={supplier?.id ?? ""} />
+      <input type="hidden" name="primary_contact_id" value={primaryContact?.id ?? ""} />
       <Card className="grid gap-5 p-5 sm:p-6">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-sky">Thông tin nhà cung cấp</p>
@@ -60,8 +68,9 @@ export function SupplierProfileForm({ supplier }: { supplier?: SupplierDto | nul
             </Select>
           </Field>
           <Field label="Trạng thái vòng đời" htmlFor="status">
-            <Select id="status" name="status" defaultValue={supplier?.status ?? "lead"}>
-              {SUPPLIER_STATUSES.map((value) => <option key={value} value={value}>{SUPPLIER_STATUS_LABELS[value]}</option>)}
+            <Select id="status" name="status" defaultValue={reactivating ? "" : supplier?.status ?? "lead"} required>
+              {reactivating ? <option value="" disabled>Chọn trạng thái để tái kích hoạt</option> : null}
+              {EDITABLE_SUPPLIER_STATUSES.map((value) => <option key={value} value={value}>{SUPPLIER_STATUS_LABELS[value]}</option>)}
             </Select>
           </Field>
           <Field label="Tên pháp lý" htmlFor="legal_name">
@@ -79,25 +88,31 @@ export function SupplierProfileForm({ supplier }: { supplier?: SupplierDto | nul
         </Field>
       </Card>
 
-      {!editing ? (
-        <Card className="grid gap-5 p-5 sm:p-6">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-sky">Liên hệ chính ban đầu · không bắt buộc</p>
-            <p className="mt-1 text-sm text-muted">Nếu nhập, hồ sơ nhà cung cấp và liên hệ này được lưu trong cùng một giao dịch.</p>
-          </div>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Tên người liên hệ" htmlFor="primary_contact_name"><Input id="primary_contact_name" name="primary_contact_name" maxLength={160} /></Field>
-            <Field label="Loại liên hệ" htmlFor="primary_contact_type">
-              <Select id="primary_contact_type" name="primary_contact_type" defaultValue=""><option value="">Chọn khi có liên hệ</option>{CONTACT_TYPES.map((value) => <option key={value} value={value}>{CONTACT_TYPE_LABELS[value]}</option>)}</Select>
-            </Field>
-            <Field label="Chức danh" htmlFor="primary_role_title"><Input id="primary_role_title" name="primary_role_title" maxLength={120} /></Field>
-            <Field label="Điện thoại" htmlFor="primary_phone"><Input id="primary_phone" name="primary_phone" type="tel" maxLength={30} /></Field>
-            <Field label="Email" htmlFor="primary_email"><Input id="primary_email" name="primary_email" type="email" maxLength={254} /></Field>
-            <Field label="Zalo" htmlFor="primary_zalo"><Input id="primary_zalo" name="primary_zalo" maxLength={160} /></Field>
-          </div>
-          <Field label="Ghi chú liên hệ" htmlFor="primary_notes_internal"><Textarea id="primary_notes_internal" name="primary_notes_internal" maxLength={5000} /></Field>
-        </Card>
-      ) : null}
+      <Card className="grid gap-5 p-5 sm:p-6">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-sky">
+            {editing ? "Liên hệ chính hiện tại" : "Liên hệ chính ban đầu · không bắt buộc"}
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            {editing
+              ? primaryContact
+                ? "Sửa tại đây sẽ cập nhật đúng liên hệ hiện tại, không tạo thêm bản ghi. Muốn thay người, hãy thêm liên hệ mới ở mục Liên hệ."
+                : "Chưa có liên hệ chính. Điền đầy đủ để tạo liên hệ trong cùng giao dịch; các liên hệ lịch sử không tự mở lại."
+              : "Nếu nhập, hồ sơ nhà cung cấp và liên hệ này được lưu trong cùng một giao dịch."}
+          </p>
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Tên người liên hệ" htmlFor="primary_contact_name"><Input id="primary_contact_name" name="primary_contact_name" defaultValue={primaryContact?.contact_name ?? ""} maxLength={160} /></Field>
+          <Field label="Loại liên hệ" htmlFor="primary_contact_type">
+            <Select id="primary_contact_type" name="primary_contact_type" defaultValue={primaryContact?.contact_type ?? ""}><option value="">Chọn khi có liên hệ</option>{CONTACT_TYPES.map((value) => <option key={value} value={value}>{CONTACT_TYPE_LABELS[value]}</option>)}</Select>
+          </Field>
+          <Field label="Chức danh" htmlFor="primary_role_title"><Input id="primary_role_title" name="primary_role_title" defaultValue={primaryContact?.role_title ?? ""} maxLength={120} /></Field>
+          <Field label="Điện thoại" htmlFor="primary_phone"><Input id="primary_phone" name="primary_phone" type="tel" defaultValue={primaryContact?.phone ?? ""} maxLength={30} /></Field>
+          <Field label="Email" htmlFor="primary_email"><Input id="primary_email" name="primary_email" type="email" defaultValue={primaryContact?.email ?? ""} maxLength={254} /></Field>
+          <Field label="Zalo" htmlFor="primary_zalo"><Input id="primary_zalo" name="primary_zalo" defaultValue={primaryContact?.zalo ?? ""} maxLength={160} /></Field>
+        </div>
+        <Field label="Ghi chú liên hệ" htmlFor="primary_notes_internal"><Textarea id="primary_notes_internal" name="primary_notes_internal" defaultValue={primaryContact?.notes_internal ?? ""} maxLength={5000} /></Field>
+      </Card>
       <div className="flex justify-end"><SubmitButton label={editing ? "Lưu hồ sơ nhà cung cấp" : "Tạo nhà cung cấp"} /></div>
     </form>
   );

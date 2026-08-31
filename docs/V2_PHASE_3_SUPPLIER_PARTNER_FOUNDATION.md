@@ -1,6 +1,6 @@
 # V2 Phase 3 — Supplier + Partner Foundation
 
-Status: **implemented** by additive migration `202608290016_v2_supplier_partner_foundation.sql` and the private Admin module at `/admin/suppliers`.
+Status: **implemented** by additive migration `202608290016_v2_supplier_partner_foundation.sql` and the private Admin module at `/admin/suppliers`; lifecycle/contact semantics are corrected by Phase 3H migration `202608290017_harden_supplier_lifecycle.sql`.
 
 This phase answers who supplies a product/service, who operations contacts, which accommodation entities they support, and what private relationship they have with Tà Xùa Trip. It deliberately stops before V2 Phase 4 commercial economics.
 
@@ -41,7 +41,7 @@ Lifecycle:
 - `inactive`
 - `archived`
 
-Hard delete is not granted. Archiving atomically disables active contacts and external references, closes open Property links, and ends the open Partner relationship while preserving history. An archived Supplier must first be reactivated before receiving a new current operational child.
+Hard delete is not granted. Phase 3H makes `archive_supplier` the single authoritative lifecycle path: it locks the Supplier, disables/closes children, then archives the parent in one transaction. Direct authenticated status changes to `archived` are blocked. An archived Supplier must first be reactivated before receiving a new current operational child, and reactivation never reopens historical children.
 
 ### `supplier_contacts`
 
@@ -107,7 +107,9 @@ Server Actions repeat authentication/authorization and Zod validation. RLS and e
 
 ## Mutation safety
 
-`save_supplier_profile` atomically creates/updates the Supplier and optionally creates the first primary contact. A bad contact therefore rolls back the Supplier insert. Contact saves atomically normalize one active primary contact. Property-link saves atomically clear another open primary link for the same Property/role before saving the selected one. Partner/external-reference saves are one-transaction RPCs. `archive_supplier` performs the complete lifecycle closure in one transaction.
+`save_supplier_profile_v2` atomically creates/updates the Supplier and optionally creates or updates the current primary contact. Existing primary-contact edits preserve the contact ID; a different person is added deliberately through the Contacts UI so the prior row remains history. The migration-016 profile RPC is no longer executable by authenticated callers. Contact saves atomically normalize one active primary contact. Property-link saves atomically clear another open primary link for the same Property/role before saving the selected one. Partner/external-reference saves are one-transaction RPCs. `archive_supplier` closes all current children before archiving the parent, and a controlled child failure rolls the full graph back.
+
+Relationship `valid_until` dates are inclusive. Closing a relationship today records history through today; the corrected child-first ordering preserves that semantic without weakening the archived-Supplier guard. See `docs/V2_PHASE_3H_SUPPLIER_LIFECYCLE_HARDENING.md` for the root cause, direct-update policy, reactivation behavior, and rollback-only integration suite.
 
 These functions use `security invoker`, explicit role checks, authenticated grants, and RLS. There are no function-level commits, partial follow-up writes, or hard-delete actions.
 

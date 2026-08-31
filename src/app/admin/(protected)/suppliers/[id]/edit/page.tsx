@@ -35,6 +35,7 @@ export default async function EditSupplierPage({
   if (!supplier) notFound();
   const isAdmin = user.role === "admin";
   const archived = supplier.status === "archived";
+  const primaryContact = supplier.contacts.find((contact) => contact.is_primary && contact.is_active) ?? null;
   const openPartner = supplier.partner_relationships.find((relationship) => relationship.status !== "ended");
   const endedPartners = supplier.partner_relationships.filter((relationship) => relationship.status === "ended");
 
@@ -45,7 +46,7 @@ export default async function EditSupplierPage({
       {archived ? <p className="mb-5 rounded-2xl bg-amber-50 p-4 text-sm font-bold text-amber-950">Hồ sơ đã lưu trữ. Hãy tái kích hoạt bằng tài khoản Admin trước khi thêm liên hệ hoặc quan hệ đang hiệu lực.</p> : null}
 
       <div className="grid gap-8 pb-12">
-        {isAdmin ? <SupplierProfileForm supplier={supplier} /> : (
+        {isAdmin ? <SupplierProfileForm supplier={supplier} primaryContact={primaryContact} /> : (
           <Card className="p-5 sm:p-6"><p className="text-xs font-bold uppercase tracking-[0.14em] text-sky">Thông tin nhà cung cấp</p><p className="mt-2 text-sm leading-6 text-muted">Staff có quyền xem và xử lý đầu mối/liên kết cơ sở. Chỉ Admin thay đổi danh tính và vòng đời nhà cung cấp.</p></Card>
         )}
 
@@ -70,7 +71,7 @@ export default async function EditSupplierPage({
           <div className="grid gap-4">{supplier.external_refs.map((externalRef) => isAdmin ? <SupplierExternalRefForm key={externalRef.id} supplierId={supplier.id} externalRef={externalRef} /> : <Card key={externalRef.id} className="p-4"><p className="font-mono text-sm font-bold text-pine">{externalRef.system_key} · {externalRef.external_reference}</p><p className="mt-1 text-xs text-muted">{externalRef.is_active ? "Đang hoạt động" : "Đã tắt"}</p></Card>)}{isAdmin && !archived ? <SupplierExternalRefForm supplierId={supplier.id} /> : null}</div>
         </section>
 
-        {isAdmin && !archived ? <Card className="border-danger/30 p-5"><h2 className="font-display text-xl font-bold text-danger">Vùng nguy hiểm</h2><p className="mt-1 text-sm text-muted">Lưu trữ sẽ tắt liên hệ/tham chiếu, kết thúc quan hệ đối tác và đóng các liên kết đang mở. Lịch sử không bị xóa.</p><form action={archiveSupplierAction} className="mt-4"><input type="hidden" name="id" value={supplier.id} /><SubmitButton label="Lưu trữ nhà cung cấp" icon={<Archive size={18} aria-hidden="true" />} variant="danger" confirmation="Lưu trữ nhà cung cấp và đóng các quan hệ đang hoạt động?" /></form></Card> : null}
+        {isAdmin && !archived ? <Card className="border-danger/30 p-5"><h2 className="font-display text-xl font-bold text-danger">Vùng nguy hiểm</h2><p className="mt-1 text-sm text-muted">Lưu trữ sẽ tắt liên hệ/tham chiếu, kết thúc quan hệ đối tác và đóng các liên kết đang mở. Lịch sử không bị xóa.</p><form action={archiveSupplierAction} className="mt-4"><input type="hidden" name="id" value={supplier.id} /><SubmitButton label="Lưu trữ nhà cung cấp" icon={<Archive size={18} aria-hidden="true" />} variant="danger" confirmation={"LƯU TRỮ NHÀ CUNG CẤP?\n\nCác liên hệ và quan hệ đang hoạt động sẽ được kết thúc/lưu trữ nhưng lịch sử không bị xóa."} /></form></Card> : null}
       </div>
     </main>
   );

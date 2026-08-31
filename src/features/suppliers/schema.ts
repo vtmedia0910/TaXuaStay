@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   CONTACT_TYPES,
+  EDITABLE_SUPPLIER_STATUSES,
   PARTNER_STATUSES,
   PARTNER_TIERS,
   PROPERTY_RELATIONSHIP_TYPES,
@@ -22,10 +23,11 @@ export const supplierProfileSchema = z.object({
   supplier_type: z.enum(SUPPLIER_TYPES),
   display_name: z.string().trim().min(2).max(160),
   legal_name: optionalText(200),
-  status: z.enum(SUPPLIER_STATUSES),
+  status: z.enum(EDITABLE_SUPPLIER_STATUSES),
   tax_code: optionalText(50),
   website_url: optionalHttpsUrl,
   internal_notes: optionalText(10000),
+  primary_contact_id: optionalId,
   primary_contact_name: optionalText(160),
   primary_contact_type: z.preprocess(blankToNull, z.enum(CONTACT_TYPES).nullable()),
   primary_role_title: optionalText(120),

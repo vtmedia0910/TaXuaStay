@@ -23,7 +23,7 @@ describe("V2 Phase 3 Supplier Admin", () => {
     const actions = source("src/features/suppliers/actions.ts");
     expect(actions).toContain('requireAdminUser(["admin"]');
     expect(actions).toContain('requireAdminUser(["admin", "staff"]');
-    expect(actions).toContain('.rpc("save_supplier_profile"');
+    expect(actions).toContain('.rpc("save_supplier_profile_v2"');
     expect(actions).toContain('.rpc("save_supplier_contact"');
     expect(actions).toContain('.rpc("save_supplier_property_link"');
     expect(actions).toContain('.rpc("save_partner_relationship"');

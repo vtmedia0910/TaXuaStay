@@ -7,7 +7,7 @@
 **Target repository:** `vtmedia0910/TaXuaStay`  
 **Read-only technical reference:** `vtmedia0910/taxuabiker2`  
 **Canonical target file trong repo sau khi áp dụng:** `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md`
-**Current product state:** Legacy Foundation 001–008 + V2 Phase 1 / migration 009 + V2 Phase 2 / migration 010 + application-only V2 Phase 2.5 + V2 Phase 2.6 / migrations 011–014 + V2 Phase 2.6H / migration 015 + V2 Phase 3 / migration 016 đã hoàn thành. V2 Phase 4 — Commercial Economics chưa bắt đầu và chỉ được thực hiện khi có task riêng.
+**Current product state:** Legacy Foundation 001–008 + V2 Phase 1 / migration 009 + V2 Phase 2 / migration 010 + application-only V2 Phase 2.5 + V2 Phase 2.6 / migrations 011–014 + V2 Phase 2.6H / migration 015 + V2 Phase 3 / migration 016 + corrective V2 Phase 3H / migration 017 đã hoàn thành. V2 Phase 4 — Commercial Economics chưa bắt đầu và chỉ được thực hiện khi có task riêng.
 
 ---
 
@@ -3680,6 +3680,14 @@ Temporary Vercel noindex unchanged.
 # 189. V2 PHASE 3 — IMPLEMENTATION STATUS
 
 Phase 3 is complete through migration 016 and the private `/admin/suppliers` workflow. Supplier/Property/Partner/Verification remain separate; anonymous access is zero; no Supplier rows were seeded; Biker remains an external source of truth with no runtime integration. See `docs/V2_PHASE_3_SUPPLIER_PARTNER_FOUNDATION.md`.
+
+---
+
+# 189A. V2 PHASE 3H — SUPPLIER LIFECYCLE HARDENING STATUS
+
+Phase 3H is complete through corrective migration 017. Supplier archive is child-first and atomic, direct archive bypass is blocked, reactivation does not reopen historical children, and ordinary Supplier profile edits preserve the current primary-contact ID. `valid_until` remains inclusive. See `docs/V2_PHASE_3H_SUPPLIER_LIFECYCLE_HARDENING.md`.
+
+The next separately authorized phase is V2 Phase 4 — Commercial Economics. It has not started.
 
 ---
 
