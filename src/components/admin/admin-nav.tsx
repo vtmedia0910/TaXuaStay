@@ -16,6 +16,7 @@ import {
   FilePenLine,
   Sparkles,
   Handshake,
+  ChartNoAxesCombined,
 } from "lucide-react";
 import { logoutAction } from "@/features/admin/auth-actions";
 import type { AdminRole } from "@/features/admin/authz";
@@ -31,6 +32,7 @@ const contentLinks = [
   { label: "Verification", href: "/admin/verification", icon: ShieldCheck },
   { label: "Hồ sơ phòng", href: "/admin/room-profiles", icon: ListChecks },
   { label: "Giá", href: "/admin/rates", icon: BadgeDollarSign },
+  { label: "Chi phí & biên", href: "/admin/economics", icon: ChartNoAxesCombined },
   { label: "Tình trạng", href: "/admin/availability", icon: CalendarCheck },
   { label: "Nhà cung cấp", href: "/admin/suppliers", icon: Handshake },
 ] as const;

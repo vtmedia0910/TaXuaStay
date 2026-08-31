@@ -32,7 +32,7 @@ Technical domain      Stay
 Technical namespace   /stay
 ```
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented at application level with no database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented with migrations 011–014, **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** with migration 015, **V2 Phase 3 — Supplier + Partner Foundation** with migration 016, and the corrective **V2 Phase 3H — Supplier Lifecycle Hardening** with migration 017. Historical routes remain compatibility pages with `/stay` canonicals. V2 Phase 4 has not started and requires a separate owner task.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented at application level with no database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented with migrations 011–014, **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** with migration 015, **V2 Phase 3 — Supplier + Partner Foundation** with migration 016, corrective **V2 Phase 3H — Supplier Lifecycle Hardening** with migration 017, and **V2 Phase 4 — Commercial Economics** with migrations 018–020. Historical routes remain compatibility pages with `/stay` canonicals. V2 Phase 5 Motorbike Integration has not started and requires a separate owner task.
 
 ## Currently implemented — legacy foundation completed
 
@@ -49,7 +49,7 @@ The current repository actually implements:
 - structured website copy/media operations with protected preview, atomic page publish and public-safe fallbacks.
 - private Supplier identities, normalized contacts, historical many-to-many Property links, Partner relationship lifecycle/tier, and immutable external-system references.
 
-There is currently no private commercial economics, generic service catalog, package commerce, unified trip booking, booking items, payment, bus inventory, supplier confirmation workflow, or Trip Dashboard.
+Private accommodation commercial economics now exists as a protected internal domain. There is still no commission/settlement engine, generic service catalog, package commerce, unified trip booking, booking items, payment, bus inventory, supplier confirmation workflow, Motorbike Integration, or Trip Dashboard.
 
 ## V2 accommodation hierarchy — Phase 1 implemented
 
@@ -112,6 +112,8 @@ See `docs/V2_PHASE_2_6_CMS_MEDIA_CONTENT_OPS.md` and `docs/V2_PHASE_2_6H_CMS_ADM
 ## V2 Phase 3 — Supplier + Partner Foundation implemented
 
 Migration 016 adds a private supply-side domain without changing public accommodation DTOs. Corrective migration 017 makes archive child-first and atomic, blocks direct archive outside the canonical RPC, and updates the identified current primary contact in place. `suppliers` holds stable immutable `SUP-...` operational codes and a lifecycle that supports accommodation, motorbike, bus, transport, activity, food, guide, and other providers. `supplier_contacts` normalizes private operational contacts and requires at least one phone/email/Zalo method. `supplier_properties` links Suppliers to Properties many-to-many with explicit roles and inclusive dated history; it does not add `properties.supplier_id`.
+
+Migration 018 adds `commercial_rate_plans` and `room_commercial_rules` as private Supplier–Property–Room Type economics. Corrective migration 019 removes Supabase-materialized default RPC execution ACLs from every trigger-only economics helper; migration 020 restores authenticated-only execution for the one RLS-protected relationship predicate needed by validation triggers. The tables hold integer-VND net cost and private market reference with explicit provenance, dates, freshness and audit ownership. The pure `phase4-economics-v1` resolver combines these facts with—but never replaces—the existing `phase5-v1` public sell quote. `/admin/economics` exposes private comparison and warnings to staff/admin. Anonymous access is zero, public pricing projections are unchanged, and Supplier archive atomically expires/deactivates economics without deleting history.
 
 `partner_relationships` is a separate Trip-to-Supplier lifecycle. Its standard/verified/preferred/cloud_partner/exclusive tier is private and commercial/relational only. It never changes verification, Cloud View, Room Quality, Road Verified, price confidence, availability, or public ranking. `supplier_external_refs` stores only immutable opaque external identities and bounded non-secret metadata, preparing a future adapter without Biker database access or copied fleet/rental data.
 
@@ -220,7 +222,7 @@ Public inventory is read through a `security_invoker` allow-listed view backed b
 
 ## V2 roadmap boundary
 
-The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is migration 009, Verified Room Profile migration 010, brand/UX V2 Phase 2.5, website operations migrations 011–014, CMS hardening migration 015, Supplier/Partner foundation migration 016, and Supplier lifecycle hardening migration 017. Only separately authorized later phases may add private commercial economics, motorbike service integration, services, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
+The V2.1 roadmap begins from the completed legacy foundation; it does not rename or replay migrations 001–008. Destination/exact-room alignment is migration 009, Verified Room Profile migration 010, brand/UX V2 Phase 2.5, website operations migrations 011–014, CMS hardening migration 015, Supplier/Partner foundation migration 016, Supplier lifecycle hardening migration 017, and private Commercial Economics migrations 018–020. Only separately authorized later phases may add motorbike service integration, services, packages, recommendations, unified booking, payment, trip operations, transport/add-ons, growth, and multi-destination hardening.
 
 ## Future Biker relationship
 

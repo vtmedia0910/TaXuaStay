@@ -17,6 +17,14 @@ const ERROR_MESSAGES: Record<string, string> = {
   "rate-plan-range": "Không thể lưu khoảng ngày của bảng giá vì sẽ làm một quy tắc đang hoạt động không còn ngày áp dụng. Hãy điều chỉnh khoảng ngày hoặc tắt quy tắc trước.",
   "rate-rule-save": "Không thể lưu quy tắc giá. Hãy kiểm tra phòng thuộc đúng nơi lưu trú, khoảng ngày, nguồn và mức ưu tiên.",
   "rate-rule-range": "Quy tắc đang hoạt động phải có ít nhất một ngày giao với khoảng hiệu lực của bảng giá. Có thể tắt quy tắc để lưu trước cho kế hoạch sau.",
+  "economics-plan-invalid": "Bảng chi phí chưa hợp lệ. Kiểm tra nhà cung cấp, cơ sở, mã, nguồn và khoảng ngày.",
+  "economics-plan-save": "Không thể lưu bảng chi phí. Giao dịch không tạo thay đổi dở dang; kiểm tra quan hệ nhà cung cấp–cơ sở và vòng đời.",
+  "economics-plan-range": "Khoảng ngày của bảng chi phí phải còn giao với mọi quy tắc đang hoạt động.",
+  "economics-lifecycle-forbidden": "Staff chỉ được quản lý bản nháp và không được thay đổi vòng đời hoặc tham chiếu thỏa thuận.",
+  "economics-rule-invalid": "Quy tắc chi phí chưa hợp lệ. Cần giá vốn hoặc tham chiếu thị trường, cùng khoảng ngày và nguồn hợp lệ.",
+  "economics-rule-owner": "Bảng chi phí, nhà cung cấp, cơ sở và loại phòng không cùng một phạm vi sở hữu.",
+  "economics-rule-range": "Quy tắc hoạt động phải có ngày giao với bảng chi phí.",
+  "economics-rule-save": "Không thể lưu quy tắc chi phí. Giao dịch đã hoàn tác; kiểm tra quan hệ nhà cung cấp, quyền và dữ liệu xác minh.",
   "inventory-save": "Không thể cập nhật tình trạng phòng. Hãy kiểm tra khoảng ngày, số phòng vật lý, nguồn và giá vận hành tùy chọn.",
   "cms-page-invalid": "Nội dung trang hoặc metadata chưa hợp lệ.",
   "cms-page-save": "Không thể lưu bản nháp trang.",
@@ -65,6 +73,8 @@ export function FormFeedback({ saved, error }: { saved?: string; error?: string 
       property: "✓ Đã lưu liên kết cơ sở.",
       partner: "✓ Đã lưu quan hệ đối tác.",
       reference: "✓ Đã lưu tham chiếu hệ thống.",
+      "economics-plan": "✓ Đã lưu bảng chi phí riêng tư.",
+      "economics-rule": "✓ Đã lưu quy tắc chi phí riêng tư.",
     };
     return (
       <p className="mb-5 rounded-2xl bg-pine-soft p-3 text-sm font-bold text-success" role="status">

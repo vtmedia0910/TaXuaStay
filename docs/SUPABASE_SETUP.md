@@ -36,7 +36,7 @@ Migrations 001–008 are the **Legacy Foundation Completed**. They remain immuta
 
 Migration `202608290009_v2_destination_and_physical_rooms.sql` is **V2 Phase 1 — Architecture Alignment**. Migration `202608290010_v2_verified_room_profile.sql` is **V2 Phase 2 — Verified Room Profile**. It adds Room Quality, factual strengths/caveats, and stronger exact-room resolution without changing pricing, pooled availability, search, Road Verified, or the Cloud View rubric.
 
-**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. Migrations 011–014 implement **V2 Phase 2.6 — CMS, Media & Content Operations**. Migration 015 implements **V2 Phase 2.6H**. Migration `202608290016_v2_supplier_partner_foundation.sql` implements **V2 Phase 3** with private Suppliers, contacts, Property relationships, Partner lifecycle/tier, external references and zero anonymous access. Corrective migration `202608290017_harden_supplier_lifecycle.sql` implements **V2 Phase 3H**. V2 Phase 4 has not started.
+**V2 Phase 2.5 — Master Brand + Public UX Migration** is complete without a database migration. Migrations 011–014 implement **V2 Phase 2.6 — CMS, Media & Content Operations**. Migration 015 implements **V2 Phase 2.6H**. Migration `202608290016_v2_supplier_partner_foundation.sql` implements **V2 Phase 3** with private Suppliers, contacts, Property relationships, Partner lifecycle/tier, external references and zero anonymous access. Corrective migration `202608290017_harden_supplier_lifecycle.sql` implements **V2 Phase 3H**. Migrations `202608290018_v2_commercial_economics.sql`, `202608290019_harden_commercial_function_grants.sql` and `202608290020_restore_authenticated_relationship_predicate.sql` implement the private accommodation **V2 Phase 4 — Commercial Economics** foundation and narrow function-ACL corrections. V2 Phase 5 Motorbike Integration has not started.
 
 ## Migration order
 
@@ -176,6 +176,19 @@ After migration 017, verify additionally:
 8. `supabase/tests/202608290017_supplier_lifecycle.sql` completes with every assertion passed and ends in `ROLLBACK`, leaving no fixture row.
 
 The post-017 linked integration run passed all eight reported assertions: full-graph archive, direct-archive blocking, forced child-constraint rollback, intentional contact replacement, primary-contact ID preservation, non-reopening reactivation, repeated-edit count stability, and role/grant regression. Exact counts for all five Supplier tables remained zero after the rollback. Migrations 001–017 were Local = Remote. Linked lint reported no Phase 3H error and only the same migration-015 reorder-function shadowed/unused `position` warnings documented above. No service-role application client, key, fake Supplier, or smoke-test row was added.
+
+After migration 018, verify additionally:
+
+1. `commercial_rate_plans` and `room_commercial_rules` exist with RLS, no anonymous privilege and no authenticated hard delete.
+2. Active plans/rules require matching Supplier–Property–Room ownership, a current inclusive Supplier–Property link and a non-archived Supplier.
+3. Staff can manage draft terms and preview; only Admin can control plan lifecycle or contract references.
+4. Future verification, reversed ranges, invalid Vietnam-date validity and negative amounts are rejected.
+5. Supplier archive expires plans and deactivates rules in the same transaction; forced failure rolls everything back and reactivation does not reopen economics.
+6. `public_room_rate_rules` and public DTOs remain unchanged and contain no cost, market, contribution, margin, contract or private notes.
+7. `supabase/tests/202608290018_commercial_economics.sql` reports every assertion passed and ends in `ROLLBACK`.
+8. Production economics tables remain empty until staff enters real facts; never infer cost from sell price.
+
+The first linked integration run after 018 rolled back and exposed explicit Supabase-default `anon`/`authenticated` execute ACLs on the new trigger helpers. Corrective migration 019 revokes those helper RPC grants, and migration 020 restores only the authenticated relationship predicate needed by validation triggers. The final rollback-only integration run passed every reported database assertion, including an authenticated Admin active-plan/rule write. HTTP smoke tests returned 401 for anonymous economics reads, inserts and helper execution, while `public_room_rate_rules` remained HTTP 200. Exact post-test counts were zero for both economics tables and for Suppliers, Supplier links, Partner relationships, Properties, Room Types, sell plans and sell rules. Migrations 001–020 were Local = Remote. Linked lint added no Phase 4 warning; only the pre-existing migration-015 CMS reorder warnings remained. No fixture or secret was persisted.
 
 ## Environment configuration
 
