@@ -55,7 +55,7 @@ describe("locked Tà Xùa Trip Hero", () => {
     );
 
     expect(html).toContain("<picture");
-    expect(html).toContain('media="(min-width: 768px)"');
+    expect(html).toContain('media="(min-width: 1024px)"');
     expect(html).toContain("desktop.webp");
     expect(html).toContain("mobile.webp");
     expect(html).toContain("--hero-desktop-position:72% 42%");
@@ -75,7 +75,8 @@ describe("locked Tà Xùa Trip Hero", () => {
     const html = renderToStaticMarkup(<TripHero hero={heroSection()} />);
     for (const copy of [
       "TÀ XÙA TRIP",
-      "Đi thật. Biết trước.",
+      "Đi thật.",
+      "Biết trước.",
       "Tà Xùa, trước khi bạn đến.",
       "Phòng thật, thông tin thật",
       "Biết rõ trước khi chọn",
@@ -128,5 +129,15 @@ describe("locked Tà Xùa Trip Hero", () => {
     ]) {
       expect(html).toContain(trust);
     }
+  });
+
+  it("keeps desktop search while CSS replaces it with one mobile CTA below 1024px", () => {
+    const html = renderToStaticMarkup(<TripHero hero={heroSection()} />);
+    const css = source("src/app/globals.css");
+    expect(html).toContain("trip-desktop-hero-search");
+    expect(html).toContain("trip-mobile-hero-cta");
+    expect(css).toMatch(/@media \(max-width: 1023px\)[\s\S]+\.trip-desktop-hero-search[\s\S]+display: none/);
+    expect(css).toMatch(/@media \(max-width: 1023px\)[\s\S]+\.trip-site-search-cta[\s\S]+display: none/);
+    expect(css).toMatch(/\.trip-home-hero[\s\S]+min-height: 100svh/);
   });
 });

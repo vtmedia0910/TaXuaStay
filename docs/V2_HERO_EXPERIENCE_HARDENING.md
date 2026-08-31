@@ -1,5 +1,7 @@
 # V2 locked Hero experience hardening
 
+> Mobile follow-up: the later focused mobile-first presentation is documented in `docs/V2_MOBILE_HERO_EXPERIENCE.md`. Its `< 1024px` Hero and bottom-sheet behavior supersede the compressed tablet/mobile search-panel notes in this historical implementation record. The accepted desktop Hero remains unchanged.
+
 ## Scope
 
 This corrective implementation changes only the Tà Xùa Trip homepage Hero and its immediately attached trust strip. It does not redesign the later homepage sections, change accommodation records, create a new commercial domain, or start V2 Phase 4.

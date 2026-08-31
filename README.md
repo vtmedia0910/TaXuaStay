@@ -14,6 +14,8 @@ Migrations 001–008 and their historical phase documents are the **Legacy Found
 
 **V2 Phase 2.5 — Master Brand + Public UX Migration** is implemented without a database migration. **V2 Phase 2.6 — CMS, Media & Content Operations** is implemented by migrations 011–014. **V2 Phase 2.6H — CMS Admin UX + Publishing Hardening** adds the visual section editor/media library and migration 015. **V2 Phase 3 — Supplier + Partner Foundation** is implemented by migration 016 and the private Supplier Admin; **V2 Phase 3H — Supplier Lifecycle Hardening** is implemented by corrective migration 017; **V2 Phase 4 — Commercial Economics** is implemented by migrations 018–020 and `/admin/economics`. `/stay` is canonical; compatibility routes remain available. V2 Phase 5 — Motorbike Integration has not been started.
 
+The focused **Mobile Hero Experience** keeps the accepted desktop Hero from 1024 px, while smaller viewports use a photography-first campaign layout and an accessible search bottom sheet. Both layouts reuse the existing CMS media/focal-point pipeline and `/stay` search semantics. This application-only UX pass adds no migration and does not start V2 Phase 5.
+
 ## Local development
 
 ```bash

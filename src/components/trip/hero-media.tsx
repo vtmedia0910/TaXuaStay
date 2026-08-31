@@ -65,7 +65,7 @@ export function HeroMedia({
   return (
     <picture className="absolute inset-0 block" style={style}>
       <source
-        media="(min-width: 768px)"
+        media="(min-width: 1024px)"
         srcSet={desktopProps?.srcSet ?? TRANSPARENT_PIXEL}
         sizes="100vw"
       />

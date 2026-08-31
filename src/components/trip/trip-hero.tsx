@@ -2,6 +2,7 @@ import { BookOpen, Heart, ShieldCheck } from "lucide-react";
 import { HeroMedia } from "@/components/trip/hero-media";
 import { HeroSearch } from "@/components/trip/hero-search";
 import { HeroTrustStrip } from "@/components/trip/hero-trust-strip";
+import { MobileHeroSearch } from "@/components/trip/mobile-hero-search";
 import type { CmsSection } from "@/features/cms/types";
 
 const brandValues = [
@@ -22,11 +23,16 @@ export function TripHero({ hero }: { hero: CmsSection | undefined }) {
         <div className="trip-home-hero-content">
           <div className="trip-home-hero-copy">
             <h1 id="trip-hero-title">TÀ XÙA TRIP</h1>
-            <p className="trip-home-hero-slogan">Đi thật. Biết trước.</p>
+            <p className="trip-home-hero-slogan"><span>Đi thật.</span> <span>Biết trước.</span></p>
             <p className="trip-home-hero-tagline">Tà Xùa, trước khi bạn đến.</p>
-            <p className="trip-home-hero-support">
+            <p className="trip-home-hero-support trip-desktop-hero-support">
               Thông tin thật về nơi ở, hành trình và trải nghiệm — để bạn biết rõ trước khi lên đường.
             </p>
+            <p className="trip-home-hero-support trip-mobile-hero-support">
+              Thông tin thật về nơi ở và hành trình — để bạn biết rõ trước khi lên đường.
+            </p>
+
+            <div className="trip-mobile-hero-search"><MobileHeroSearch /></div>
 
             <div className="trip-home-hero-values" aria-label="Giá trị thương hiệu">
               {brandValues.map(({ Icon, title, copy }) => (
@@ -36,9 +42,10 @@ export function TripHero({ hero }: { hero: CmsSection | undefined }) {
                 </div>
               ))}
             </div>
+            <p className="trip-mobile-scroll-cue" aria-hidden="true">↓ Vuốt để khám phá</p>
           </div>
 
-          <div className="trip-home-hero-search-wrap">
+          <div className="trip-home-hero-search-wrap trip-desktop-hero-search">
             <HeroSearch />
           </div>
         </div>
