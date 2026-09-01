@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAIConfigurationError, getAIProviderConfig } from "@/features/ai/config";
+import { getAIConfigurationError } from "@/features/ai/config";
 import { createAIControlStore, type AIControlStore } from "@/features/ai/control-store";
 import { estimateAIUsageCostMicros } from "@/features/ai/cost";
 import { createAIProviderAdapter } from "@/features/ai/provider";
@@ -7,6 +7,7 @@ import { runAssistant } from "@/features/ai/engine";
 import { AssistantError, normalizeAssistantError } from "@/features/ai/errors";
 import { recordAICompletion, recordAIRateLimit, recordAIRequest } from "@/features/ai/metrics";
 import { getAssistantClientIdentity, getAssistantSessionIdentity } from "@/features/ai/rate-limit";
+import { getActiveAIRuntime } from "@/features/ai/runtime/data";
 import { assistantRequestSchema } from "@/features/ai/schema";
 import type { AIErrorCode, AIProviderUsage } from "@/features/ai/types";
 
@@ -44,9 +45,13 @@ export async function POST(request: Request) {
     const parsed = assistantRequestSchema.safeParse(parsedJson);
     if (!parsed.success) throw new AssistantError("AI_BAD_REQUEST", 400);
 
-    const config = getAIProviderConfig();
+    const resolvedRuntime = await getActiveAIRuntime();
+    const config = resolvedRuntime.config;
     const configurationError = getAIConfigurationError(config);
     if (configurationError) throw new AssistantError(configurationError, 503);
+    if (!resolvedRuntime.runtime || !resolvedRuntime.compiledPrompt) {
+      throw new AssistantError("AI_NOT_CONFIGURED", 503);
+    }
     const salt = process.env.AI_IDENTITY_HASH_SALT?.trim();
     if (!salt) throw new AssistantError("AI_NOT_CONFIGURED", 503);
     controls = createAIControlStore(config);
@@ -76,12 +81,16 @@ export async function POST(request: Request) {
     const answer = await runAssistant({
       message: parsed.data.message,
       history: parsed.data.history,
-      adapter: createAIProviderAdapter(),
+      adapter: createAIProviderAdapter({
+        provider: resolvedRuntime.runtime.provider,
+        model: resolvedRuntime.runtime.model,
+      }),
       providerTimeoutMs: config.limits.providerTimeoutMs,
       requestTimeoutMs: config.limits.requestTimeoutMs,
       maxOutputTokens: config.limits.maxOutputTokens,
       safetyIdentifier: getAssistantSessionIdentity(parsed.data.sessionId, salt)
         ?? getAssistantClientIdentity(request.headers, salt),
+      systemPrompt: resolvedRuntime.compiledPrompt,
     });
     usage = answer.usage;
     toolCalls = answer.toolCalls;

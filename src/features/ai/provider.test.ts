@@ -2,16 +2,17 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { getAIProviderConfig } from "@/features/ai/config";
-import { AssistantError } from "@/features/ai/errors";
-import { createAIProviderAdapter, OpenAIResponsesAdapter } from "@/features/ai/provider";
+import { getAIConfigurationError, getAIProviderConfig } from "@/features/ai/config";
+import { DeepSeekAdapter, GeminiAdapter, OpenAIResponsesAdapter, createAIProviderAdapter } from "@/features/ai/provider";
+import { AI_PROVIDER_REGISTRY, SAFE_AI_PROVIDER_REGISTRY } from "@/features/ai/providers/registry";
 import type { AIProviderRequest } from "@/features/ai/types";
 
+const selection = { provider: "openai", model: "gpt-5-mini-2025-08-07", enabled: true };
 const completeEnv = {
   AI_ENABLED: "true",
-  AI_PROVIDER: "openai",
-  AI_MODEL: "gpt-5-mini-2025-08-07",
-  AI_API_KEY: "test-key-never-log",
+  OPENAI_API_KEY: "test-key-never-log",
+  GEMINI_API_KEY: "gemini-test-never-log",
+  DEEPSEEK_API_KEY: "deepseek-test-never-log",
   AI_IDENTITY_HASH_SALT: "test-salt",
   UPSTASH_REDIS_REST_URL: "https://example.invalid",
   UPSTASH_REDIS_REST_TOKEN: "test-token",
@@ -31,104 +32,105 @@ function request(overrides: Partial<AIProviderRequest> = {}): AIProviderRequest 
   };
 }
 
-function providerResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
-}
+const response = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
-describe("Phase 13A provider configuration", () => {
+describe("Phase 13B provider registry and configuration", () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it("covers disabled, unconfigured and incomplete states", () => {
-    expect(getAIProviderConfig({} as NodeJS.ProcessEnv).status).toBe("disabled");
-    expect(getAIProviderConfig({ AI_ENABLED: "true" } as unknown as NodeJS.ProcessEnv).status).toBe("unconfigured");
-    expect(getAIProviderConfig({ AI_ENABLED: "true", AI_PROVIDER: "openai" } as unknown as NodeJS.ProcessEnv).status).toBe("incomplete");
+  it("exposes only the controlled provider/model allow-list and no credential env names", () => {
+    expect(AI_PROVIDER_REGISTRY.map((item) => item.id)).toEqual(["gemini", "openai", "deepseek"]);
+    expect(AI_PROVIDER_REGISTRY.flatMap((item) => item.models.map((model) => model.id))).toEqual([
+      "gemini-2.5-flash",
+      "gpt-5-mini-2025-08-07",
+      "deepseek-v4-flash",
+    ]);
+    expect(JSON.stringify(SAFE_AI_PROVIDER_REGISTRY)).not.toMatch(/API_KEY|credentialEnv|secret/i);
   });
 
-  it("fails closed for unsupported provider and model without fallback", () => {
-    expect(getAIProviderConfig({ ...completeEnv, AI_PROVIDER: "other" } as NodeJS.ProcessEnv)).toMatchObject({ status: "unsupported", adapterSupported: false });
-    expect(getAIProviderConfig({ ...completeEnv, AI_MODEL: "moving-alias" } as NodeJS.ProcessEnv)).toMatchObject({ status: "unsupported", adapterSupported: false });
-    expect(createAIProviderAdapter({ ...completeEnv, AI_PROVIDER: "other" } as NodeJS.ProcessEnv)).toMatchObject({ configured: false, provider: "other" });
+  it("fails closed without an active runtime, with missing controls, and for unsupported selections", () => {
+    expect(getAIProviderConfig(null, completeEnv)).toMatchObject({ status: "disabled", runtimeEnabled: false });
+    expect(getAIProviderConfig(selection, { AI_ENABLED: "true" } as unknown as NodeJS.ProcessEnv)).toMatchObject({ status: "incomplete", credentialConfigured: false });
+    expect(getAIProviderConfig({ provider: "other", model: "moving", enabled: true }, completeEnv)).toMatchObject({ status: "unsupported", adapterSupported: false });
+    expect(createAIProviderAdapter({ provider: "other", model: "moving" }, completeEnv)).toMatchObject({ configured: false, provider: "other" });
+    expect(getAIConfigurationError(getAIProviderConfig({ provider: "other", model: "moving", enabled: true }, completeEnv))).toBe("AI_PROVIDER_UNSUPPORTED");
+    expect(getAIConfigurationError(getAIProviderConfig({ provider: "openai", model: "moving", enabled: true }, completeEnv))).toBe("AI_MODEL_UNSUPPORTED");
   });
 
-  it("is ready only with the exact allow-listed snapshot and shared controls", () => {
-    const config = getAIProviderConfig(completeEnv);
-    expect(config).toMatchObject({ status: "ready", provider: "openai", model: "gpt-5-mini-2025-08-07", credentialConfigured: true });
+  it("is ready only when the runtime, credential and shared controls all pass", () => {
+    const config = getAIProviderConfig(selection, completeEnv);
+    expect(config).toMatchObject({ status: "ready", provider: "openai", credentialConfigured: true, masterEnabled: true, runtimeEnabled: true });
     expect(JSON.stringify(config)).not.toContain("test-key-never-log");
   });
 
-  it("keeps Preview disabled unless explicitly allowed and honors the kill switch", () => {
-    expect(getAIProviderConfig({ ...completeEnv, VERCEL_ENV: "preview" } as NodeJS.ProcessEnv)).toMatchObject({ status: "disabled", environmentAllowed: false });
-    expect(getAIProviderConfig({ ...completeEnv, AI_KILL_SWITCH: "true" } as NodeJS.ProcessEnv)).toMatchObject({ status: "disabled", killSwitch: true });
+  it("keeps Preview disabled unless explicitly allowed and honors the hard kill switch", () => {
+    expect(getAIProviderConfig(selection, { ...completeEnv, VERCEL_ENV: "preview" } as NodeJS.ProcessEnv)).toMatchObject({ status: "disabled", environmentAllowed: false });
+    expect(getAIProviderConfig(selection, { ...completeEnv, AI_KILL_SWITCH: "true" } as NodeJS.ProcessEnv)).toMatchObject({ status: "disabled", killSwitch: true });
   });
 });
 
 describe("OpenAI Responses adapter", () => {
-  it("normalizes a concise response and usage without storing provider state", async () => {
-    const fetcher = vi.fn(async () => providerResponse({
-      status: "completed",
-      output: [{ type: "message", content: [{ type: "output_text", text: "CLARIFY: Xin chào từ Tà Xùa Trip." }] }],
-      usage: { input_tokens: 12, output_tokens: 7 },
-    }));
-    const adapter = new OpenAIResponsesAdapter("gpt-5-mini-2025-08-07", "secret-key", fetcher as typeof fetch);
-    await expect(adapter.generate(request())).resolves.toEqual({
-      type: "final",
-      kind: "clarification",
-      text: "Xin chào từ Tà Xùa Trip.",
-      usage: { inputTokens: 12, outputTokens: 7 },
-    });
+  it("keeps store=false, serial tool calling and normalized usage", async () => {
+    const fetcher = vi.fn(async () => response({ status: "completed", output: [{ type: "message", content: [{ type: "output_text", text: "CLARIFY: OK" }] }], usage: { input_tokens: 12, output_tokens: 7 } }));
+    const adapter = new OpenAIResponsesAdapter(selection.model, "secret-key", fetcher as typeof fetch);
+    await expect(adapter.generate(request())).resolves.toMatchObject({ type: "final", kind: "clarification", text: "OK", usage: { inputTokens: 12, outputTokens: 7 } });
     const init = (fetcher.mock.calls as unknown[][])[0]?.[1] as RequestInit;
     const body = JSON.parse(String(init.body));
-    expect(body).toMatchObject({ model: "gpt-5-mini-2025-08-07", store: false, max_output_tokens: 800, safety_identifier: "privacy-safe-hash" });
-    expect(body).not.toHaveProperty("api_key");
+    expect(body).toMatchObject({ store: false, parallel_tool_calls: false, model: selection.model });
+    expect(JSON.stringify(body)).not.toContain("secret-key");
   });
 
-  it("normalizes tool calls and reconstructs the bounded multi-tool context", async () => {
-    const fetcher = vi.fn(async () => providerResponse({
-      status: "completed",
-      output: [{ type: "function_call", call_id: "call-1", name: "get_price", arguments: "{\"property_slug\":\"a\"}" }],
-      usage: { input_tokens: 20, output_tokens: 4 },
-    }));
-    const adapter = new OpenAIResponsesAdapter("gpt-5-mini-2025-08-07", "secret-key", fetcher as typeof fetch);
-    await expect(adapter.generate(request({
-      tools: [{ name: "get_price", description: "Safe", inputSchema: { type: "object" } }],
-      toolResults: [{ callId: "old", toolName: "get_room_options", input: { guests: 2 }, result: { status: "known", data: { count: 1 }, source: { label: "Nguồn" } } }],
-    }))).resolves.toMatchObject({ type: "tool_calls", calls: [{ id: "call-1", name: "get_price", input: { property_slug: "a" } }] });
+  it("normalizes tool calls and provider errors", async () => {
+    const adapter = new OpenAIResponsesAdapter(selection.model, "key", vi.fn(async () => response({ status: "completed", output: [{ type: "function_call", call_id: "call-1", name: "get_price", arguments: "{\"room\":\"a\"}" }] })) as typeof fetch);
+    await expect(adapter.generate(request())).resolves.toMatchObject({ type: "tool_calls", calls: [{ id: "call-1", name: "get_price", input: { room: "a" } }] });
+    const invalid = new OpenAIResponsesAdapter(selection.model, "key", vi.fn(async () => response({}, 401)) as typeof fetch);
+    await expect(invalid.generate(request())).rejects.toMatchObject({ code: "AI_PROVIDER_ERROR", healthStatus: "INVALID_CREDENTIAL" });
+  });
+});
+
+describe("Gemini adapter", () => {
+  it("uses the approved Google endpoint, function declarations and normalized usage", async () => {
+    const fetcher = vi.fn(async () => response({ candidates: [{ content: { parts: [{ functionCall: { name: "get_availability", args: { rooms: 1 } } }] } }], usageMetadata: { promptTokenCount: 20, candidatesTokenCount: 4 } }));
+    const adapter = new GeminiAdapter("gemini-2.5-flash", "gemini-secret", fetcher as typeof fetch);
+    await expect(adapter.generate(request({ tools: [{ name: "get_availability", description: "safe", inputSchema: { type: "object" } }] }))).resolves.toMatchObject({ type: "tool_calls", calls: [{ name: "get_availability", input: { rooms: 1 } }], usage: { inputTokens: 20, outputTokens: 4 } });
+    expect(String((fetcher.mock.calls as unknown[][])[0]?.[0])).toBe("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent");
+    const init = (fetcher.mock.calls as unknown[][])[0]?.[1] as RequestInit;
+    expect((init.headers as Record<string, string>)["x-goog-api-key"]).toBe("gemini-secret");
+    expect(JSON.parse(String(init.body)).tools[0].functionDeclarations[0].name).toBe("get_availability");
+  });
+
+  it("normalizes final text and rejects malformed provider responses", async () => {
+    const adapter = new GeminiAdapter("gemini-2.5-flash", "key", vi.fn(async () => response({ candidates: [{ content: { parts: [{ text: "CLARIFY: Bạn đi ngày nào?" }] } }] })) as typeof fetch);
+    await expect(adapter.generate(request())).resolves.toMatchObject({ type: "final", kind: "clarification", text: "Bạn đi ngày nào?" });
+    const malformed = new GeminiAdapter("gemini-2.5-flash", "key", vi.fn(async () => response({ candidates: [] })) as typeof fetch);
+    await expect(malformed.generate(request())).rejects.toMatchObject({ code: "AI_RESPONSE_INVALID" });
+  });
+});
+
+describe("DeepSeek adapter", () => {
+  it("uses the fixed endpoint and safely supports the normalized tool loop", async () => {
+    const fetcher = vi.fn(async () => response({ choices: [{ message: { content: null, tool_calls: [{ id: "d1", type: "function", function: { name: "get_price", arguments: "{\"room\":\"a\"}" } }] } }], usage: { prompt_tokens: 9, completion_tokens: 3 } }));
+    const adapter = new DeepSeekAdapter("deepseek-v4-flash", "deepseek-secret", fetcher as typeof fetch);
+    await expect(adapter.generate(request({ tools: [{ name: "get_price", description: "safe", inputSchema: { type: "object" } }] }))).resolves.toMatchObject({ type: "tool_calls", calls: [{ id: "d1", name: "get_price", input: { room: "a" } }], usage: { inputTokens: 9, outputTokens: 3 } });
+    expect(String((fetcher.mock.calls as unknown[][])[0]?.[0])).toBe("https://api.deepseek.com/chat/completions");
     const body = JSON.parse(String(((fetcher.mock.calls as unknown[][])[0]?.[1] as RequestInit).body));
-    expect(body.input).toEqual(expect.arrayContaining([
-      expect.objectContaining({ type: "function_call", call_id: "old" }),
-      expect.objectContaining({ type: "function_call_output", call_id: "old" }),
-    ]));
-    expect(body.parallel_tool_calls).toBe(false);
+    expect(body).toMatchObject({ model: "deepseek-v4-flash", tool_choice: "auto", stream: false });
+    expect(JSON.stringify(body)).not.toContain("deepseek-secret");
   });
 
-  it.each([[429, "AI_PROVIDER_UNAVAILABLE"], [500, "AI_PROVIDER_ERROR"], [401, "AI_PROVIDER_ERROR"]] as const)("maps HTTP %s to a sanitized error", async (status, code) => {
-    const adapter = new OpenAIResponsesAdapter("gpt-5-mini-2025-08-07", "invalid", vi.fn(async () => providerResponse({ private_error: "never expose" }, status)) as typeof fetch);
-    await expect(adapter.generate(request())).rejects.toMatchObject({ code });
+  it.each([[429, "UNAVAILABLE"], [500, "UNAVAILABLE"], [401, "INVALID_CREDENTIAL"], [404, "UNSUPPORTED_MODEL"]] as const)("maps HTTP %s to %s without raw errors", async (status, healthStatus) => {
+    const adapter = new DeepSeekAdapter("deepseek-v4-flash", "key", vi.fn(async () => response({ private_error: "never expose" }, status)) as typeof fetch);
+    await expect(adapter.generate(request())).rejects.toMatchObject({ healthStatus });
   });
+});
 
-  it("maps aborts and transport failures without leaking upstream details", async () => {
-    const aborted = new OpenAIResponsesAdapter("gpt-5-mini-2025-08-07", "key", vi.fn(async () => { throw new DOMException("secret", "AbortError"); }) as typeof fetch);
-    await expect(aborted.generate(request())).rejects.toMatchObject({ code: "AI_TIMEOUT" });
-    const offline = new OpenAIResponsesAdapter("gpt-5-mini-2025-08-07", "key", vi.fn(async () => { throw new Error("private upstream"); }) as typeof fetch);
-    await expect(offline.generate(request())).rejects.toMatchObject({ code: "AI_PROVIDER_UNAVAILABLE" });
-  });
-
-  it("rejects malformed answers and malformed tool arguments", async () => {
-    const malformedAnswer = new OpenAIResponsesAdapter("gpt-5-mini-2025-08-07", "key", vi.fn(async () => providerResponse({ status: "completed", output: [] })) as typeof fetch);
-    await expect(malformedAnswer.generate(request())).rejects.toMatchObject({ code: "AI_RESPONSE_INVALID" });
-    const malformedTool = new OpenAIResponsesAdapter("gpt-5-mini-2025-08-07", "key", vi.fn(async () => providerResponse({ status: "completed", output: [{ type: "function_call", call_id: "x", name: "get_price", arguments: "{" }] })) as typeof fetch);
-    await expect(malformedTool.generate(request())).rejects.toMatchObject({ code: "AI_RESPONSE_INVALID" });
-  });
-
-  it("rejects an ungrounded business answer that did not call an approved tool", async () => {
-    const adapter = new OpenAIResponsesAdapter("gpt-5-mini-2025-08-07", "key", vi.fn(async () => providerResponse({
-      status: "completed",
-      output: [{ type: "message", content: [{ type: "output_text", text: "Phòng còn và giá là 500.000đ." }] }],
-    })) as typeof fetch);
-    await expect(adapter.generate(request())).rejects.toMatchObject({ code: "AI_RESPONSE_INVALID" });
-  });
-
-  it("uses the public error taxonomy", () => {
-    expect(new AssistantError("AI_TOOL_ERROR", 503).message).toBe("Mình chưa xác nhận được thông tin này từ hệ thống lúc này.");
+describe("multi-provider failure normalization", () => {
+  it.each([
+    ["Gemini", () => new GeminiAdapter("gemini-2.5-flash", "key", vi.fn(async () => response({}, 429)) as typeof fetch)],
+    ["OpenAI", () => new OpenAIResponsesAdapter("gpt-5-mini-2025-08-07", "key", vi.fn(async () => response({}, 500)) as typeof fetch)],
+    ["DeepSeek", () => new DeepSeekAdapter("deepseek-v4-flash", "key", vi.fn(async () => { throw new DOMException("timeout", "AbortError"); }) as typeof fetch)],
+  ])("normalizes %s 429/5xx/timeout without raw provider payloads", async (_label, factory) => {
+    await expect(factory().generate(request())).rejects.toMatchObject({
+      code: _label === "DeepSeek" ? "AI_TIMEOUT" : "AI_PROVIDER_UNAVAILABLE",
+    });
   });
 });

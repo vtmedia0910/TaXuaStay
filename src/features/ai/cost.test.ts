@@ -12,6 +12,8 @@ describe("Phase 13A provider-aware cost estimation", () => {
 
   it("returns null rather than inventing cost for unknown or malformed usage", () => {
     expect(estimateAIUsageCostMicros("other", "model", { inputTokens: 1, outputTokens: 1 })).toBeNull();
+    expect(estimateAIUsageCostMicros("gemini", "gemini-2.5-flash", { inputTokens: 1, outputTokens: 1 })).toBeNull();
+    expect(estimateAIUsageCostMicros("deepseek", "deepseek-v4-flash", { inputTokens: 1, outputTokens: 1 })).toBeNull();
     expect(estimateAIUsageCostMicros("openai", "gpt-5-mini-2025-08-07", { inputTokens: 1 })).toBeNull();
     expect(estimateAIUsageCostMicros("openai", "gpt-5-mini-2025-08-07", { inputTokens: -1, outputTokens: 1 })).toBeNull();
   });

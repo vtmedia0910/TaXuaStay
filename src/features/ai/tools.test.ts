@@ -8,6 +8,7 @@ import { ASSISTANT_TOOL_NAMES, createAssistantToolRegistry, PUBLIC_CMS_PAGE_ALLO
 
 describe("Phase 13 allow-listed read-only tools", () => {
   it("exposes exactly the nine approved tools and only published CMS pages", () => {
+    expect(ASSISTANT_TOOL_NAMES).toHaveLength(9);
     expect([...createAssistantToolRegistry().keys()]).toEqual(ASSISTANT_TOOL_NAMES);
     expect(PUBLIC_CMS_PAGE_ALLOWLIST).toEqual(["home", "stay", "verified", "footer", "faq"]);
     expect(ASSISTANT_TOOL_NAMES.every((name) => !/create|update|cancel|send|mark|refund/i.test(name))).toBe(true);

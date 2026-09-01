@@ -7,11 +7,9 @@ import { budgetState, UpstashAIControlStore } from "@/features/ai/control-store"
 import { getAssistantClientIdentity, getAssistantSessionIdentity, hashAssistantIdentity } from "@/features/ai/rate-limit";
 
 function readyConfig() {
-  return getAIProviderConfig({
+  return getAIProviderConfig({ provider: "openai", model: "gpt-5-mini-2025-08-07", enabled: true }, {
     AI_ENABLED: "true",
-    AI_PROVIDER: "openai",
-    AI_MODEL: "gpt-5-mini-2025-08-07",
-    AI_API_KEY: "test-only",
+    OPENAI_API_KEY: "test-only",
     AI_IDENTITY_HASH_SALT: "test-salt",
     UPSTASH_REDIS_REST_URL: "https://example.invalid",
     UPSTASH_REDIS_REST_TOKEN: "test-only",

@@ -1,5 +1,7 @@
 # V2 Phase 13A — AI Provider Activation & Cost Hardening
 
+> Historical implementation record: Phase 13B supersedes the single-provider environment contract below. Current provider-specific variables, runtime activation and owner steps are documented in `docs/V2_PHASE_13B_MULTI_PROVIDER_AI_BEHAVIOR_STUDIO.md`. Phase 13A's shared Upstash, budget, timeout and kill-switch controls remain authoritative.
+
 Status: application implementation complete with paid inference disabled by default. Live provider activation remains gated on owner-created server-only Vercel/OpenAI/Upstash configuration, an explicit Admin health check, and a controlled read-only Production smoke. No database migration is used.
 
 ## Locked scope

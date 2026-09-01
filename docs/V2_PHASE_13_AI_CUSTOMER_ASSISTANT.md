@@ -1,5 +1,7 @@
 # V2 Phase 13 — AI Customer Assistant
 
+> Foundation record: Phase 13B supersedes the single-provider configuration notes below while preserving the same nine read-only tools and safety boundary. See `docs/V2_PHASE_13B_MULTI_PROVIDER_AI_BEHAVIOR_STUDIO.md` for the current runtime contract.
+
 Status: locked read-only foundation. Phase 13A now supplies the approved provider adapter and distributed cost controls, but paid inference remains disabled until the owner completes the server-only activation checklist and an explicit Admin health check passes. No database migration.
 
 ## Scope

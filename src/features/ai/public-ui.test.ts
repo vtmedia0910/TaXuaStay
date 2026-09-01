@@ -27,12 +27,14 @@ describe("Phase 13 public and Admin UI boundaries", () => {
     const diagnostics = read("src/features/ai/diagnostics.ts");
     const actions = read("src/features/ai/actions.ts");
     expect(admin).toContain('requireAdminUser(["admin"])');
-    expect(admin).toContain("Không hiển thị API key");
-    expect(admin).toContain("Shared safety store");
-    expect(admin).toContain("Kiểm tra provider");
+    expect(admin).toContain("AI Control Center");
+    expect(admin).toContain("Credentials & explicit health");
+    expect(admin).toContain("AI BEHAVIOR STUDIO");
+    expect(admin).toContain("PROMPT LAB");
+    expect(admin).toContain("DRAFT → TEST → ACTIVATE");
     expect(actions).toContain('requireAdminUser(["admin"]');
     expect(actions).toContain("checkAIProviderHealth");
     expect(diagnostics).not.toContain("checkAIProviderHealth");
-    expect(admin).not.toContain("process.env.AI_API_KEY");
+    expect(admin).not.toMatch(/process\.env\.(GEMINI|OPENAI|DEEPSEEK)_API_KEY/);
   });
 });

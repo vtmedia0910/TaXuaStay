@@ -15,6 +15,16 @@ export const AI_ERROR_CODES = [
 ] as const;
 
 export type AIErrorCode = (typeof AI_ERROR_CODES)[number];
+export type AIProviderId = "gemini" | "openai" | "deepseek";
+export type AIProviderHealthStatus =
+  | "NOT_CHECKED"
+  | "CONNECTED"
+  | "TIMEOUT"
+  | "UNAVAILABLE"
+  | "INVALID_CREDENTIAL"
+  | "UNSUPPORTED_MODEL"
+  | "PROVIDER_ERROR"
+  | "BLOCKED";
 export type AIMessageRole = "user" | "assistant";
 
 export interface AIConversationMessage {
@@ -89,6 +99,27 @@ export interface AIProviderAdapter {
   generate(request: AIProviderRequest): Promise<AIProviderResponse>;
 }
 
+export interface AIModelDefinition {
+  id: string;
+  label: string;
+  provider: AIProviderId;
+  enabled: boolean;
+  supportsTools: boolean;
+  pricing?: {
+    inputUsdPerMillion?: number;
+    outputUsdPerMillion?: number;
+  };
+}
+
+export interface AIProviderDefinition {
+  id: AIProviderId;
+  label: string;
+  credentialEnv: "GEMINI_API_KEY" | "OPENAI_API_KEY" | "DEEPSEEK_API_KEY";
+  enabled: boolean;
+  supportsTools: boolean;
+  models: readonly AIModelDefinition[];
+}
+
 export interface AIPublicSource {
   label: string;
   href?: string;
@@ -111,6 +142,8 @@ export interface AIProviderConfig {
   rateLimiterConfigured: boolean;
   identitySaltConfigured: boolean;
   enabled: boolean;
+  masterEnabled: boolean;
+  runtimeEnabled: boolean;
   killSwitch: boolean;
   environmentAllowed: boolean;
   limits: {

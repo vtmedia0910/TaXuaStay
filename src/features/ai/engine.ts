@@ -24,8 +24,12 @@ export const AI_REQUEST_TIMEOUT_MS = 18_000;
 export const AI_PROVIDER_TIMEOUT_MS = 12_000;
 
 function mergeUsage(total: AIProviderUsage, next?: AIProviderUsage) {
-  total.inputTokens = (total.inputTokens ?? 0) + (next?.inputTokens ?? 0);
-  total.outputTokens = (total.outputTokens ?? 0) + (next?.outputTokens ?? 0);
+  if (next?.inputTokens !== undefined) {
+    total.inputTokens = (total.inputTokens ?? 0) + next.inputTokens;
+  }
+  if (next?.outputTokens !== undefined) {
+    total.outputTokens = (total.outputTokens ?? 0) + next.outputTokens;
+  }
   if (next?.estimatedCostUsd !== undefined && next.estimatedCostUsd !== null) {
     total.estimatedCostUsd = (total.estimatedCostUsd ?? 0) + next.estimatedCostUsd;
   }
@@ -71,6 +75,7 @@ export async function runAssistant(input: {
   requestTimeoutMs?: number;
   maxOutputTokens?: number;
   safetyIdentifier?: string;
+  systemPrompt?: string;
 }): Promise<AssistantAnswer> {
   const safetyReply = getDeterministicSafetyReply(input.message);
   if (safetyReply) return { answer: safetyReply, sources: [], toolCalls: 0 };
@@ -95,7 +100,7 @@ export async function runAssistant(input: {
     const remaining = (input.requestTimeoutMs ?? AI_REQUEST_TIMEOUT_MS) - elapsed;
     if (remaining <= 0) throw new AssistantError("AI_TIMEOUT", 504);
     const response: AIProviderResponse = await generateWithTimeout(input.adapter, {
-      systemPrompt: AI_SYSTEM_PROMPT,
+      systemPrompt: input.systemPrompt ?? AI_SYSTEM_PROMPT,
       messages,
       tools: toolDefinitions,
       toolResults,

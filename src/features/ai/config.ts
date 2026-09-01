@@ -1,9 +1,11 @@
 import "server-only";
 
+import {
+  getAIProviderDefinition,
+  getProviderCredential,
+  isAISelectionActivatable,
+} from "@/features/ai/providers/registry";
 import type { AIProviderConfig } from "@/features/ai/types";
-
-export const APPROVED_AI_PROVIDER = "openai";
-export const APPROVED_AI_MODEL = "gpt-5-mini-2025-08-07";
 
 function enabled(value: string | undefined) {
   return value?.trim().toLowerCase() === "true";
@@ -20,22 +22,30 @@ function usdMicros(value: string | undefined, fallbackUsd: number, minUsd: numbe
   return Math.round(dollars * 1_000_000);
 }
 
+export interface AIRuntimeSelection {
+  provider: string;
+  model: string;
+  enabled: boolean;
+}
+
 export function getAIProviderConfig(
+  selection: AIRuntimeSelection | null = null,
   environment: NodeJS.ProcessEnv = process.env,
 ): AIProviderConfig {
-  const provider = environment.AI_PROVIDER?.trim() || null;
-  const model = environment.AI_MODEL?.trim() || null;
-  const credentialConfigured = Boolean(environment.AI_API_KEY?.trim());
+  const provider = selection?.provider ?? null;
+  const model = selection?.model ?? null;
+  const credentialConfigured = provider ? Boolean(getProviderCredential(provider, environment)) : false;
   const rateLimiterConfigured = Boolean(
     environment.UPSTASH_REDIS_REST_URL?.trim()
     && environment.UPSTASH_REDIS_REST_TOKEN?.trim(),
   );
   const identitySaltConfigured = Boolean(environment.AI_IDENTITY_HASH_SALT?.trim());
-  const aiEnabled = enabled(environment.AI_ENABLED);
+  const masterEnabled = enabled(environment.AI_ENABLED);
+  const runtimeEnabled = selection?.enabled === true;
   const killSwitch = enabled(environment.AI_KILL_SWITCH);
   const isPreview = environment.VERCEL_ENV === "preview";
   const environmentAllowed = !isPreview || enabled(environment.AI_ALLOW_PREVIEW);
-  const adapterSupported = provider === APPROVED_AI_PROVIDER && model === APPROVED_AI_MODEL;
+  const adapterSupported = Boolean(provider && model && isAISelectionActivatable(provider, model));
   const limits = {
     providerTimeoutMs: integer(environment.AI_PROVIDER_TIMEOUT_MS, 12_000, 3_000, 15_000),
     requestTimeoutMs: integer(environment.AI_REQUEST_TIMEOUT_MS, 18_000, 8_000, 20_000),
@@ -48,7 +58,6 @@ export function getAIProviderConfig(
     monthlyBudgetMicros: usdMicros(environment.AI_MONTHLY_BUDGET_USD, 30, 0.5, 100_000),
     maxRequestReservationMicros: usdMicros(environment.AI_MAX_REQUEST_COST_USD, 0.05, 0.005, 5),
   };
-
   const base = {
     provider,
     model,
@@ -56,13 +65,15 @@ export function getAIProviderConfig(
     adapterSupported,
     rateLimiterConfigured,
     identitySaltConfigured,
-    enabled: aiEnabled,
+    enabled: masterEnabled && runtimeEnabled,
+    masterEnabled,
+    runtimeEnabled,
     killSwitch,
     environmentAllowed,
     limits,
   };
 
-  if (killSwitch || !aiEnabled || !environmentAllowed) {
+  if (killSwitch || !masterEnabled || !runtimeEnabled || !environmentAllowed) {
     return {
       ...base,
       status: "disabled",
@@ -70,36 +81,34 @@ export function getAIProviderConfig(
         ? "Kill switch đang bật; không có request nào được gửi tới provider."
         : !environmentAllowed
           ? "Preview mặc định bị khóa để không phát sinh paid inference ngoài Production."
-          : "AI_ENABLED đang tắt; không có request nào được gửi tới provider.",
+          : !runtimeEnabled
+            ? "Chưa có runtime ACTIVE được bật cho khách hàng."
+            : "AI_ENABLED đang tắt; runtime ACTIVE vẫn không thể gọi provider.",
     };
   }
-  if (!provider && !model && !credentialConfigured) {
-    return { ...base, status: "unconfigured", message: "Chưa cấu hình provider, model và credential server-only." };
+  if (!provider && !model) {
+    return { ...base, status: "unconfigured", message: "Chưa có runtime ACTIVE." };
+  }
+  if (provider && model && !adapterSupported) {
+    return { ...base, status: "unsupported", message: "Provider/model không nằm trong allow-list có tool calling." };
   }
   if (!provider || !model || !credentialConfigured || !rateLimiterConfigured || !identitySaltConfigured) {
     return {
       ...base,
       status: "incomplete",
-      message: "Cấu hình provider hoặc shared safety store chưa đầy đủ; hệ thống đang khóa an toàn.",
+      message: "Credential provider hoặc shared safety store chưa đầy đủ; hệ thống đang khóa an toàn.",
     };
   }
-  if (provider !== APPROVED_AI_PROVIDER) {
-    return { ...base, status: "unsupported", message: "Provider không nằm trong allow-list Phase 13A." };
-  }
-  if (model !== APPROVED_AI_MODEL) {
-    return { ...base, status: "unsupported", message: "Model không nằm trong allow-list Phase 13A." };
-  }
-  return {
-    ...base,
-    status: "ready",
-    message: "Provider, model và shared safety store đã sẵn sàng.",
-  };
+  return { ...base, status: "ready", message: "Runtime, provider và shared safety store đã sẵn sàng." };
 }
 
 export function getAIConfigurationError(config: AIProviderConfig) {
   if (config.status === "ready") return null;
   if (config.status === "disabled") return "AI_DISABLED" as const;
-  if (config.provider && config.provider !== APPROVED_AI_PROVIDER) return "AI_PROVIDER_UNSUPPORTED" as const;
-  if (config.model && config.model !== APPROVED_AI_MODEL) return "AI_MODEL_UNSUPPORTED" as const;
+  if (config.provider && !config.adapterSupported) {
+    return getAIProviderDefinition(config.provider)
+      ? "AI_MODEL_UNSUPPORTED" as const
+      : "AI_PROVIDER_UNSUPPORTED" as const;
+  }
   return "AI_NOT_CONFIGURED" as const;
 }

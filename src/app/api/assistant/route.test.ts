@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   diagnostics: vi.fn(),
   recordProviderHealth: vi.fn(),
   runAssistant: vi.fn(),
+  getActiveAIRuntime: vi.fn(),
 }));
 
 vi.mock("@/features/ai/control-store", () => ({
@@ -22,9 +23,11 @@ vi.mock("@/features/ai/control-store", () => ({
 }));
 vi.mock("@/features/ai/provider", () => ({ createAIProviderAdapter: () => ({ configured: true }) }));
 vi.mock("@/features/ai/engine", () => ({ runAssistant: mocks.runAssistant }));
+vi.mock("@/features/ai/runtime/data", () => ({ getActiveAIRuntime: mocks.getActiveAIRuntime }));
 
 import { POST } from "@/app/api/assistant/route";
 import { AssistantError } from "@/features/ai/errors";
+import { getAIProviderConfig } from "@/features/ai/config";
 
 const validBody = { message: "Gợi ý phòng cho hai người", history: [], sessionId: "session_identifier_123" };
 
@@ -40,9 +43,7 @@ describe("Phase 13A public assistant API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubEnv("AI_ENABLED", "true");
-    vi.stubEnv("AI_PROVIDER", "openai");
-    vi.stubEnv("AI_MODEL", "gpt-5-mini-2025-08-07");
-    vi.stubEnv("AI_API_KEY", "test-key");
+    vi.stubEnv("OPENAI_API_KEY", "test-key");
     vi.stubEnv("AI_IDENTITY_HASH_SALT", "test-salt");
     vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://example.invalid");
     vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "test-token");
@@ -50,6 +51,11 @@ describe("Phase 13A public assistant API", () => {
     mocks.finalize.mockResolvedValue(undefined);
     mocks.recordBlocked.mockResolvedValue(undefined);
     mocks.runAssistant.mockResolvedValue({ answer: "Kết quả an toàn", sources: [], usage: { inputTokens: 10, outputTokens: 5 }, toolCalls: 0 });
+    mocks.getActiveAIRuntime.mockResolvedValue({
+      runtime: { provider: "openai", model: "gpt-5-mini-2025-08-07", enabled: true, runtimeRevision: 1, profileRevision: 1 },
+      config: getAIProviderConfig({ provider: "openai", model: "gpt-5-mini-2025-08-07", enabled: true }),
+      compiledPrompt: "safe compiled prompt",
+    });
   });
 
   it("returns 200 with private no-store headers and shared accounting", async () => {
@@ -102,6 +108,11 @@ describe("Phase 13A public assistant API", () => {
 
   it("honors the server-side kill switch before shared admission", async () => {
     vi.stubEnv("AI_KILL_SWITCH", "true");
+    mocks.getActiveAIRuntime.mockResolvedValue({
+      runtime: { provider: "openai", model: "gpt-5-mini-2025-08-07", enabled: true },
+      config: getAIProviderConfig({ provider: "openai", model: "gpt-5-mini-2025-08-07", enabled: true }),
+      compiledPrompt: "safe compiled prompt",
+    });
     const response = await POST(request());
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toMatchObject({ error: { code: "AI_DISABLED" } });
