@@ -3,13 +3,15 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const statusPage = readFileSync(resolve(process.cwd(), "src/app/(public)/booking/[bookingCode]/page.tsx"), "utf8");
+const dashboard = readFileSync(resolve(process.cwd(), "src/components/trip/my-trip-dashboard.tsx"), "utf8");
 const card = readFileSync(resolve(process.cwd(), "src/components/trip/checkout-readiness-card.tsx"), "utf8");
 const admin = readFileSync(resolve(process.cwd(), "src/components/admin/booking-checkout-operations.tsx"), "utf8");
 
 describe("Phase 9 public and Admin checkout UX", () => {
   it("keeps customer Booking status noindex and renders the safe readiness DTO", () => {
     expect(statusPage).toMatch(/robots:\s*\{\s*index:\s*false,\s*follow:\s*false,\s*noarchive:\s*true,\s*nocache:\s*true\s*\}/);
-    expect(statusPage).toContain("<CheckoutReadinessCard checkout={booking.checkout}");
+    expect(statusPage).toContain("<MyTripDashboard trip={buildCustomerTripDashboard(booking, settings)}");
+    expect(dashboard).toContain("<CheckoutReadinessCard checkout={trip.checkout}");
   });
 
   it("uses truthful customer copy without a fake payment action", () => {

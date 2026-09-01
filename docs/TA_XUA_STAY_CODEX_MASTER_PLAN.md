@@ -7,7 +7,7 @@
 **Target repository:** `vtmedia0910/TaXuaStay`  
 **Read-only technical reference:** `vtmedia0910/taxuabiker2`  
 **Canonical target file trong repo sau khi áp dụng:** `docs/TA_XUA_STAY_CODEX_MASTER_PLAN.md`
-**Current product state:** Legacy Foundation 001–008 + V2 Phase 1 / migration 009 + V2 Phase 2 / migration 010 + application-only V2 Phase 2.5 + V2 Phase 2.6 / migrations 011–014 + V2 Phase 2.6H / migration 015 + V2 Phase 3 / migration 016 + corrective V2 Phase 3H / migration 017 + V2 Phase 4 / migrations 018–020 + V2 Phase 5 / migrations 021–022 + V2 Phase 6 / migration 023 + application-only V2 Phase 7 + V2 Phase 8 / migrations 024–026 + V2 Phase 9 / migrations 027–028 đã hoàn thành. Phase 9 thêm quote versioning, deposit/cancellation policy, deterministic amount due/readiness và checkout session gắn với quote; provider vẫn `unconfigured`, chưa có Payment transaction/paid state/QR/link/webhook/refund/settlement hoặc full My Trip.
+**Current product state:** Legacy Foundation 001–008 + V2 Phase 1 / migration 009 + V2 Phase 2 / migration 010 + application-only V2 Phase 2.5 + V2 Phase 2.6 / migrations 011–014 + V2 Phase 2.6H / migration 015 + V2 Phase 3 / migration 016 + corrective V2 Phase 3H / migration 017 + V2 Phase 4 / migrations 018–020 + V2 Phase 5 / migrations 021–022 + V2 Phase 6 / migration 023 + application-only V2 Phase 7 + V2 Phase 8 / migrations 024–026 + V2 Phase 9 / migrations 027–028 + V2 Phase 10 / corrective migration 029 đã hoàn thành. Phase 10 nâng route tokenized `/booking/[bookingCode]` thành My Trip mobile-first từ chính Booking/Confirmation/Checkout truth và chỉ chiếu các nhãn xác minh allow-listed từ snapshot bất biến; chưa có Payment transaction/paid state/QR/link/webhook/refund/settlement, customer account hoặc AI Customer Assistant.
 
 ---
 
@@ -3474,9 +3474,10 @@ V2 Phase 6 — Package Commerce / migration 023
 V2 Phase 7 — Trip Finder / application only, no migration
 V2 Phase 8 — Unified Booking + Supplier Confirmation / migrations 024–026
 V2 Phase 9 — Booking Operations + Checkout Readiness / migrations 027–028
+V2 Phase 10 — My Trip + Customer Trip Dashboard / corrective migration 029
 ```
 
-Phase 2.5, Phase 2.6, Phase 2.6H, Phase 3 Supplier/Partner foundation, Phase 3H hardening, Phase 4 Commercial Economics, Phase 5 Motorbike Integration, Phase 6 Package Commerce, Phase 7 Trip Finder, Phase 8 Unified Booking + Supplier Confirmation, and Phase 9 Booking Operations + Checkout Readiness are complete. A later V2 phase requires separate owner authorization.
+Phase 2.5, Phase 2.6, Phase 2.6H, Phase 3 Supplier/Partner foundation, Phase 3H hardening, Phase 4 Commercial Economics, Phase 5 Motorbike Integration, Phase 6 Package Commerce, Phase 7 Trip Finder, Phase 8 Unified Booking + Supplier Confirmation, Phase 9 Booking Operations + Checkout Readiness, and Phase 10 My Trip + Customer Trip Dashboard are complete. A later V2 phase requires separate owner authorization.
 
 ---
 
@@ -3690,6 +3691,8 @@ Phase 7 is complete without a migration through public `/trip-finder`, the pure 
 Phase 8 is complete through additive migration 024 and corrective migrations 025–026, mobile-first `/booking/request`, opaque-token `/booking/[bookingCode]`, and authenticated `/admin/bookings`. One trip creates one Booking with many immutable items; Booking lifecycle and Supplier Confirmation remain separate; every selected Package component participates in confirmation aggregation while component prices never double-count the explicit Package total; browser price/availability/verification is ignored and authoritative facts are re-resolved atomically. PII remains private behind RLS, public status is allow-listed and noindex, events are append-only, runtime still uses only the Publishable key, and Motorbike remains manual/reference without Biker access. No Payment, Deposit, Checkout, Refund, Settlement, hold, full My Trip or Phase 9 was added. See `docs/V2_PHASE_8_UNIFIED_BOOKING_SUPPLIER_CONFIRMATION.md`.
 
 Phase 9 is complete through additive migration 027 and volatility-only corrective migration 028, `phase9-checkout-readiness-v1`, the secure Booking status readiness card and authenticated Admin Booking operations. Booking lifecycle, Supplier Confirmation and Checkout Readiness remain separate; quote and deposit-policy history are versioned and immutable, explicit requote re-resolves current server truth, and stale checkout sessions are invalidated. Missing/stale/conflicting price blocks readiness and stays null; amount due is deterministic; Package authority remains explicit; provider state remains `unconfigured`. No real provider, QR/link, credential, webhook, payment transaction, paid state, refund, payout, settlement or “Mark Paid” action was added. See `docs/V2_PHASE_9_BOOKING_OPERATIONS_CHECKOUT_READINESS.md`.
+
+Phase 10 is complete with narrow corrective migration 029. The existing code-plus-opaque-token `/booking/[bookingCode]` surface is the canonical My Trip experience and projects immutable Booking Item presentation facts, four customer-safe verification fields derived from the immutable snapshot, Supplier Confirmation, current quote/deposit/readiness, customer-safe events and real configured support paths through `CustomerTripDashboardDto`. The RPC returns no raw verification snapshot, PII or private economics; anonymous table grants and RLS remain unchanged. It adds no customer account, duplicate lifecycle, payment behavior or AI. Customer routes remain noindex and outside sitemap. See `docs/V2_PHASE_10_MY_TRIP_CUSTOMER_DASHBOARD.md`.
 
 A later V2 phase has not started and requires separate owner authorization.
 

@@ -52,6 +52,12 @@ export interface PublicBookingStatusItem {
   confirmation_status: ItemConfirmationStatus;
   confirmation_mode: "supplier_manual" | "operator_manual" | "internal_manual" | "not_required";
   quoted_at: string;
+  verification: {
+    room_verified: boolean | null;
+    cloud_view_verified: boolean | null;
+    road_verified: boolean | null;
+    road_grade: "a" | "b" | "c" | "d" | null;
+  };
 }
 
 export interface PublicBookingStatusDto {
@@ -84,7 +90,7 @@ export interface AdminBookingDto extends Omit<PublicBookingStatusDto, "items" | 
   updated_at: string;
 }
 
-export interface AdminBookingItemDto extends PublicBookingStatusItem {
+export interface AdminBookingItemDto extends Omit<PublicBookingStatusItem, "verification"> {
   id: string;
   booking_id: string;
   parent_booking_item_id: string | null;

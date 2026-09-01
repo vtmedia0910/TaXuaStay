@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 const requestPage = readFileSync(resolve(process.cwd(), "src/app/(public)/booking/request/page.tsx"), "utf8");
 const requestForm = readFileSync(resolve(process.cwd(), "src/components/trip/booking-request-form.tsx"), "utf8");
 const statusPage = readFileSync(resolve(process.cwd(), "src/app/(public)/booking/[bookingCode]/page.tsx"), "utf8");
+const myTripDashboard = readFileSync(resolve(process.cwd(), "src/components/trip/my-trip-dashboard.tsx"), "utf8");
 const sitemap = readFileSync(resolve(process.cwd(), "src/features/search/sitemap.ts"), "utf8");
 
 describe("Phase 8 public Booking surfaces", () => {
@@ -19,6 +20,6 @@ describe("Phase 8 public Booking surfaces", () => {
     expect(requestPage).toContain("CHƯA GIỮ CHỖ");
     expect(requestForm).toContain("chưa phải đặt chỗ");
     expect(requestForm).toContain("Chưa có phòng, xe, dịch vụ hay khoản thanh toán nào được giữ");
-    expect(statusPage).toContain("không đồng nghĩa với đã giữ chỗ, đã xác nhận hoặc đã thanh toán");
+    expect(myTripDashboard).toContain("không đồng nghĩa với đã giữ chỗ, đã xác nhận toàn bộ hoặc đã thanh toán");
   });
 });

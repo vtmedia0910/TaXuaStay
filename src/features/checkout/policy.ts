@@ -9,12 +9,12 @@ import type {
 export const CHECKOUT_POLICY_VERSION = "phase9-checkout-readiness-v1" as const;
 
 export const CHECKOUT_READINESS_LABELS: Record<CheckoutReadinessState, string> = {
-  not_ready: "Chưa sẵn sàng",
+  not_ready: "Chưa sẵn sàng cho bước thanh toán",
   needs_confirmation: "Đang chờ xác nhận dịch vụ",
-  needs_requote: "Cần tạo lại báo giá",
+  needs_requote: "Cần cập nhật báo giá",
   ready: "Sẵn sàng cho bước thanh toán",
-  expired: "Báo giá đã hết hiệu lực",
-  blocked: "Đang bị chặn",
+  expired: "Thông tin thanh toán đã hết hiệu lực",
+  blocked: "Chưa thể tiếp tục",
 };
 
 export const DEPOSIT_POLICY_LABELS: Record<DepositPolicyType, string> = {
