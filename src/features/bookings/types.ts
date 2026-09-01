@@ -129,6 +129,8 @@ export interface AdminBookingConfirmationDto {
   response_note_internal: string | null;
   supplier_snapshot: Record<string, unknown>;
   updated_at: string;
+  telegram_channel_id?: string | null;
+  telegram_channel_status?: "active" | "disabled" | "error" | null;
 }
 
 export interface AdminBookingEventDto {

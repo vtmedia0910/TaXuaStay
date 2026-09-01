@@ -125,7 +125,21 @@ export async function getAdminBooking(id: string): Promise<AdminBookingBundle | 
     ? await client.from("booking_item_confirmations").select("id,booking_item_id,supplier_id,supplier_contact_id,status,confirmation_mode,requested_at,due_at,responded_at,expires_at,last_reminded_at,reminder_count,overdue_event_at,external_reference,response_note_internal,supplier_snapshot,updated_at").in("booking_item_id", itemRows.map((item) => item.id))
     : { data: [], error: null };
   if (confirmationsResult.error) return null;
-  const confirmations = new Map((confirmationsResult.data as unknown as AdminBookingConfirmationDto[]).map((item) => [item.booking_item_id, item]));
+  const rawConfirmations = confirmationsResult.data as unknown as AdminBookingConfirmationDto[];
+  const supplierIds = [...new Set(rawConfirmations.flatMap((item) => item.supplier_id ? [item.supplier_id] : []))];
+  const channelsResult = supplierIds.length
+    ? await client.from("supplier_communication_channels").select("id,supplier_id,status,is_primary").in("supplier_id", supplierIds).eq("is_primary", true)
+    : { data: [], error: null };
+  if (channelsResult.error) return null;
+  const channelBySupplier = new Map((channelsResult.data ?? []).map((item) => [item.supplier_id, item]));
+  const confirmations = new Map(rawConfirmations.map((item) => {
+    const channel = item.supplier_id ? channelBySupplier.get(item.supplier_id) : null;
+    return [item.booking_item_id, {
+      ...item,
+      telegram_channel_id: channel?.id ?? null,
+      telegram_channel_status: channel?.status as AdminBookingConfirmationDto["telegram_channel_status"] ?? null,
+    }];
+  }));
   const items = (itemRows as unknown as Array<AdminBookingItemDto & { display_name_snapshot: string; description_snapshot: string | null; parent_name_snapshot: string | null; confirmation_mode_snapshot: AdminBookingItemDto["confirmation_mode"] }>).map((item) => ({ ...item, display_name: item.display_name_snapshot, description: item.description_snapshot, parent_name: item.parent_name_snapshot, confirmation_mode: item.confirmation_mode_snapshot, confirmation: confirmations.get(item.id) ?? null }));
   return {
     booking: bookingResult.data as unknown as AdminBookingDto,

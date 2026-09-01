@@ -27,6 +27,7 @@ export const ATTENTION_REASON_LABELS: Record<AttentionReason, string> = {
   missing_price: "Thiếu giá",
   missing_supplier_mapping: "Thiếu đầu mối Supplier",
   data_conflict: "Dữ liệu xung đột",
+  supplier_discussion: "Supplier cần trao đổi qua Telegram",
 };
 
 export const PRIORITY_LABELS: Record<PriorityBucket, string> = {
@@ -99,6 +100,7 @@ export function resolveBookingOperations(booking: OperationsBookingFact, now = n
   if (confirmationExpired) pushReason(reasons, "confirmation_expired");
   if (declined || confirmationExpired) pushReason(reasons, "replacement_required");
   if (openChanges.length) pushReason(reasons, "booking_change_requested");
+  if (booking.has_open_telegram_discussion) pushReason(reasons, "supplier_discussion");
 
   if (booking.current_quote?.quote_status === "expired" || (booking.current_quote?.quote_status === "valid" && quoteExpiry && quoteExpiry <= now)) {
     pushReason(reasons, "quote_expired");
@@ -127,13 +129,13 @@ export function resolveBookingOperations(booking: OperationsBookingFact, now = n
   }, 0);
   let priority: PriorityBucket = orderedReasons.length ? "normal" : "low";
   if (declined || confirmationExpired || reasons.has("data_conflict") || maxOverdueMs >= 12 * HOUR || (orderedReasons.length > 0 && tripDistance <= DAY)) priority = "urgent";
-  else if (reasons.has("confirmation_overdue") || reasons.has("needs_requote") || reasons.has("booking_stuck") || reasons.has("booking_change_requested") || (orderedReasons.length > 0 && tripDistance <= 3 * DAY)) priority = "high";
+  else if (reasons.has("confirmation_overdue") || reasons.has("supplier_discussion") || reasons.has("needs_requote") || reasons.has("booking_stuck") || reasons.has("booking_change_requested") || (orderedReasons.length > 0 && tripDistance <= 3 * DAY)) priority = "high";
 
   let nextAction: OperationsNextAction;
   if (reasons.has("booking_change_requested")) nextAction = "REVIEW_CHANGE";
   else if (reasons.has("replacement_required")) nextAction = "REPLACE_ITEM";
   else if (reasons.has("data_conflict") || reasons.has("missing_price") || reasons.has("missing_supplier_mapping")) nextAction = "RESOLVE_DATA";
-  else if (reasons.has("confirmation_overdue")) nextAction = "FOLLOW_UP_CONFIRMATION";
+  else if (reasons.has("confirmation_overdue") || reasons.has("supplier_discussion")) nextAction = "FOLLOW_UP_CONFIRMATION";
   else if (activeItems.some((item) => item.confirmation_status === "pending")) nextAction = "REQUEST_CONFIRMATION";
   else if (reasons.has("needs_requote") || reasons.has("quote_expired") || reasons.has("quote_expiring")) nextAction = "REQUOTE";
   else nextAction = "READY_NO_ACTION";

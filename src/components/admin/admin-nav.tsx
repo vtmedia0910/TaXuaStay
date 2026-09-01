@@ -21,6 +21,7 @@ import {
   Package,
   ClipboardCheck,
   Siren,
+  Bot,
 } from "lucide-react";
 import { logoutAction } from "@/features/admin/auth-actions";
 import type { AdminRole } from "@/features/admin/authz";
@@ -40,6 +41,7 @@ const contentLinks = [
   { label: "Chi phí & biên", href: "/admin/economics", icon: ChartNoAxesCombined },
   { label: "Tình trạng", href: "/admin/availability", icon: CalendarCheck },
   { label: "Nhà cung cấp", href: "/admin/suppliers", icon: Handshake },
+  { label: "Telegram", href: "/admin/integrations/telegram", icon: Bot },
   { label: "Xe máy", href: "/admin/motorbike", icon: Bike },
   { label: "Gói dịch vụ", href: "/admin/packages", icon: Package },
   { label: "Yêu cầu chuyến đi", href: "/admin/bookings", icon: ClipboardCheck },

@@ -17,6 +17,8 @@ import { getAdminPropertyOptions } from "@/features/properties/data";
 import { archiveSupplierAction } from "@/features/suppliers/actions";
 import { getAdminSupplier } from "@/features/suppliers/data";
 import { PARTNER_STATUS_LABELS, PARTNER_TIER_POLICY, SUPPLIER_STATUS_LABELS, SUPPLIER_TYPE_LABELS } from "@/features/suppliers/policy";
+import Link from "next/link";
+import { Bot } from "lucide-react";
 
 export default async function EditSupplierPage({
   params,
@@ -43,6 +45,7 @@ export default async function EditSupplierPage({
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <AdminPageHeader title={supplier.display_name} description={`${supplier.supplier_code} · ${SUPPLIER_TYPE_LABELS[supplier.supplier_type]} · ${SUPPLIER_STATUS_LABELS[supplier.status]}`} />
       <FormFeedback saved={feedback.saved} error={feedback.error} />
+      <Link href={`/admin/integrations/telegram#supplier-${supplier.id}`} className="mb-5 flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-sky/30 bg-sky/5 px-4 font-bold text-pine"><Bot size={18} />Quản lý nhóm Telegram của Supplier</Link>
       {archived ? <p className="mb-5 rounded-2xl bg-amber-50 p-4 text-sm font-bold text-amber-950">Hồ sơ đã lưu trữ. Hãy tái kích hoạt bằng tài khoản Admin trước khi thêm liên hệ hoặc quan hệ đang hiệu lực.</p> : null}
 
       <div className="grid gap-8 pb-12">

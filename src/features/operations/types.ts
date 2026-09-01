@@ -19,6 +19,7 @@ export const ATTENTION_REASONS = [
   "missing_price",
   "missing_supplier_mapping",
   "data_conflict",
+  "supplier_discussion",
 ] as const;
 
 export const PRIORITY_BUCKETS = ["urgent", "high", "normal", "low"] as const;
@@ -122,6 +123,7 @@ export interface OperationsBookingFact {
   change_requests: OperationsChangeRequestFact[];
   current_quote: OperationsQuoteFact | null;
   checkout: CheckoutReadinessDto;
+  has_open_telegram_discussion?: boolean;
 }
 
 export interface AdminOperationsFeed {
