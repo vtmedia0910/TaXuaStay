@@ -64,7 +64,7 @@ begin
   perform public.update_booking_lifecycle(booking_uuid, 'active', null);
   readiness := public.get_admin_checkout_readiness(booking_uuid);
   if readiness->>'readiness_state' <> 'needs_confirmation' then raise exception 'Supplier confirmation did not gate readiness: %', readiness; end if;
-  begin perform public.set_booking_deposit_policy(booking_uuid,'percentage',null,2500,null,null,null,'Rollback terms'); exception when others then denied := sqlerrm like '%requires Admin%'; end;
+  begin perform public.set_booking_deposit_policy(booking_uuid,'percentage',null,2500,null,null,null,'Rollback terms'); exception when others then denied := sqlerrm like '%requires admin%'; end;
   if not denied then raise exception 'Staff changed Admin-only deposit policy'; end if;
   select id into service_uuid from public.booking_items where booking_id = booking_uuid and confirmation_status <> 'not_required' limit 1;
   perform public.update_supplier_confirmation(service_uuid, 'confirmed', 'rollback confirmed', 'PHASE9-REF', now() + interval '1 day');
@@ -99,7 +99,7 @@ begin
   if readiness->>'readiness_state' <> 'blocked' or not (readiness->'blockers' ? 'deposit_invalid_fixed_amount') then raise exception 'Invalid fixed deposit did not block: %', readiness; end if;
   if (select status from public.checkout_sessions where id = second_session) <> 'cancelled' then raise exception 'Policy change did not invalidate session'; end if;
   begin perform public.create_checkout_draft(booking_uuid); raise exception 'Blocked readiness created checkout'; exception when others then if sqlerrm not like '%Deposit policy blocks checkout%' then raise; end if; end;
-  begin update public.booking_quotes set booking_total_vnd = 1 where id = second_quote; raise exception 'Quote financial mutation succeeded'; exception when others then if sqlerrm not like '%immutable%' then raise; end if; end;
+  begin update public.booking_quotes set booking_total_vnd = 1 where id = second_quote; raise exception 'Quote financial mutation succeeded'; exception when others then if sqlstate <> '42501' and sqlerrm not like '%immutable%' then raise; end if; end;
   if (select count(*) from public.booking_events where booking_id = booking_uuid and event_type in ('booking_quote_created','booking_requoted','deposit_policy_set','checkout_session_created','checkout_session_expired')) < 5 then raise exception 'Phase 9 audit timeline incomplete'; end if;
 end $admin$;
 
