@@ -22,6 +22,7 @@ import {
   ClipboardCheck,
   Siren,
   Bot,
+  BrainCircuit,
 } from "lucide-react";
 import { logoutAction } from "@/features/admin/auth-actions";
 import type { AdminRole } from "@/features/admin/authz";
@@ -52,7 +53,10 @@ const cmsLinks = [
   { label: "Media website", href: "/admin/site-media", icon: ImageIcon },
 ] as const;
 
-const adminLinks = [{ label: "Cấu hình", href: "/admin/settings", icon: Settings }] as const;
+const adminLinks = [
+  { label: "AI Assistant", href: "/admin/integrations/ai", icon: BrainCircuit },
+  { label: "Cấu hình", href: "/admin/settings", icon: Settings },
+] as const;
 const publicLink = { label: "Trang chủ", href: "/", icon: ExternalLink } as const;
 
 export function AdminNav({ role }: { role: AdminRole }) {
