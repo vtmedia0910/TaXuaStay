@@ -51,7 +51,7 @@ Motorbike remains manual/reference and no Tà Xùa Biker database/API is accesse
 1. In Telegram, open the verified `@BotFather`, run `/newbot`, choose the display name and username, and keep the returned token private. Do not paste it into chat, Git, docs or a client variable.
 2. In Vercel project `taxuaslay1`, add `TELEGRAM_BOT_TOKEN` to Production and Preview as a sensitive server-only variable.
 3. Generate a random webhook secret (recommended at least 32 random bytes encoded URL-safe) and add it as server-only `TELEGRAM_WEBHOOK_SECRET` to Production and Preview. It is not the Bot Token.
-4. Redeploy. Set the webhook from a trusted local terminal using environment variables, not literal credentials in a committed script. The target URL is `https://<deployed-domain>/api/integrations/telegram/webhook`; call Telegram `setWebhook` with `secret_token` equal to `TELEGRAM_WEBHOOK_SECRET` and `allowed_updates` containing `message` and `callback_query`. Verify with `getWebhookInfo` that the URL is correct and there is no recent error.
+4. Redeploy Production, open Telegram System in Admin, confirm the intended live bot identity and use the Admin-only Production `Cài / sửa webhook` action. It installs `message` and `callback_query` against the stable Vercel project Production endpoint and verifies the result without exposing secrets or dropping pending updates.
 5. Keep BotFather privacy mode enabled; commands and inline callbacks still reach the bot. Do not grant unnecessary group-admin permissions—the bot needs to send its own messages only.
 6. For each Supplier, create one private group. Add only that Supplier's operational people, assigned Tà Xùa Trip staff and the shared bot.
 7. In `/admin/integrations/telegram`, assign primary/backup staff and generate a one-time code.
@@ -60,3 +60,7 @@ Motorbike remains manual/reference and no Tà Xùa Biker database/API is accesse
 10. Reconnect by generating a new code as Admin and running it in the replacement group. Disable the old channel explicitly when it must stop receiving work.
 
 Production currently must remain safely deployable even if Telegram variables are absent: Admin shows unconfigured status, public routes continue working and no message is sent.
+
+## Phase 12H production diagnostics
+
+Application-only Phase 12H adds a live Telegram System card, sanitized `getMe`/`getWebhookInfo`, Admin-only Production `setWebhook`, Preview takeover prevention and bot-rotation guidance without changing migration 033 or any Supplier/chat mapping. Routine webhook repair keeps pending updates and installs only `message` plus `callback_query`. See `docs/V2_PHASE_12H_TELEGRAM_SETUP_DIAGNOSTICS.md`.

@@ -71,6 +71,17 @@ const ERROR_MESSAGES: Record<string, string> = {
   "change-apply": "Không thể áp dụng thay đổi. Yêu cầu phải được Admin duyệt và còn đúng revision.",
   "confirmation-follow-up": "Không thể ghi nhận follow-up. Chỉ xác nhận đang chờ và đúng revision mới được cập nhật.",
   "expiry-process": "Không thể đồng bộ các mốc hết hạn. Không có trạng thái một phần bị che giấu.",
+  "telegram-bot_token_missing": "Bot Token chưa được cấu hình trong Vercel. Không nhập token vào Admin.",
+  "telegram-bot_token_invalid": "Bot Token không hợp lệ hoặc đã bị thu hồi. Hãy cập nhật Vercel và redeploy.",
+  "telegram-telegram_unreachable": "Không thể kết nối Telegram lúc này. Hãy kiểm tra lại sau.",
+  "telegram-telegram_rejected": "Telegram từ chối cài webhook. Hãy kiểm tra bot và cấu hình Production.",
+  "telegram-malformed_response": "Telegram trả về dữ liệu không đúng định dạng mong đợi.",
+  "telegram-webhook_secret_missing": "Webhook Secret chưa được cấu hình trong Vercel.",
+  "telegram-webhook_secret_invalid": "Webhook Secret có ký tự Telegram không hỗ trợ. Hãy tạo secret mới trong Vercel rồi redeploy.",
+  "telegram-production_origin_missing": "Không xác định được Production webhook URL an toàn.",
+  "telegram-preview_install_disabled": "Webhook installation disabled in Preview.",
+  "telegram-post_install_verification_failed": "Telegram đã nhận yêu cầu nhưng webhook sau cài đặt chưa khớp. Hãy kiểm tra lại.",
+  "telegram-setup": "Không thể hoàn tất Telegram setup. Không có secret nào được thay đổi.",
 };
 
 export function FormFeedback({ saved, error }: { saved?: string; error?: string }) {
@@ -97,6 +108,8 @@ export function FormFeedback({ saved, error }: { saved?: string; error?: string 
       "change-applied": "✓ Đã áp dụng thay đổi nguyên tử, lưu lịch sử và đánh giá lại quote/xác nhận.",
       "confirmation-follow-up": "✓ Đã ghi nhận follow-up nội bộ. Hệ thống không tự gửi tin ra ngoài.",
       "expiry-process": "✓ Đã đồng bộ các mốc hết hạn theo dữ liệu hiện có.",
+      "telegram-system-checked": "✓ Đã kiểm tra trực tiếp danh tính bot và webhook hiện tại.",
+      "telegram-webhook-installed": "✓ Đã cài webhook Production và xác minh lại URL cùng allowed updates.",
     };
     return (
       <p className="mb-5 rounded-2xl bg-pine-soft p-3 text-sm font-bold text-success" role="status">

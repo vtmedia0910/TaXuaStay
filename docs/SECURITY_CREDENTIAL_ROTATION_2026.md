@@ -15,7 +15,7 @@
 - Browser, server, Proxy and Admin Auth clients all consume the shared public configuration.
 - Legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` fallback: **NONE**.
 - `SUPABASE_SERVICE_ROLE_KEY` runtime usage: **NONE**.
-- Phase 12 Telegram uses only server-side `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET`; neither is a Supabase credential, database field, client variable or logged value.
+- Phase 12/12H Telegram uses only server-side Vercel `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET`; live bot/webhook diagnostics return allow-listed facts only, and neither secret is a Supabase credential, database field, client variable, Admin input or logged value.
 - `SUPABASE_SECRET_KEY` runtime usage: **NONE**.
 
 ## Environment status

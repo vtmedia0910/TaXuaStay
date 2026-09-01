@@ -1,14 +1,43 @@
 import "server-only";
 
 import { createHash, timingSafeEqual } from "node:crypto";
-import type { TelegramActionType, TelegramClaimedOutbox } from "@/features/telegram/types";
+import type {
+  TelegramActionType,
+  TelegramBotIdentity,
+  TelegramClaimedOutbox,
+  TelegramSafeErrorCode,
+  TelegramSystemDiagnostics,
+  TelegramSystemHealth,
+  TelegramWebhookDiagnostics,
+} from "@/features/telegram/types";
 
 interface TelegramApiEnvelope {
   ok?: boolean;
-  result?: { message_id?: number } | boolean;
+  result?: unknown;
   error_code?: number;
   description?: string;
   parameters?: { retry_after?: number; migrate_to_chat_id?: number };
+}
+
+type TelegramFetch = typeof fetch;
+type TelegramEnvironment = Record<string, string | undefined>;
+type TelegramMethod = "getMe" | "getWebhookInfo" | "setWebhook" | "sendMessage" | "answerCallbackQuery";
+
+const TELEGRAM_ALLOWED_UPDATES = ["message", "callback_query"] as const;
+const TELEGRAM_WEBHOOK_PATH = "/api/integrations/telegram/webhook";
+const WEBHOOK_SECRET_PATTERN = /^[A-Za-z0-9_-]{1,256}$/;
+
+interface TelegramApiCallResult {
+  status: number;
+  body: TelegramApiEnvelope;
+  networkError: boolean;
+}
+
+interface TelegramInstallResult {
+  ok: boolean;
+  errorCode: TelegramSafeErrorCode | null;
+  errorMessage: string | null;
+  diagnostics: TelegramSystemDiagnostics;
 }
 export interface TelegramDeliveryResult {
   accepted: boolean;
@@ -26,6 +55,76 @@ type TelegramButton = { text: string; callback_data: string };
 function serverSecret(name: "TELEGRAM_BOT_TOKEN" | "TELEGRAM_WEBHOOK_SECRET") {
   const value = process.env[name]?.trim();
   return value || null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function sanitizedTelegramText(value: unknown, maximum = 240) {
+  if (typeof value !== "string") return null;
+  const compact = value
+    .replace(/[\u0000-\u001F\u007F]+/g, " ")
+    .replace(/\b\d{5,}:[A-Za-z0-9_-]{20,}\b/g, "[redacted]")
+    .replace(/https:\/\/api\.telegram\.org\/bot[^/\s]+/gi, "[redacted]")
+    .replace(/\s+/g, " ")
+    .trim();
+  return compact ? compact.slice(0, maximum) : null;
+}
+
+function safeWebhookUrl(value: unknown) {
+  if (typeof value !== "string" || !value.trim()) return null;
+  try {
+    const url = new URL(value.trim());
+    if (url.protocol !== "https:" || url.username || url.password || url.hostname.toLowerCase() === "api.telegram.org") return null;
+    url.hash = "";
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+function safeFailure(
+  result: TelegramApiCallResult,
+  fallback: TelegramSafeErrorCode = "telegram_rejected",
+): { errorCode: TelegramSafeErrorCode; errorMessage: string } {
+  if (result.networkError) return { errorCode: "telegram_unreachable", errorMessage: "Không thể kết nối Telegram lúc này." };
+  if (result.status === 401 || result.body.error_code === 401) {
+    return { errorCode: "bot_token_invalid", errorMessage: "Bot Token không hợp lệ hoặc đã bị thu hồi." };
+  }
+  if (result.status >= 500 || (result.body.error_code ?? 0) >= 500) {
+    return { errorCode: "telegram_unreachable", errorMessage: "Telegram tạm thời không phản hồi." };
+  }
+  return {
+    errorCode: fallback,
+    errorMessage: fallback === "malformed_response"
+      ? "Telegram trả về dữ liệu không đúng định dạng mong đợi."
+      : "Telegram từ chối yêu cầu. Hãy kiểm tra cấu hình bot.",
+  };
+}
+
+export function getTelegramDeploymentPolicy(environment: TelegramEnvironment = process.env) {
+  const rawEnvironment = environment.VERCEL_ENV?.trim().toLocaleLowerCase("en");
+  const deploymentEnvironment = rawEnvironment === "production" || rawEnvironment === "preview" || rawEnvironment === "development"
+    ? rawEnvironment
+    : "unknown";
+  const productionHost = environment.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  let expectedWebhookUrl: string | null = null;
+  if (productionHost) {
+    try {
+      const origin = new URL(/^https:\/\//i.test(productionHost) ? productionHost : `https://${productionHost}`);
+      if (origin.protocol === "https:" && !origin.username && !origin.password) {
+        expectedWebhookUrl = new URL(TELEGRAM_WEBHOOK_PATH, `${origin.origin}/`).toString();
+      }
+    } catch {
+      expectedWebhookUrl = null;
+    }
+  }
+  return {
+    deploymentEnvironment,
+    productionInstallEnabled: deploymentEnvironment === "production" && Boolean(expectedWebhookUrl),
+    expectedWebhookUrl,
+  } as const;
 }
 
 export function telegramServerConfigStatus() {
@@ -82,16 +181,21 @@ function sanitizedFailure(status: number, body: TelegramApiEnvelope): Omit<Teleg
   };
 }
 
-async function callTelegramApi(method: "sendMessage" | "answerCallbackQuery", payload: Record<string, unknown>) {
+async function callTelegramApi(
+  method: TelegramMethod,
+  payload: Record<string, unknown> = {},
+  fetchImpl: TelegramFetch = fetch,
+): Promise<TelegramApiCallResult> {
   const token = serverSecret("TELEGRAM_BOT_TOKEN");
   if (!token) return {
     status: 503,
     body: { ok: false, error_code: 503, description: "not configured" } satisfies TelegramApiEnvelope,
+    networkError: false,
   };
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10_000);
   try {
-    const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
+    const response = await fetchImpl(`https://api.telegram.org/bot${token}/${method}`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
@@ -100,15 +204,190 @@ async function callTelegramApi(method: "sendMessage" | "answerCallbackQuery", pa
     });
     let body: TelegramApiEnvelope = {};
     try { body = await response.json() as TelegramApiEnvelope; } catch { body = {}; }
-    return { status: response.status, body };
+    return { status: response.status, body, networkError: false };
   } catch {
     return {
       status: 503,
       body: { ok: false, error_code: 503, description: "network unavailable" } satisfies TelegramApiEnvelope,
+      networkError: true,
     };
   } finally {
     clearTimeout(timeout);
   }
+}
+
+export async function getTelegramBotIdentity(fetchImpl: TelegramFetch = fetch): Promise<TelegramBotIdentity> {
+  if (!serverSecret("TELEGRAM_BOT_TOKEN")) return {
+    configured: false,
+    reachable: false,
+    botId: null,
+    username: null,
+    displayName: null,
+    errorCode: "bot_token_missing",
+    errorMessage: "Bot Token chưa được cấu hình trong Vercel.",
+  };
+  const response = await callTelegramApi("getMe", {}, fetchImpl);
+  if (!response.body.ok) {
+    const failure = safeFailure(response);
+    return { configured: true, reachable: false, botId: null, username: null, displayName: null, ...failure };
+  }
+  const result = response.body.result;
+  if (!isRecord(result) || result.is_bot !== true || typeof result.id !== "number" || !Number.isSafeInteger(result.id)
+    || typeof result.first_name !== "string") {
+    const failure = safeFailure(response, "malformed_response");
+    return { configured: true, reachable: false, botId: null, username: null, displayName: null, ...failure };
+  }
+  return {
+    configured: true,
+    reachable: true,
+    botId: result.id,
+    username: typeof result.username === "string" ? sanitizedTelegramText(result.username, 64) : null,
+    displayName: sanitizedTelegramText(result.first_name, 128),
+    errorCode: null,
+    errorMessage: null,
+  };
+}
+
+export async function getTelegramWebhookDiagnostics(
+  expectedUrl: string | null,
+  fetchImpl: TelegramFetch = fetch,
+): Promise<TelegramWebhookDiagnostics> {
+  const empty = {
+    reachable: false,
+    installed: false,
+    currentUrl: null,
+    expectedUrl,
+    matchesExpectedUrl: false,
+    allowedUpdates: [],
+    allowedUpdatesMatch: false,
+    pendingUpdateCount: 0,
+    lastErrorDate: null,
+    lastErrorMessage: null,
+    maxConnections: null,
+  } satisfies Omit<TelegramWebhookDiagnostics, "errorCode" | "errorMessage">;
+  if (!serverSecret("TELEGRAM_BOT_TOKEN")) return {
+    ...empty,
+    errorCode: "bot_token_missing",
+    errorMessage: "Không thể kiểm tra webhook khi Bot Token còn thiếu.",
+  };
+  const response = await callTelegramApi("getWebhookInfo", {}, fetchImpl);
+  if (!response.body.ok) return { ...empty, ...safeFailure(response) };
+  const result = response.body.result;
+  if (!isRecord(result)) return { ...empty, ...safeFailure(response, "malformed_response") };
+  const currentUrl = safeWebhookUrl(result.url);
+  const allowedUpdates = Array.isArray(result.allowed_updates)
+    ? result.allowed_updates.flatMap((value) => typeof value === "string" ? [value.slice(0, 64)] : []).slice(0, 32)
+    : [];
+  const allowedSet = new Set(allowedUpdates);
+  const allowedUpdatesMatch = allowedSet.size === TELEGRAM_ALLOWED_UPDATES.length
+    && TELEGRAM_ALLOWED_UPDATES.every((value) => allowedSet.has(value));
+  const pendingUpdateCount = typeof result.pending_update_count === "number" && Number.isSafeInteger(result.pending_update_count)
+    ? Math.max(0, result.pending_update_count)
+    : 0;
+  const lastErrorTimestamp = typeof result.last_error_date === "number" && Number.isSafeInteger(result.last_error_date)
+    ? result.last_error_date * 1000
+    : null;
+  return {
+    reachable: true,
+    installed: Boolean(currentUrl),
+    currentUrl,
+    expectedUrl,
+    matchesExpectedUrl: Boolean(currentUrl && expectedUrl && currentUrl === expectedUrl),
+    allowedUpdates,
+    allowedUpdatesMatch,
+    pendingUpdateCount,
+    lastErrorDate: lastErrorTimestamp ? new Date(lastErrorTimestamp).toISOString() : null,
+    lastErrorMessage: sanitizedTelegramText(result.last_error_message),
+    maxConnections: typeof result.max_connections === "number" && Number.isSafeInteger(result.max_connections)
+      ? result.max_connections : null,
+    errorCode: null,
+    errorMessage: null,
+  };
+}
+
+function resolveSystemHealth(
+  configured: ReturnType<typeof telegramServerConfigStatus>,
+  bot: TelegramBotIdentity,
+  webhook: TelegramWebhookDiagnostics,
+  now: number,
+): TelegramSystemHealth {
+  if (!configured.botTokenConfigured || !configured.webhookSecretConfigured) return "missing_config";
+  if (bot.errorCode === "bot_token_invalid") return "bot_invalid";
+  if (!bot.reachable || !webhook.reachable) return "telegram_error";
+  if (!webhook.installed) return "webhook_missing";
+  if (!webhook.matchesExpectedUrl) return "webhook_mismatch";
+  if (!webhook.allowedUpdatesMatch) return "allowed_updates_mismatch";
+  const lastErrorTime = webhook.lastErrorDate ? Date.parse(webhook.lastErrorDate) : Number.NaN;
+  if (Number.isFinite(lastErrorTime) && now - lastErrorTime < 24 * 60 * 60 * 1000) return "telegram_error";
+  if (webhook.pendingUpdateCount > 0) return "pending_updates_attention";
+  return "ready";
+}
+
+export async function getTelegramSystemDiagnostics(options: {
+  fetchImpl?: TelegramFetch;
+  environment?: TelegramEnvironment;
+  now?: number;
+} = {}): Promise<TelegramSystemDiagnostics> {
+  const fetchImpl = options.fetchImpl ?? fetch;
+  const policy = getTelegramDeploymentPolicy(options.environment ?? process.env);
+  const configured = telegramServerConfigStatus();
+  const [bot, webhook] = await Promise.all([
+    getTelegramBotIdentity(fetchImpl),
+    getTelegramWebhookDiagnostics(policy.expectedWebhookUrl, fetchImpl),
+  ]);
+  const now = options.now ?? Date.now();
+  return {
+    ...configured,
+    ...policy,
+    bot,
+    webhook,
+    health: resolveSystemHealth(configured, bot, webhook, now),
+    checkedAt: new Date(now).toISOString(),
+  };
+}
+
+export async function installTelegramWebhook(options: {
+  fetchImpl?: TelegramFetch;
+  environment?: TelegramEnvironment;
+} = {}): Promise<TelegramInstallResult> {
+  const fetchImpl = options.fetchImpl ?? fetch;
+  const environment = options.environment ?? process.env;
+  const policy = getTelegramDeploymentPolicy(environment);
+  const initial = await getTelegramSystemDiagnostics({ fetchImpl, environment });
+  const failure = async (errorCode: TelegramSafeErrorCode, errorMessage: string): Promise<TelegramInstallResult> => ({
+    ok: false,
+    errorCode,
+    errorMessage,
+    diagnostics: initial,
+  });
+  if (policy.deploymentEnvironment !== "production") {
+    return failure("preview_install_disabled", "Webhook installation disabled in Preview.");
+  }
+  if (!policy.expectedWebhookUrl) return failure("production_origin_missing", "Không xác định được Production webhook URL an toàn.");
+  if (!serverSecret("TELEGRAM_BOT_TOKEN")) return failure("bot_token_missing", "Bot Token chưa được cấu hình trong Vercel.");
+  const webhookSecret = serverSecret("TELEGRAM_WEBHOOK_SECRET");
+  if (!webhookSecret) return failure("webhook_secret_missing", "Webhook Secret chưa được cấu hình trong Vercel.");
+  if (!WEBHOOK_SECRET_PATTERN.test(webhookSecret)) {
+    return failure("webhook_secret_invalid", "Webhook Secret có ký tự Telegram không hỗ trợ. Hãy tạo secret mới trong Vercel rồi redeploy.");
+  }
+  if (!initial.bot.reachable) return failure(initial.bot.errorCode ?? "unknown", initial.bot.errorMessage ?? "Không xác minh được bot hiện tại.");
+  const response = await callTelegramApi("setWebhook", {
+    url: policy.expectedWebhookUrl,
+    secret_token: webhookSecret,
+    allowed_updates: [...TELEGRAM_ALLOWED_UPDATES],
+  }, fetchImpl);
+  if (!response.body.ok || response.body.result !== true) {
+    const safe = safeFailure(response, response.body.ok ? "malformed_response" : "telegram_rejected");
+    return failure(safe.errorCode, safe.errorMessage);
+  }
+  const diagnostics = await getTelegramSystemDiagnostics({ fetchImpl, environment });
+  if (!diagnostics.webhook.matchesExpectedUrl || !diagnostics.webhook.allowedUpdatesMatch) return {
+    ok: false,
+    errorCode: "post_install_verification_failed",
+    errorMessage: "Telegram đã nhận yêu cầu nhưng trạng thái webhook sau cài đặt chưa khớp.",
+    diagnostics,
+  };
+  return { ok: true, errorCode: null, errorMessage: null, diagnostics };
 }
 
 function safeText(value: unknown, fallback: string, maximum = 300) {
@@ -184,7 +463,7 @@ export async function sendTelegramOutboxMessage(claim: TelegramClaimedOutbox): P
     disable_web_page_preview: true,
     ...(message.buttons.length ? { reply_markup: { inline_keyboard: message.buttons.map((button) => [button]) } } : {}),
   });
-  const messageId = body.ok && typeof body.result === "object" && typeof body.result.message_id === "number"
+  const messageId = body.ok && isRecord(body.result) && typeof body.result.message_id === "number"
     ? body.result.message_id : null;
   if (body.ok && messageId) return {
     accepted: true, messageId, responseCode: status, errorCode: null,

@@ -277,3 +277,5 @@ Tà Xùa Biker remains a separate repository, database, Auth boundary, deploymen
 ## V2 Phase 12 — Supplier Telegram communication
 
 Phase 12 adds one shared bot, one private group per Supplier, hash-only one-time `/connect` onboarding, staff assignments, a private transactional outbox, webhook `update_id` dedupe and opaque CONFIRM/DECLINE/NEED_DISCUSSION callbacks. Telegram remains transport-only; existing Supplier Confirmation and Phase 11 Operations state remain authoritative. Runtime adds only server-side `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET`; Supabase access remains Publishable-key-only with no service role. See `docs/V2_PHASE_12_SUPPLIER_TELEGRAM_INTEGRATION.md`.
+
+Application-only Phase 12H adds server-only `getMe`, `getWebhookInfo` and Production-gated `setWebhook` diagnostics. The stable webhook origin derives from `VERCEL_PROJECT_PRODUCTION_URL`, never Preview or SEO canonical state. Admin receives only allow-listed bot/webhook facts and safe errors; secrets remain Vercel-only. Bot rotation changes live identity but never Supplier/chat mappings. See `docs/V2_PHASE_12H_TELEGRAM_SETUP_DIAGNOSTICS.md`.

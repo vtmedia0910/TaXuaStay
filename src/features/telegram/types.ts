@@ -8,6 +8,67 @@ export type TelegramAssignmentRole = (typeof TELEGRAM_ASSIGNMENT_ROLES)[number];
 export type TelegramOutboxStatus = (typeof TELEGRAM_OUTBOX_STATUSES)[number];
 export type TelegramActionType = (typeof TELEGRAM_ACTION_TYPES)[number];
 
+export type TelegramSystemHealth =
+  | "ready"
+  | "missing_config"
+  | "bot_invalid"
+  | "webhook_missing"
+  | "webhook_mismatch"
+  | "allowed_updates_mismatch"
+  | "telegram_error"
+  | "pending_updates_attention";
+
+export type TelegramSafeErrorCode =
+  | "bot_token_missing"
+  | "bot_token_invalid"
+  | "telegram_unreachable"
+  | "telegram_rejected"
+  | "malformed_response"
+  | "webhook_secret_missing"
+  | "webhook_secret_invalid"
+  | "production_origin_missing"
+  | "preview_install_disabled"
+  | "post_install_verification_failed"
+  | "unknown";
+
+export interface TelegramBotIdentity {
+  configured: boolean;
+  reachable: boolean;
+  botId: number | null;
+  username: string | null;
+  displayName: string | null;
+  errorCode: TelegramSafeErrorCode | null;
+  errorMessage: string | null;
+}
+
+export interface TelegramWebhookDiagnostics {
+  reachable: boolean;
+  installed: boolean;
+  currentUrl: string | null;
+  expectedUrl: string | null;
+  matchesExpectedUrl: boolean;
+  allowedUpdates: string[];
+  allowedUpdatesMatch: boolean;
+  pendingUpdateCount: number;
+  lastErrorDate: string | null;
+  lastErrorMessage: string | null;
+  maxConnections: number | null;
+  errorCode: TelegramSafeErrorCode | null;
+  errorMessage: string | null;
+}
+
+export interface TelegramSystemDiagnostics {
+  botTokenConfigured: boolean;
+  webhookSecretConfigured: boolean;
+  deploymentEnvironment: "production" | "preview" | "development" | "unknown";
+  productionInstallEnabled: boolean;
+  expectedWebhookUrl: string | null;
+  bot: TelegramBotIdentity;
+  webhook: TelegramWebhookDiagnostics;
+  health: TelegramSystemHealth;
+  checkedAt: string;
+}
+
 export interface TelegramChannelDto {
   id: string;
   supplier_id: string;

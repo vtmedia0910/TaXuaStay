@@ -14,10 +14,27 @@ import {
   telegramWorkerSchema,
 } from "@/features/telegram/schema";
 import type { TelegramConnectionActionState } from "@/features/telegram/types";
+import { getTelegramSystemDiagnostics, installTelegramWebhook } from "@/features/telegram/bot";
 import { processTelegramOutbox } from "@/features/telegram/worker";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const integrationPath = "/admin/integrations/telegram";
+
+function telegramSetupError(code: string | null) {
+  const allowed = new Set([
+    "bot_token_missing",
+    "bot_token_invalid",
+    "telegram_unreachable",
+    "telegram_rejected",
+    "malformed_response",
+    "webhook_secret_missing",
+    "webhook_secret_invalid",
+    "production_origin_missing",
+    "preview_install_disabled",
+    "post_install_verification_failed",
+  ]);
+  return allowed.has(code ?? "") ? `telegram-${code}` : "telegram-setup";
+}
 function refreshTelegram(supplierId?: string, bookingId?: string) {
   revalidatePath(integrationPath);
   if (supplierId) revalidatePath(`/admin/suppliers/${supplierId}/edit`);
@@ -140,4 +157,19 @@ export async function resolveTelegramDiscussionAction(formData: FormData) {
 export async function validateTelegramChannelIdAction(value: unknown) {
   await requireAdminUser();
   return telegramChannelIdSchema.safeParse(value).success;
+}
+
+export async function refreshTelegramSystemAction() {
+  await requireAdminUser(["admin"], `${integrationPath}?error=forbidden`);
+  const diagnostics = await getTelegramSystemDiagnostics();
+  revalidatePath(integrationPath);
+  redirect(`${integrationPath}?saved=telegram-system-checked&health=${diagnostics.health}`);
+}
+
+export async function installTelegramWebhookAction() {
+  await requireAdminUser(["admin"], `${integrationPath}?error=forbidden`);
+  const result = await installTelegramWebhook();
+  revalidatePath(integrationPath);
+  if (!result.ok) redirect(`${integrationPath}?error=${telegramSetupError(result.errorCode)}`);
+  redirect(`${integrationPath}?saved=telegram-webhook-installed`);
 }
