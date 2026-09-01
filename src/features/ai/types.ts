@@ -1,8 +1,14 @@
 export const AI_ERROR_CODES = [
+  "AI_DISABLED",
   "AI_NOT_CONFIGURED",
+  "AI_PROVIDER_UNSUPPORTED",
+  "AI_MODEL_UNSUPPORTED",
   "AI_PROVIDER_UNAVAILABLE",
+  "AI_PROVIDER_ERROR",
   "AI_RATE_LIMITED",
+  "AI_BUDGET_EXHAUSTED",
   "AI_TOOL_ERROR",
+  "AI_TOOL_LIMIT",
   "AI_TIMEOUT",
   "AI_BAD_REQUEST",
   "AI_RESPONSE_INVALID",
@@ -44,6 +50,7 @@ export interface AIToolResult {
 export interface AIProviderUsage {
   inputTokens?: number;
   outputTokens?: number;
+  estimatedCostUsd?: number | null;
 }
 
 export interface AIProviderRequest {
@@ -53,9 +60,12 @@ export interface AIProviderRequest {
   toolResults: Array<{
     callId: string;
     toolName: string;
+    input: unknown;
     result: AIToolResult;
   }>;
   maxOutputCharacters: number;
+  maxOutputTokens: number;
+  safetyIdentifier?: string;
   signal: AbortSignal;
 }
 
@@ -89,12 +99,31 @@ export interface AssistantAnswer {
   answer: string;
   sources: AIPublicSource[];
   usage?: AIProviderUsage;
+  toolCalls: number;
 }
 
 export interface AIProviderConfig {
-  status: "unconfigured" | "incomplete" | "unsupported";
+  status: "disabled" | "unconfigured" | "incomplete" | "unsupported" | "ready";
   provider: string | null;
   model: string | null;
   credentialConfigured: boolean;
+  adapterSupported: boolean;
+  rateLimiterConfigured: boolean;
+  identitySaltConfigured: boolean;
+  enabled: boolean;
+  killSwitch: boolean;
+  environmentAllowed: boolean;
+  limits: {
+    providerTimeoutMs: number;
+    requestTimeoutMs: number;
+    maxOutputTokens: number;
+    perIpPerMinute: number;
+    perSessionPerMinute: number;
+    globalPerMinute: number;
+    dailyRequests: number;
+    dailyBudgetMicros: number;
+    monthlyBudgetMicros: number;
+    maxRequestReservationMicros: number;
+  };
   message: string;
 }

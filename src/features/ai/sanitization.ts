@@ -25,8 +25,9 @@ export function redactUserPII(value: string) {
     .replace(/(?<!\d)(?:\+?84|0)(?:[\s.-]?\d){9,10}(?!\d)/g, "[số điện thoại đã ẩn]");
 }
 
-const FORBIDDEN_QUERY = /(giá\s*nhập|supplier|nhà\s*cung\s*cấp.*(số|điện\s*thoại|email)|margin|contribution|lợi\s*nhuận|service.?role|sb_secret|api.?key|webhook.?secret|telegram.*(token|chat.?id|log)|dump\s+(bảng|table)|\bsql\b|biến\s*môi\s*trường|environment\s*variable|bỏ\s*qua\s*(quy\s*tắc|hướng\s*dẫn))/i;
+const FORBIDDEN_QUERY = /(giá\s*nhập|supplier|nhà\s*cung\s*cấp.*(số|điện\s*thoại|email)|margin|contribution|lợi\s*nhuận|service.?role|sb_secret|api.?key|webhook.?secret|telegram.*(token|chat.?id|log)|dump\s+(bảng|table)|\bsql\b|database|cơ\s*sở\s*dữ\s*liệu|biến\s*môi\s*trường|environment\s*variable|bỏ\s*qua\s*(quy\s*tắc|hướng\s*dẫn))/i;
 const WRITE_QUERY = /(đánh\s*dấu.*(đã\s*)?trả|mark\s*paid|hoàn\s*tiền|refund|gửi\s*telegram|xác\s*nhận\s*nhà\s*cung\s*cấp|hủy\s*booking|sửa\s*booking|tạo\s*booking)/i;
+const GUESS_QUERY = /(không\s*biết|chưa\s*có|unknown).*(đoán|ước\s*lượng).*(giá|tình\s*trạng\s*phòng)|(đoán|ước\s*lượng).*(giá|tình\s*trạng\s*phòng).*(không\s*biết|chưa\s*có|unknown)/i;
 
 export function getDeterministicSafetyReply(message: string) {
   if (FORBIDDEN_QUERY.test(message)) {
@@ -34,6 +35,9 @@ export function getDeterministicSafetyReply(message: string) {
   }
   if (WRITE_QUERY.test(message)) {
     return "Trợ lý này chỉ đọc thông tin và không thể tạo, sửa, hủy Booking, tác động Supplier/Telegram hay xác nhận thanh toán. Vui lòng dùng luồng hiện có hoặc liên hệ đội hỗ trợ Tà Xùa Trip.";
+  }
+  if (GUESS_QUERY.test(message)) {
+    return "Mình không đoán giá hoặc tình trạng phòng khi hệ thống chưa có dữ liệu có thẩm quyền. Giá trị chưa biết vẫn được giữ là chưa xác nhận; bạn có thể thử tìm theo ngày hoặc liên hệ đội hỗ trợ.";
   }
   return null;
 }

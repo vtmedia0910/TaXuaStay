@@ -24,8 +24,15 @@ describe("Phase 13 public and Admin UI boundaries", () => {
 
   it("guards Admin diagnostics with admin role and never renders a key value", () => {
     const admin = read("src/app/admin/(protected)/integrations/ai/page.tsx");
+    const diagnostics = read("src/features/ai/diagnostics.ts");
+    const actions = read("src/features/ai/actions.ts");
     expect(admin).toContain('requireAdminUser(["admin"])');
     expect(admin).toContain("Không hiển thị API key");
+    expect(admin).toContain("Shared safety store");
+    expect(admin).toContain("Kiểm tra provider");
+    expect(actions).toContain('requireAdminUser(["admin"]');
+    expect(actions).toContain("checkAIProviderHealth");
+    expect(diagnostics).not.toContain("checkAIProviderHealth");
     expect(admin).not.toContain("process.env.AI_API_KEY");
   });
 });

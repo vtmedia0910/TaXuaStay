@@ -1,6 +1,6 @@
 # V2 Phase 13 — AI Customer Assistant
 
-Status: implemented as an application-only, read-only foundation. No database migration. No provider was owner-configured during implementation, so the live assistant intentionally fails closed and preserves the rest of the site.
+Status: locked read-only foundation. Phase 13A now supplies the approved provider adapter and distributed cost controls, but paid inference remains disabled until the owner completes the server-only activation checklist and an explicit Admin health check passes. No database migration.
 
 ## Scope
 
@@ -24,7 +24,8 @@ Phase 13 does not add Payment, Booking mutation, Supplier action, Telegram acces
 Browser
   -> POST /api/assistant
   -> strict payload + size validation
-  -> per-IP / per-session / global rate limit
+  -> server kill/environment gate
+  -> shared atomic per-IP / per-session / global rate and budget admission
   -> deterministic private/write-intent refusal
   -> AIProviderAdapter
   -> bounded allow-listed tool loop
@@ -32,7 +33,7 @@ Browser
   -> final plain-text answer
 ```
 
-The browser never calls a model provider directly. Domain logic depends only on the local adapter contract, not a vendor SDK response type. Provider-specific code may be added later only after the owner selects and configures a provider. An absent, partial or unsupported configuration is not guessed: it returns `AI_NOT_CONFIGURED`.
+The browser never calls a model provider directly. Domain logic depends only on the local adapter contract, not a vendor SDK response type. Phase 13A selects exactly OpenAI and the immutable `gpt-5-mini-2025-08-07` snapshot inside `OpenAIResponsesAdapter`. An absent, disabled, partial or unsupported configuration fails closed without silently selecting a fallback.
 
 Server-only environment contract:
 
@@ -40,9 +41,14 @@ Server-only environment contract:
 AI_PROVIDER
 AI_MODEL
 AI_API_KEY
+AI_ENABLED
+AI_KILL_SWITCH
+AI_IDENTITY_HASH_SALT
+UPSTASH_REDIS_REST_URL
+UPSTASH_REDIS_REST_TOKEN
 ```
 
-The current adapter deliberately supports the safe unconfigured state only because no provider credential/provider choice existed at implementation time. `AI_API_KEY` is represented only as present/absent in diagnostics. Its value is never returned, logged, committed, stored in Supabase or sent to the browser.
+`AI_API_KEY` and the shared-store credential are represented only as present/absent in diagnostics. Their values are never returned, logged, committed, stored in Supabase or sent to the browser. See `docs/V2_PHASE_13A_AI_PROVIDER_ACTIVATION_COST_HARDENING.md` for the activation procedure and operational limits.
 
 ## Tool allow-list
 
@@ -96,7 +102,7 @@ Every tool result has:
 }
 ```
 
-A provider response marked `tool_based` is rejected unless at least one approved tool actually ran. A first response without a tool is accepted only as a concise clarification or refusal. Unknown tool names, duplicate call IDs, malformed arguments, empty call sets and more than four tool calls fail with `AI_RESPONSE_INVALID`.
+A provider response marked `tool_based` is rejected unless at least one approved tool actually ran. A first response without a tool is accepted only as a concise clarification or refusal. Unknown tool names, duplicate call IDs, malformed arguments, empty call sets, more than four rounds, more than eight total calls or more than three repeats of one tool fail closed.
 
 Customers see only the final plain-text answer and compact source labels. Raw tool payloads, tool names, database IDs and chain-of-thought are not rendered.
 
@@ -120,17 +126,19 @@ The endpoint stores no prompt and logs no cookie/token. Runtime counters contain
 - request body: maximum 16 KiB;
 - current user message: 1,200 characters;
 - recent history: at most six messages, each 1,200 characters;
-- output: at most 2,400 characters;
-- tool calls: at most four per user turn;
+- output: at most 800 provider tokens and 3,200 rendered characters;
+- tool loop: at most four rounds, eight calls and three repeats of one tool;
 - provider call timeout: 12 seconds;
-- whole assistant request budget: 15 seconds;
+- whole assistant request budget: 18 seconds;
 - client network timeout: 20 seconds;
-- public rate limits: eight/IP/minute, ten/session/minute, 80/instance/minute;
-- rate-limit keys are one-way hashes and are kept only in bounded instance memory;
+- public rate limits: eight/IP/minute, ten/session/minute and 80 globally/minute;
+- the shared Upstash admission uses one atomic operation across rate, daily request and daily/monthly budget limits;
+- identities are HMAC-derived; the shared store receives no raw IP, session ID, prompt or PII;
+- conservative cost is reserved before inference and reconciled from provider usage only when known;
 - availability and authorized Booking reads are not application-cached by the assistant;
 - provider failure, timeout, invalid response and tool error fail closed.
 
-Instance-local counters are deliberately non-persistent because Phase 13 does not justify a new PII-bearing observability table. They may reset during serverless rotation and are not a billing ledger.
+Instance-local counters remain supplementary only. Phase 13A shared aggregate buckets provide deployment-wide enforcement/diagnostics with short retention; they are not a billing ledger and store no conversation content.
 
 ## Customer experience
 
@@ -146,20 +154,27 @@ When AI is unavailable, the response points to Trip Finder, Lưu trú and instru
 - provider and model names when present;
 - credential present/absent, never its value;
 - read-only tool count;
-- request/success/failure/rate-limit/tool-error counts;
-- average latency, token usage when a provider returns it, and last success;
-- the runtime-instance limitation.
+- distributed limiter health and configured safety limits;
+- shared request/success/failure/rate-limit/budget/timeout/provider/tool counters;
+- token usage, estimated cost and daily/monthly budget state;
+- explicit provider health status/time/latency and kill-switch state.
 
-The canned test link opens only the public assistant and cannot mutate data.
+The explicit Admin health action uses a fixed minimal prompt, no customer data or tools, and the same shared quota/budget guard. Page load itself never makes a billable provider request.
 
 ## Error taxonomy
 
 Customer-safe codes are:
 
 - `AI_NOT_CONFIGURED`;
+- `AI_DISABLED`;
+- `AI_PROVIDER_UNSUPPORTED`;
+- `AI_MODEL_UNSUPPORTED`;
 - `AI_PROVIDER_UNAVAILABLE`;
+- `AI_PROVIDER_ERROR`;
 - `AI_RATE_LIMITED`;
+- `AI_BUDGET_EXHAUSTED`;
 - `AI_TOOL_ERROR`;
+- `AI_TOOL_LIMIT`;
 - `AI_TIMEOUT`;
 - `AI_BAD_REQUEST`;
 - `AI_RESPONSE_INVALID`.
@@ -182,7 +197,7 @@ With no provider configured:
 4. open `/admin/integrations/ai` while authenticated as Admin and verify the safe unconfigured state;
 5. confirm temporary-host robots remain noindex/nofollow.
 
-If the owner later selects a provider, add its isolated adapter and tests, set the three server-only Vercel variables, redeploy, then use only public-safe read smoke questions. Do not test Booking mutation, Payment, Telegram or Supplier data.
+Production activation now follows the ordered owner checklist in `docs/V2_PHASE_13A_AI_PROVIDER_ACTIVATION_COST_HARDENING.md`: configure secrets directly in Vercel, keep AI disabled, redeploy, run one explicit Admin health check, then enable and run only public-safe read smoke questions. Do not test Booking mutation, Payment, Telegram or Supplier data.
 
 ## Database and deferred boundaries
 

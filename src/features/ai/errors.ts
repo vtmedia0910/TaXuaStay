@@ -1,10 +1,16 @@
 import type { AIErrorCode } from "@/features/ai/types";
 
 const PUBLIC_MESSAGES: Record<AIErrorCode, string> = {
+  AI_DISABLED: "Trợ lý AI đang tạm tắt. Bạn vẫn có thể dùng Tìm chuyến đi, xem Lưu trú hoặc mở My Trip.",
   AI_NOT_CONFIGURED: "Trợ lý AI đang tạm chưa khả dụng. Bạn vẫn có thể dùng Tìm chuyến đi, xem Lưu trú hoặc mở My Trip.",
+  AI_PROVIDER_UNSUPPORTED: "Trợ lý AI đang tạm chưa sẵn sàng.",
+  AI_MODEL_UNSUPPORTED: "Trợ lý AI đang tạm chưa sẵn sàng.",
   AI_PROVIDER_UNAVAILABLE: "Mình chưa xác nhận được thông tin này từ hệ thống lúc này. Vui lòng thử lại sau.",
+  AI_PROVIDER_ERROR: "Trợ lý AI đang gặp lỗi kết nối an toàn. Vui lòng thử lại sau.",
   AI_RATE_LIMITED: "Bạn đang gửi yêu cầu quá nhanh. Vui lòng đợi một chút rồi thử lại.",
+  AI_BUDGET_EXHAUSTED: "Trợ lý AI đã đạt giới hạn sử dụng an toàn. Bạn vẫn có thể dùng các công cụ tìm chuyến đi hiện có.",
   AI_TOOL_ERROR: "Mình chưa xác nhận được thông tin này từ hệ thống lúc này.",
+  AI_TOOL_LIMIT: "Câu hỏi này cần quá nhiều bước kiểm tra. Vui lòng hỏi ngắn gọn hơn.",
   AI_TIMEOUT: "Hệ thống cần thêm thời gian để kiểm tra. Vui lòng thử lại sau.",
   AI_BAD_REQUEST: "Nội dung gửi lên chưa hợp lệ. Vui lòng rút gọn câu hỏi và thử lại.",
   AI_RESPONSE_INVALID: "Mình chưa thể tạo câu trả lời an toàn từ dữ liệu hiện có.",
