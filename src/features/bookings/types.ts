@@ -1,3 +1,5 @@
+import type { CheckoutReadinessDto } from "@/features/checkout/types";
+
 export const BOOKING_LIFECYCLE_STATUSES = ["submitted", "active", "cancelled", "completed", "expired"] as const;
 export const BOOKING_CONFIRMATION_STATUSES = ["pending", "partial", "confirmed", "failed", "cancelled"] as const;
 export const ITEM_CONFIRMATION_STATUSES = ["pending", "requested", "partial", "confirmed", "declined", "expired", "cancelled", "not_required"] as const;
@@ -68,9 +70,10 @@ export interface PublicBookingStatusDto {
   submitted_at: string;
   items: PublicBookingStatusItem[];
   events: Array<{ event_type: string; message: string; created_at: string }>;
+  checkout: CheckoutReadinessDto;
 }
 
-export interface AdminBookingDto extends Omit<PublicBookingStatusDto, "items" | "events"> {
+export interface AdminBookingDto extends Omit<PublicBookingStatusDto, "items" | "events" | "checkout"> {
   id: string;
   customer_name: string;
   customer_phone: string;

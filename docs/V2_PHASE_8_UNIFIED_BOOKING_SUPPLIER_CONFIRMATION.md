@@ -50,4 +50,4 @@ The plaintext token is stored only in an HttpOnly, Secure-in-production, SameSit
 
 The rollback-only SQL smoke at `supabase/tests/202608290024_unified_booking.sql` verifies atomic creation, exactly one Booking, many items, idempotency, Package no-double-counting, safe token reads, PII exclusion, anonymous table denial, confirmation aggregation, immutable snapshots, append-only events and Admin-only cancellation. Vitest covers migration ACL invariants, no later commerce tables, no privileged key, source-only request validation, anti-spam limits and missing-price semantics.
 
-Phase 9 has not been started.
+Phase 9 was not implemented as part of this Phase 8 delivery. Its later implementation record is `docs/V2_PHASE_9_BOOKING_OPERATIONS_CHECKOUT_READINESS.md`.

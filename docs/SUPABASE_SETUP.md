@@ -46,6 +46,8 @@ Migration `202608290009_v2_destination_and_physical_rooms.sql` is **V2 Phase 1 �
 
 Migration `202608290024_v2_unified_booking_supplier_confirmation.sql` implements **V2 Phase 8 — Unified Booking + Supplier Confirmation**. Corrective migration `202608290025_fix_phase8_booking_code_generation.sql` resolves pgcrypto from Supabase's managed, non-writable `extensions` schema after linked DB lint; corrective migration `202608290026_fix_phase8_selected_component_aggregation.sql` makes every traveler-selected Package component participate in confirmation aggregation. Applied migrations remain immutable. Together they add private Bookings, immutable Booking Items/snapshots, separate item confirmations and append-only events. Anonymous users have no table access; only bounded creation and tokenized safe-status RPCs are executable. No Payment, Deposit, Checkout, Refund, Settlement or hold table is created, and no production Booking/customer row is seeded.
 
+Migration `202608290027_v2_booking_operations_checkout_readiness.sql` implements **V2 Phase 9 — Booking Operations + Checkout Readiness**. It adds versioned immutable quote history, versioned provider-neutral deposit/cancellation policies, deterministic `phase9-checkout-readiness-v1`, and checkout preparation sessions bound to quote/policy versions. Volatility-only corrective migration `202608290028_fix_phase9_deposit_function_volatility.sql` matches the table-free JSON calculator to PostgreSQL's linked-lint `STABLE` classification without changing behavior. All tables are private behind RLS; the tokenized public status RPC exposes only a safe readiness projection. Provider state is constrained to `unconfigured`. No payment credential, provider intent, QR/link, webhook, payment transaction, paid state, refund, payout or settlement is added, and no production row is seeded.
+
 ## Migration order
 
 Apply only missing Stay migrations in filename order:
@@ -68,15 +70,17 @@ supabase/migrations/202608290014_enforce_cms_archive_lifecycle.sql
 supabase/migrations/202608290015_harden_cms_publishing_permissions.sql
 supabase/migrations/202608290016_v2_supplier_partner_foundation.sql
 supabase/migrations/202608290017_harden_supplier_lifecycle.sql
-supabase/migrations/202608290024_v2_unified_booking_supplier_confirmation.sql
-supabase/migrations/202608290025_fix_phase8_booking_code_generation.sql
-supabase/migrations/202608290026_fix_phase8_selected_component_aggregation.sql
 supabase/migrations/202608290018_v2_commercial_economics.sql
 supabase/migrations/202608290019_harden_commercial_function_grants.sql
 supabase/migrations/202608290020_restore_authenticated_relationship_predicate.sql
 supabase/migrations/202608290021_v2_motorbike_integration.sql
 supabase/migrations/202608290022_fix_motorbike_public_ordering.sql
 supabase/migrations/202608290023_v2_package_commerce.sql
+supabase/migrations/202608290024_v2_unified_booking_supplier_confirmation.sql
+supabase/migrations/202608290025_fix_phase8_booking_code_generation.sql
+supabase/migrations/202608290026_fix_phase8_selected_component_aggregation.sql
+supabase/migrations/202608290027_v2_booking_operations_checkout_readiness.sql
+supabase/migrations/202608290028_fix_phase9_deposit_function_volatility.sql
 ```
 
 Migration 023 adds the Phase 6 `packages`, `package_components`, and `package_price_rules` domain. Verify additionally:
