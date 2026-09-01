@@ -62,6 +62,15 @@ const ERROR_MESSAGES: Record<string, string> = {
   "package-forbidden": "Chỉ Admin được thay đổi gói dịch vụ, thành phần, giá và kinh tế.",
   "package-invalid": "Gói chưa hợp lệ. Kiểm tra identity, nguồn thành phần, giá, chi phí, ngày và trạng thái công khai.",
   "package-save": "Không thể lưu gói. Toàn bộ thông tin, thành phần và quy tắc giá đã được hoàn tác.",
+  "booking-action": "Không thể đổi trạng thái Booking. Hãy kiểm tra quyền, lý do và trạng thái hiện tại rồi thử lại.",
+  "confirmation-action": "Không thể cập nhật Supplier Confirmation. Hãy kiểm tra trạng thái, thời hạn và tải lại nếu dữ liệu vừa thay đổi.",
+  "operations-action": "Không thể hoàn tất thao tác vận hành. Dữ liệu không thay đổi dở dang; hãy tải lại và kiểm tra trạng thái.",
+  stale: "Booking hoặc xác nhận vừa thay đổi ở phiên khác. Hãy tải lại trang trước khi tiếp tục.",
+  "change-request": "Yêu cầu thay đổi chưa hợp lệ. Chỉ nhập các trường thuộc đúng loại thay đổi.",
+  "change-review": "Không thể cập nhật review. Staff chỉ được đưa yêu cầu vào review; quyết định cần Admin.",
+  "change-apply": "Không thể áp dụng thay đổi. Yêu cầu phải được Admin duyệt và còn đúng revision.",
+  "confirmation-follow-up": "Không thể ghi nhận follow-up. Chỉ xác nhận đang chờ và đúng revision mới được cập nhật.",
+  "expiry-process": "Không thể đồng bộ các mốc hết hạn. Không có trạng thái một phần bị che giấu.",
 };
 
 export function FormFeedback({ saved, error }: { saved?: string; error?: string }) {
@@ -83,6 +92,11 @@ export function FormFeedback({ saved, error }: { saved?: string; error?: string 
       "economics-rule": "✓ Đã lưu quy tắc chi phí riêng tư.",
       motorbike: "✓ Đã lưu lựa chọn xe máy phía Trip.",
       package: "✓ Đã lưu gói dịch vụ, thành phần và quy tắc giá trong một giao dịch.",
+      "change-request": "✓ Đã tạo yêu cầu thay đổi. Chưa có dữ liệu Booking nào bị áp dụng.",
+      "change-review": "✓ Đã cập nhật trạng thái review và ghi audit.",
+      "change-applied": "✓ Đã áp dụng thay đổi nguyên tử, lưu lịch sử và đánh giá lại quote/xác nhận.",
+      "confirmation-follow-up": "✓ Đã ghi nhận follow-up nội bộ. Hệ thống không tự gửi tin ra ngoài.",
+      "expiry-process": "✓ Đã đồng bộ các mốc hết hạn theo dữ liệu hiện có.",
     };
     return (
       <p className="mb-5 rounded-2xl bg-pine-soft p-3 text-sm font-bold text-success" role="status">

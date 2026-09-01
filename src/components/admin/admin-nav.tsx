@@ -20,12 +20,14 @@ import {
   Bike,
   Package,
   ClipboardCheck,
+  Siren,
 } from "lucide-react";
 import { logoutAction } from "@/features/admin/auth-actions";
 import type { AdminRole } from "@/features/admin/authz";
 
 const contentLinks = [
   { label: "Tổng quan", href: "/admin", icon: CircleGauge },
+  { label: "Điều hành", href: "/admin/operations", icon: Siren },
   { label: "Điểm đến", href: "/admin/destinations", icon: MapPinned },
   { label: "Homestays", href: "/admin/properties", icon: House },
   { label: "Phòng", href: "/admin/rooms", icon: BedDouble },

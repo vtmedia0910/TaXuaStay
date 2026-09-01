@@ -4,7 +4,7 @@ Use only the dedicated Tà Xùa Stay Supabase project. Never link this repositor
 
 ## Current remote status
 
-Verified again on 2026-08-31 against the dedicated Supabase project returned by the CLI as `TaXuaStay`, project ref `kkrtajdgkinybpwermls`. The repository is linked through Supabase CLI metadata under the gitignored `supabase/.temp/` directory; no credentials or tracked `supabase/config.toml` were added.
+Verified again on 2026-09-01 against the dedicated Supabase project returned by the CLI as `TaXuaStay`, project ref `kkrtajdgkinybpwermls`. The repository is linked through Supabase CLI metadata under the gitignored `supabase/.temp/` directory; no credentials or tracked `supabase/config.toml` were added.
 
 Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the application dependencies were not changed. Remote migration history is reconciled and contains these migrations in order:
 
@@ -32,9 +32,18 @@ Supabase CLI `2.116.0` was used through an ephemeral `npx` workflow, so the appl
 202608290021
 202608290022
 202608290023
+202608290024
+202608290025
+202608290026
+202608290027
+202608290028
+202609010029
+202609010030
+202609010031
+202609010032
 ```
 
-After V2 Phase 6, `migration list` must report 001–023 Local = Remote. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
+After V2 Phase 11, `migration list` must report 001–032 Local = Remote. Never reuse this link metadata for Biker or change the project ref without first verifying the target project identity.
 
 ## V2 migration lineage
 
@@ -47,6 +56,8 @@ Migration `202608290009_v2_destination_and_physical_rooms.sql` is **V2 Phase 1 �
 Migration `202608290024_v2_unified_booking_supplier_confirmation.sql` implements **V2 Phase 8 — Unified Booking + Supplier Confirmation**. Corrective migration `202608290025_fix_phase8_booking_code_generation.sql` resolves pgcrypto from Supabase's managed, non-writable `extensions` schema after linked DB lint; corrective migration `202608290026_fix_phase8_selected_component_aggregation.sql` makes every traveler-selected Package component participate in confirmation aggregation. Applied migrations remain immutable. Together they add private Bookings, immutable Booking Items/snapshots, separate item confirmations and append-only events. Anonymous users have no table access; only bounded creation and tokenized safe-status RPCs are executable. No Payment, Deposit, Checkout, Refund, Settlement or hold table is created, and no production Booking/customer row is seeded.
 
 Migration `202608290027_v2_booking_operations_checkout_readiness.sql` implements **V2 Phase 9 — Booking Operations + Checkout Readiness**. It adds versioned immutable quote history, versioned provider-neutral deposit/cancellation policies, deterministic `phase9-checkout-readiness-v1`, and checkout preparation sessions bound to quote/policy versions. Volatility-only corrective migration `202608290028_fix_phase9_deposit_function_volatility.sql` matches the table-free JSON calculator to PostgreSQL's linked-lint `STABLE` classification without changing behavior. All tables are private behind RLS; the tokenized public status RPC exposes only a safe readiness projection. Provider state is constrained to `unconfigured`. No payment credential, provider intent, QR/link, webhook, payment transaction, paid state, refund, payout or settlement is added, and no production row is seeded.
+
+Migration `202609010029_phase10_my_trip_verification_projection.sql` narrowly extends the existing token-gated public Booking projection with four customer-safe verification labels derived only from immutable Booking Item snapshots. Migration `202609010030_v2_trip_operations_hardening.sql` implements **V2 Phase 11 — Trip Operations Hardening + System Administration** with private controlled change requests, append-only confirmation history, item lineage, deterministic aging/expiry Operations RPCs and strict RLS. Additive migration 031 fixes lint-discovered motorbike alias/package-lifecycle resolver definitions and volatility; additive migration 032 fixes table-specific trigger-field resolution discovered by rollback smoke. It creates no payment or AI state and seeds no production data.
 
 ## Migration order
 
@@ -81,6 +92,10 @@ supabase/migrations/202608290025_fix_phase8_booking_code_generation.sql
 supabase/migrations/202608290026_fix_phase8_selected_component_aggregation.sql
 supabase/migrations/202608290027_v2_booking_operations_checkout_readiness.sql
 supabase/migrations/202608290028_fix_phase9_deposit_function_volatility.sql
+supabase/migrations/202609010029_phase10_my_trip_verification_projection.sql
+supabase/migrations/202609010030_v2_trip_operations_hardening.sql
+supabase/migrations/202609010031_fix_phase11_operational_resolvers.sql
+supabase/migrations/202609010032_fix_phase11_booking_touch_trigger.sql
 ```
 
 Migration 023 adds the Phase 6 `packages`, `package_components`, and `package_price_rules` domain. Verify additionally:

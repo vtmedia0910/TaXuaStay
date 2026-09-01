@@ -61,8 +61,8 @@ export async function updateBookingLifecycleAction(formData: FormData) {
   if (!parsed.success || (parsed.data.status === "cancelled" && user.role !== "admin")) redirect("/admin/bookings?error=booking-action");
   const client = await createServerSupabaseClient();
   if (!client) redirect("/admin/bookings?error=config");
-  const { error } = await client.rpc("update_booking_lifecycle", { target_booking_id: parsed.data.booking_id, target_status: parsed.data.status, target_note: parsed.data.note });
-  if (error) redirect(`/admin/bookings/${parsed.data.booking_id}?error=booking-action`);
+  const { error } = await client.rpc("update_booking_lifecycle_v2", { target_booking_id: parsed.data.booking_id, target_status: parsed.data.status, target_note: parsed.data.note, target_expected_revision: parsed.data.expected_revision });
+  if (error) redirect(`/admin/bookings/${parsed.data.booking_id}?error=${error.message.includes("Booking changed") ? "stale" : "booking-action"}`);
   revalidatePath("/admin/bookings"); revalidatePath(`/admin/bookings/${parsed.data.booking_id}`);
   redirect(`/admin/bookings/${parsed.data.booking_id}?saved=booking`);
 }
@@ -87,8 +87,8 @@ export async function updateSupplierConfirmationAction(formData: FormData) {
   const client = await createServerSupabaseClient();
   if (!client) redirect(`/admin/bookings/${bookingId}?error=config`);
   const expiresAt = parsed.data.expires_at ? `${parsed.data.expires_at.length === 16 ? `${parsed.data.expires_at}:00` : parsed.data.expires_at}+07:00` : null;
-  const { error } = await client.rpc("update_supplier_confirmation", { target_booking_item_id: parsed.data.booking_item_id, target_status: parsed.data.status, target_note: parsed.data.note, target_external_reference: parsed.data.external_reference, target_expires_at: expiresAt });
-  if (error) redirect(`/admin/bookings/${bookingId}?error=confirmation-action`);
+  const { error } = await client.rpc("update_supplier_confirmation_v2", { target_booking_item_id: parsed.data.booking_item_id, target_status: parsed.data.status, target_note: parsed.data.note, target_external_reference: parsed.data.external_reference, target_expires_at: expiresAt, target_expected_updated_at: parsed.data.expected_updated_at });
+  if (error) redirect(`/admin/bookings/${bookingId}?error=${error.message.includes("Booking changed") ? "stale" : "confirmation-action"}`);
   revalidatePath("/admin/bookings"); revalidatePath(`/admin/bookings/${bookingId}`);
   redirect(`/admin/bookings/${bookingId}?saved=confirmation`);
 }

@@ -1,4 +1,5 @@
 import type { CheckoutReadinessDto } from "@/features/checkout/types";
+import type { OperationsChangeRequestFact } from "@/features/operations/types";
 
 export const BOOKING_LIFECYCLE_STATUSES = ["submitted", "active", "cancelled", "completed", "expired"] as const;
 export const BOOKING_CONFIRMATION_STATUSES = ["pending", "partial", "confirmed", "failed", "cancelled"] as const;
@@ -88,6 +89,8 @@ export interface AdminBookingDto extends Omit<PublicBookingStatusDto, "items" | 
   customer_note: string | null;
   internal_note: string | null;
   updated_at: string;
+  operations_revision: number;
+  last_operational_activity_at: string;
 }
 
 export interface AdminBookingItemDto extends Omit<PublicBookingStatusItem, "verification"> {
@@ -100,6 +103,11 @@ export interface AdminBookingItemDto extends Omit<PublicBookingStatusItem, "veri
   availability_snapshot: Record<string, unknown>;
   verification_snapshot: Record<string, unknown>;
   policy_snapshot: Record<string, unknown>;
+  operational_status: "active" | "replaced" | "cancelled";
+  replacement_for_booking_item_id: string | null;
+  replaced_by_booking_item_id: string | null;
+  change_request_id: string | null;
+  operational_updated_at: string;
   confirmation?: AdminBookingConfirmationDto | null;
 }
 
@@ -113,6 +121,10 @@ export interface AdminBookingConfirmationDto {
   requested_at: string | null;
   responded_at: string | null;
   expires_at: string | null;
+  due_at: string | null;
+  last_reminded_at: string | null;
+  reminder_count: number;
+  overdue_event_at: string | null;
   external_reference: string | null;
   response_note_internal: string | null;
   supplier_snapshot: Record<string, unknown>;
@@ -130,8 +142,29 @@ export interface AdminBookingEventDto {
   created_at: string;
 }
 
+export interface AdminConfirmationEventDto {
+  id: number;
+  booking_id: string;
+  booking_item_id: string;
+  confirmation_id: string;
+  previous_status: string;
+  next_status: string;
+  requested_at_snapshot: string | null;
+  due_at_snapshot: string | null;
+  responded_at_snapshot: string | null;
+  expires_at_snapshot: string | null;
+  reminder_count_snapshot: number;
+  external_reference_snapshot: string | null;
+  response_note_snapshot: string | null;
+  reason: string | null;
+  actor_type: "staff" | "admin" | "system";
+  created_at: string;
+}
+
 export interface AdminBookingBundle {
   booking: AdminBookingDto;
   items: AdminBookingItemDto[];
   events: AdminBookingEventDto[];
+  changeRequests: OperationsChangeRequestFact[];
+  confirmationEvents: AdminConfirmationEventDto[];
 }

@@ -1,19 +1,29 @@
 import Link from "next/link";
-import { CalendarDays, ChevronRight, ClipboardCheck } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { FormFeedback } from "@/components/admin/form-feedback";
-import { Badge } from "@/components/ui/badge";
+import { OperationsQueue } from "@/components/admin/operations-queue";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { BOOKING_CONFIRMATION_LABELS, BOOKING_LIFECYCLE_LABELS, formatBookingVnd } from "@/features/bookings/policy";
-import { getAdminBookings } from "@/features/bookings/data";
+import { getAdminOperationsView } from "@/features/operations/data";
+import { operationsQuerySchema } from "@/features/operations/schema";
 
-export default async function AdminBookingsPage({ searchParams }: { searchParams: Promise<{ error?: string; q?: string; lifecycle?: string; confirmation?: string }> }) {
-  const query = await searchParams;
-  const bookings = await getAdminBookings();
-  const needle = query.q?.trim().toLocaleLowerCase("vi") ?? "";
-  const filtered = bookings.filter((booking) => (!needle || `${booking.booking_code} ${booking.customer_name} ${booking.customer_phone}`.toLocaleLowerCase("vi").includes(needle)) && (!query.lifecycle || booking.lifecycle_status === query.lifecycle) && (!query.confirmation || booking.confirmation_status === query.confirmation));
-  return <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6"><AdminPageHeader title="Yêu cầu chuyến đi" description="Một chuyến đi là một Booking; xác nhận từng nhà cung cấp được theo dõi riêng. Chưa có thanh toán hoặc giữ chỗ." /><FormFeedback error={query.error} /><Card className="mb-5 p-4"><form className="grid gap-3 sm:grid-cols-[1fr_0.7fr_0.7fr_auto]"><Input name="q" defaultValue={query.q} placeholder="Mã, tên hoặc số điện thoại" /><Select name="lifecycle" defaultValue={query.lifecycle ?? ""}><option value="">Mọi vòng đời</option>{Object.entries(BOOKING_LIFECYCLE_LABELS).map(([value,label]) => <option key={value} value={value}>{label}</option>)}</Select><Select name="confirmation" defaultValue={query.confirmation ?? ""}><option value="">Mọi xác nhận</option>{Object.entries(BOOKING_CONFIRMATION_LABELS).map(([value,label]) => <option key={value} value={value}>{label}</option>)}</Select><div className="flex gap-2"><Button type="submit">Lọc</Button><Link href="/admin/bookings" className={buttonVariants({ variant: "secondary" })}>Xóa</Link></div></form></Card>{filtered.length ? <div className="grid gap-4">{filtered.map((booking) => <Link key={booking.id} href={`/admin/bookings/${booking.id}`}><Card className="p-5 transition hover:border-copper"><div className="flex items-start justify-between gap-4"><div><div className="flex flex-wrap gap-2"><Badge>{BOOKING_LIFECYCLE_LABELS[booking.lifecycle_status]}</Badge><Badge className="bg-mist text-pine">{BOOKING_CONFIRMATION_LABELS[booking.confirmation_status]}</Badge></div><h2 className="mt-3 text-2xl font-bold text-pine">{booking.booking_code}</h2><p className="mt-1 font-bold text-ink">{booking.customer_name} · {booking.customer_phone}</p><p className="mt-2 flex items-center gap-2 text-sm text-muted"><CalendarDays size={16} />{booking.check_in} → {booking.check_out}</p><p className="mt-2 text-sm font-bold text-pine">{booking.quoted_sell_total_vnd === null ? "Chưa đủ tổng giá" : formatBookingVnd(booking.quoted_sell_total_vnd)}</p></div><ChevronRight className="shrink-0 text-copper" /></div></Card></Link>)}</div> : <Card className="p-8 text-center"><ClipboardCheck size={46} className="mx-auto text-copper" /><h2 className="mt-4 text-2xl font-bold text-pine">{bookings.length ? "Không có yêu cầu phù hợp" : "Chưa có yêu cầu nào"}</h2><p className="mt-2 text-muted">{bookings.length ? "Hãy đổi bộ lọc để xem yêu cầu khác." : "Không tạo dữ liệu mẫu. Yêu cầu thật sẽ xuất hiện sau khi khách gửi qua website."}</p></Card>}</main>;
+export default async function AdminBookingsPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const raw = await searchParams;
+  const parsed = operationsQuerySchema.safeParse(raw);
+  const query = parsed.success ? parsed.data : {};
+  const view = await getAdminOperationsView(query);
+  return <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
+    <AdminPageHeader title="Yêu cầu chuyến đi" description="Inbox vận hành có lý do chú ý, deadline và hành động tiếp theo; Booking, Supplier Confirmation và Checkout Readiness vẫn là các state machine riêng." />
+    <FormFeedback error={raw.error} saved={raw.saved} />
+    <Card className="mb-5 p-4"><form className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.2fr_0.9fr_0.9fr_auto]">
+      <Input name="q" defaultValue={query.q} placeholder="Mã, khách, SĐT, ngày, phòng, gói, Supplier" />
+      <Select name="view" defaultValue={query.view ?? "all"}><option value="all">Tất cả Booking</option><option value="needs_attention">Cần chú ý</option><option value="pending">Pending confirmation</option><option value="overdue">Overdue confirmation</option><option value="needs_requote">Needs requote</option><option value="quote_expiring">Quote expiring</option><option value="declined">Declined</option><option value="replacement">Replacement required</option><option value="checkout_blocked">Checkout blocked</option><option value="ready">Ready for payment</option><option value="cancelled">Cancelled</option><option value="completed">Completed</option></Select>
+      <Select name="sort" defaultValue={query.sort ?? "priority"}><option value="priority">Priority</option><option value="oldest_pending">Oldest pending</option><option value="trip_date">Nearest trip date</option><option value="quote_expiry">Quote expiry</option><option value="newest">Newest Booking</option></Select>
+      <div className="flex gap-2"><Button type="submit">Lọc</Button><Link href="/admin/bookings" className={buttonVariants({ variant: "secondary" })}>Xóa</Link></div>
+    </form></Card>
+    <div className="mb-3 flex flex-wrap items-end justify-between gap-3"><p className="text-sm text-muted">{view.total_filtered} kết quả · trang {view.page}/{view.page_count}</p><Link href="/admin/operations" className={buttonVariants({ variant: "secondary" })}>Mở Operations</Link></div>
+    <OperationsQueue items={view.page_items} emptyMessage={view.source_total ? "Không có Booking phù hợp với bộ lọc." : "Chưa có Booking thật. Hệ thống không tạo dữ liệu mẫu."} />
+  </main>;
 }

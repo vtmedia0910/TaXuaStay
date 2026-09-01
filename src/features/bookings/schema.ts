@@ -62,6 +62,11 @@ export const bookingLifecycleActionSchema = z.object({
   booking_id: z.uuid(),
   status: z.enum(["active", "cancelled", "completed", "expired"]),
   note: optionalShort(5000),
+  expected_revision: z.coerce.number().int().positive(),
+}).superRefine((value, context) => {
+  if (["cancelled", "completed", "expired"].includes(value.status) && !value.note) {
+    context.addIssue({ code: "custom", path: ["note"], message: "Thao tác terminal cần lý do nội bộ." });
+  }
 });
 export const bookingInternalNoteActionSchema = z.object({ booking_id: z.uuid(), note: optionalShort(10_000) });
 export const supplierConfirmationActionSchema = z.object({
@@ -70,4 +75,5 @@ export const supplierConfirmationActionSchema = z.object({
   note: optionalShort(5000),
   external_reference: optionalShort(500),
   expires_at: z.preprocess((value) => typeof value === "string" && !value ? null : value, z.iso.datetime({ local: true }).nullable()),
+  expected_updated_at: z.iso.datetime({ offset: true }),
 });
