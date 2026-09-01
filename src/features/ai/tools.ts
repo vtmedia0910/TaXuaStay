@@ -67,6 +67,10 @@ function objectSchema(properties: Record<string, unknown>, required: string[] = 
   return { type: "object", additionalProperties: false, properties, required };
 }
 
+export function toVerificationPresence(value: unknown): true | null {
+  return value ? true : null;
+}
+
 const roomOptionsSchema = dateRange.and(party).and(z.object({
   destination: z.literal("ta-xua").default("ta-xua"),
   budget_max_vnd: z.number().int().min(100_000).max(100_000_000).optional(),
@@ -140,7 +144,7 @@ function createRoomOptionsTool(): AssistantTool {
           path: `/stay/${item.property.slug}/${item.room.slug}`,
           capacity: { adults: item.room.capacity_adults, children: item.room.capacity_children, maxGuests: item.room.max_guests },
           access: { car: item.road?.car_access ?? item.property.car_access, motorbike: item.road?.motorbike_access ?? item.property.motorbike_access },
-          verified: { cloudView: item.cloudView ? true : false, road: item.road ? true : false },
+          verified: { cloudView: toVerificationPresence(item.cloudView), road: toVerificationPresence(item.road) },
           price: item.priceQuote?.total_vnd === null || item.priceQuote?.total_vnd === undefined ? { state: "unknown", totalVnd: null } : { state: item.priceQuote.status, totalVnd: item.priceQuote.total_vnd, label: formatVnd(item.priceQuote.total_vnd) },
           availability: item.availabilityQuote ? { state: item.availabilityQuote.state, label: AVAILABILITY_STATE_LABELS[item.availabilityQuote.state], asOf: item.availabilityQuote.oldest_verified_at } : { state: "unknown", label: "Chưa có dữ liệu tình trạng", asOf: null },
         }));
@@ -167,7 +171,9 @@ function createVerifiedFactsTool(): AssistantTool {
         getPublicPropertyVerificationBundle(property.id, room ? [room.id] : []),
         room ? getPublicRoomVerificationBundle(room.id) : Promise.resolve(null),
       ]);
-      const roomVerified = roomVerification ? roomVerification.badges.some((badge) => badge.verification_type === "room") : null;
+      const roomVerified = roomVerification
+        ? toVerificationPresence(roomVerification.badges.some((badge) => badge.verification_type === "room"))
+        : null;
       const cloud = roomVerification?.cloudView ?? null;
       const road = propertyVerification.road;
       const href = room ? `/stay/${property.slug}/${room.slug}` : `/stay/${property.slug}`;
@@ -184,9 +190,9 @@ function createVerifiedFactsTool(): AssistantTool {
         } : null,
         verification: {
           roomVerified,
-          cloudViewVerified: room ? Boolean(cloud) : null,
+          cloudViewVerified: room ? toVerificationPresence(cloud) : null,
           cloudView: cloud ? { score10: Number(cloud.score_10), viewFromBed: cloud.view_from_bed, position: cloud.viewing_position, expiresAt: cloud.expires_at } : null,
-          roadVerified: Boolean(road),
+          roadVerified: toVerificationPresence(road),
           road: road ? { grade: road.grade, gradeLabel: ROAD_GRADE_LABELS[road.grade], surface: road.road_surface, walkFromParkingM: road.walk_from_parking_m, expiresAt: road.expires_at } : null,
         },
       }, source("Dữ kiện đã xác minh", { href, asOf }));

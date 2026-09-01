@@ -4,13 +4,20 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { ASSISTANT_TOOL_NAMES, createAssistantToolRegistry, PUBLIC_CMS_PAGE_ALLOWLIST } from "@/features/ai/tools";
+import { ASSISTANT_TOOL_NAMES, createAssistantToolRegistry, PUBLIC_CMS_PAGE_ALLOWLIST, toVerificationPresence } from "@/features/ai/tools";
 
 describe("Phase 13 allow-listed read-only tools", () => {
   it("exposes exactly the nine approved tools and only published CMS pages", () => {
     expect([...createAssistantToolRegistry().keys()]).toEqual(ASSISTANT_TOOL_NAMES);
     expect(PUBLIC_CMS_PAGE_ALLOWLIST).toEqual(["home", "stay", "verified", "footer", "faq"]);
     expect(ASSISTANT_TOOL_NAMES.every((name) => !/create|update|cancel|send|mark|refund/i.test(name))).toBe(true);
+  });
+
+  it("keeps missing public verification unknown instead of converting it to false", () => {
+    expect(toVerificationPresence(null)).toBeNull();
+    expect(toVerificationPresence(undefined)).toBeNull();
+    expect(toVerificationPresence(false)).toBeNull();
+    expect(toVerificationPresence({ verification_id: "public-current" })).toBe(true);
   });
 
   it("rejects invalid dates, unreasonable rooms and malformed booking codes before data access", async () => {
