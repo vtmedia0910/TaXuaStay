@@ -43,6 +43,9 @@ describe("Phase 13A public assistant API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubEnv("AI_ENABLED", "true");
+    vi.stubEnv("AI_KILL_SWITCH", "false");
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("AI_ALLOW_PREVIEW", "false");
     vi.stubEnv("OPENAI_API_KEY", "test-key");
     vi.stubEnv("AI_IDENTITY_HASH_SALT", "test-salt");
     vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://example.invalid");
@@ -73,8 +76,37 @@ describe("Phase 13A public assistant API", () => {
     }));
   });
 
-  it.each(["Chào bạn", "Cảm ơn nhé", "Tạm biệt", "Bạn làm được gì?"])("answers pure social intent before runtime and shared admission: %s", async (message) => {
+  it("blocks a pure social turn when the master AI gate is disabled", async () => {
     vi.stubEnv("AI_ENABLED", "false");
+    const response = await POST(request({ message: "Chào bạn", history: [], sessionId: "session_identifier_123" }));
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({ error: { code: "AI_DISABLED" } });
+    expect(mocks.getActiveAIRuntime).not.toHaveBeenCalled();
+    expect(mocks.admit).not.toHaveBeenCalled();
+    expect(mocks.runAssistant).not.toHaveBeenCalled();
+  });
+
+  it("blocks a pure social turn when the kill switch is active", async () => {
+    vi.stubEnv("AI_KILL_SWITCH", "true");
+    const response = await POST(request({ message: "Chào bạn", history: [], sessionId: "session_identifier_123" }));
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({ error: { code: "AI_DISABLED" } });
+    expect(mocks.getActiveAIRuntime).not.toHaveBeenCalled();
+    expect(mocks.admit).not.toHaveBeenCalled();
+    expect(mocks.runAssistant).not.toHaveBeenCalled();
+  });
+
+  it("blocks a pure social turn in a disallowed Preview environment", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+    const response = await POST(request({ message: "Chào bạn", history: [], sessionId: "session_identifier_123" }));
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({ error: { code: "AI_DISABLED" } });
+    expect(mocks.getActiveAIRuntime).not.toHaveBeenCalled();
+    expect(mocks.admit).not.toHaveBeenCalled();
+    expect(mocks.runAssistant).not.toHaveBeenCalled();
+  });
+
+  it.each(["Chào bạn", "Cảm ơn nhé", "Tạm biệt", "Bạn làm được gì?"])("answers an allowed pure social intent before runtime and shared admission: %s", async (message) => {
     const response = await POST(request({ message, history: [], sessionId: "session_identifier_123" }));
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
@@ -113,6 +145,16 @@ describe("Phase 13A public assistant API", () => {
       sources: [{ href: "/trip-finder" }],
       advisor: { stage: "NEXT_ACTION" },
     });
+    expect(mocks.getActiveAIRuntime).not.toHaveBeenCalled();
+    expect(mocks.admit).not.toHaveBeenCalled();
+    expect(mocks.runAssistant).not.toHaveBeenCalled();
+  });
+
+  it("blocks deterministic action guidance until the master AI gate passes", async () => {
+    vi.stubEnv("AI_ENABLED", "false");
+    const response = await POST(request({ message: "Đặt phòng giúp tôi", history: [], sessionId: "session_identifier_123" }));
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({ error: { code: "AI_DISABLED" } });
     expect(mocks.getActiveAIRuntime).not.toHaveBeenCalled();
     expect(mocks.admit).not.toHaveBeenCalled();
     expect(mocks.runAssistant).not.toHaveBeenCalled();
@@ -159,7 +201,7 @@ describe("Phase 13A public assistant API", () => {
     expect(mocks.finalize).toHaveBeenCalledWith(expect.objectContaining({ ok: false, actualCostMicros: null }));
   });
 
-  it("honors the server-side kill switch before shared admission", async () => {
+  it("honors the server-side kill switch before runtime resolution and shared admission", async () => {
     vi.stubEnv("AI_KILL_SWITCH", "true");
     mocks.getActiveAIRuntime.mockResolvedValue({
       runtime: { provider: "openai", model: "gpt-5-mini-2025-08-07", enabled: true },
@@ -169,6 +211,7 @@ describe("Phase 13A public assistant API", () => {
     const response = await POST(request());
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toMatchObject({ error: { code: "AI_DISABLED" } });
+    expect(mocks.getActiveAIRuntime).not.toHaveBeenCalled();
     expect(mocks.admit).not.toHaveBeenCalled();
     expect(mocks.runAssistant).not.toHaveBeenCalled();
   });

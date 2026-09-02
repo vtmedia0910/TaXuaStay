@@ -4,7 +4,7 @@ import { compileAdvisorRequestPrompt } from "@/features/ai/advisor/prompt";
 import { recordAIConversationLogWriteError } from "@/features/ai-conversations/metrics";
 import { captureAIConversationTurn } from "@/features/ai-conversations/service";
 import type { AIConversationEntryPoint } from "@/features/ai-conversations/types";
-import { getAIConfigurationError } from "@/features/ai/config";
+import { getAIConfigurationError, getAIMasterGateError } from "@/features/ai/config";
 import { createAIControlStore, type AIControlStore } from "@/features/ai/control-store";
 import { estimateAIUsageCostMicros, microsToUsd } from "@/features/ai/cost";
 import { createAIProviderAdapter } from "@/features/ai/provider";
@@ -79,6 +79,9 @@ export async function POST(request: Request) {
     try { parsedJson = JSON.parse(raw); } catch { throw new AssistantError("AI_BAD_REQUEST", 400); }
     const parsed = assistantRequestSchema.safeParse(parsedJson);
     if (!parsed.success) throw new AssistantError("AI_BAD_REQUEST", 400);
+
+    const masterGateError = getAIMasterGateError();
+    if (masterGateError) throw new AssistantError(masterGateError, 503);
 
     const advisorPlan = planAdvisorTurn(parsed.data.advisorState, parsed.data.message, {
       hasPageTarget: Boolean(parsed.data.pageContext && ["property", "room", "package", "motorbike_detail"].includes(parsed.data.pageContext.pageKind)),

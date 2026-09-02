@@ -28,6 +28,14 @@ export interface AIRuntimeSelection {
   enabled: boolean;
 }
 
+export function getAIMasterGateError(environment: NodeJS.ProcessEnv = process.env) {
+  const masterEnabled = enabled(environment.AI_ENABLED);
+  const killSwitch = enabled(environment.AI_KILL_SWITCH);
+  const isPreview = environment.VERCEL_ENV === "preview";
+  const environmentAllowed = !isPreview || enabled(environment.AI_ALLOW_PREVIEW);
+  return killSwitch || !masterEnabled || !environmentAllowed ? "AI_DISABLED" as const : null;
+}
+
 export function getAIProviderConfig(
   selection: AIRuntimeSelection | null = null,
   environment: NodeJS.ProcessEnv = process.env,
