@@ -50,7 +50,7 @@ describe("Phase 13A public assistant API", () => {
     mocks.admit.mockResolvedValue({ allowed: true, retryAfterSeconds: 0, reservationMicros: 50_000 });
     mocks.finalize.mockResolvedValue(undefined);
     mocks.recordBlocked.mockResolvedValue(undefined);
-    mocks.runAssistant.mockResolvedValue({ answer: "Kết quả an toàn", sources: [], usage: { inputTokens: 10, outputTokens: 5 }, toolCalls: 0, toolNames: [], responseKind: "clarification", advisorOptions: [] });
+    mocks.runAssistant.mockResolvedValue({ answer: "Kết quả an toàn", sources: [], usage: { inputTokens: 10, outputTokens: 5 }, toolCalls: 0, toolNames: [], responseKind: "tool_based", advisorOptions: [] });
     mocks.getActiveAIRuntime.mockResolvedValue({
       runtime: { provider: "openai", model: "gpt-5-mini-2025-08-07", enabled: true, runtimeRevision: 1, profileRevision: 1 },
       config: getAIProviderConfig({ provider: "openai", model: "gpt-5-mini-2025-08-07", enabled: true }),
@@ -93,6 +93,16 @@ describe("Phase 13A public assistant API", () => {
     expect(mocks.getActiveAIRuntime).toHaveBeenCalledTimes(1);
     expect(mocks.admit).toHaveBeenCalledTimes(1);
     expect(mocks.runAssistant).toHaveBeenCalledTimes(1);
+  });
+
+  it("aligns a provider clarification with the deterministic next-best question", async () => {
+    mocks.runAssistant.mockResolvedValueOnce({ answer: "Bạn đi ngày nào?", sources: [], toolCalls: 0, toolNames: [], responseKind: "clarification", advisorOptions: [] });
+    const response = await POST(request({ message: "Tìm phòng săn mây cho 2 người", history: [], sessionId: "session_identifier_123" }));
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      answer: "Bạn muốn giữ ngân sách khoảng bao nhiêu mỗi đêm?",
+      advisor: { statePatch: { consultation: { askedFields: ["budget"] } } },
+    });
   });
 
   it("guides an action request to the existing flow without provider admission or mutation", async () => {

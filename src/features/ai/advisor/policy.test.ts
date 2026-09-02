@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 import {
+  alignAdvisorAnswer,
   classifyAdvisorIntent,
   classifySocialIntent,
   extractAdvisorOptionReferences,
@@ -37,6 +38,15 @@ describe("Phase 13E domain intent router", () => {
   it("keeps motorbike rental distinct from road-access advice", () => {
     expect(classifyAdvisorIntent("Tôi muốn thuê xe máy")).toBe("motorbike");
     expect(classifyAdvisorIntent("Đường đi xe máy có khó không?")).toBe("road");
+  });
+});
+
+describe("Phase 13E deterministic question alignment", () => {
+  it("uses the code-selected next question when a provider returns a different clarification", () => {
+    const plan = planAdvisorTurn(undefined, "Tìm phòng săn mây cho 2 người");
+    expect(plan.nextQuestion?.field).toBe("budget");
+    expect(alignAdvisorAnswer(plan, "clarification", "Bạn đi ngày nào?")).toBe("Bạn muốn giữ ngân sách khoảng bao nhiêu mỗi đêm?");
+    expect(alignAdvisorAnswer(plan, "tool_based", "Mình tìm thấy hai lựa chọn.")).toBe("Mình tìm thấy hai lựa chọn.");
   });
 });
 

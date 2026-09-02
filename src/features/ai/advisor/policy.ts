@@ -281,6 +281,11 @@ export function finalizeAdvisorTurn(plan: AdvisorTurnPlan, options: AdvisorOptio
   };
 }
 
+export function alignAdvisorAnswer(plan: AdvisorTurnPlan, responseKind: "clarification" | "refusal" | "tool_based", answer: string) {
+  if (responseKind === "clarification" && plan.nextQuestion) return plan.nextQuestion.text;
+  return answer;
+}
+
 export function actionGuidanceResponse(plan: AdvisorTurnPlan) {
   const state = structuredClone(plan.state);
   state.consultation.stage = "NEXT_ACTION";

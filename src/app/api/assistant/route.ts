@@ -1,5 +1,5 @@
 import { after, NextResponse } from "next/server";
-import { actionGuidanceResponse, classifySocialIntent, finalizeAdvisorTurn, planAdvisorTurn, socialResponse } from "@/features/ai/advisor/policy";
+import { actionGuidanceResponse, alignAdvisorAnswer, classifySocialIntent, finalizeAdvisorTurn, planAdvisorTurn, socialResponse } from "@/features/ai/advisor/policy";
 import { compileAdvisorRequestPrompt } from "@/features/ai/advisor/prompt";
 import { recordAIConversationLogWriteError } from "@/features/ai-conversations/metrics";
 import { captureAIConversationTurn } from "@/features/ai-conversations/service";
@@ -170,12 +170,13 @@ export async function POST(request: Request) {
     } catch {
       // Admission already reserved a conservative maximum, so returning the safe answer cannot overspend.
     }
+    const customerAnswer = alignAdvisorAnswer(advisorPlan, answer.responseKind, answer.answer);
     recordAICompletion({ ok: true, latencyMs: Date.now() - startedAt, usage });
-    scheduleTranscript({ answer: answer.answer, result: "success", errorCode: null, estimatedCostUsd: microsToUsd(actualCostMicros) });
+    scheduleTranscript({ answer: customerAnswer, result: "success", errorCode: null, estimatedCostUsd: microsToUsd(actualCostMicros) });
     return json({
-      answer: answer.answer,
+      answer: customerAnswer,
       sources: answer.sources,
-      advisor: finalizeAdvisorTurn(advisorPlan, answer.advisorOptions, answer.responseKind, answer.answer),
+      advisor: finalizeAdvisorTurn(advisorPlan, answer.advisorOptions, answer.responseKind, customerAnswer),
     });
   } catch (rawError) {
     const error = normalizeAssistantError(rawError);

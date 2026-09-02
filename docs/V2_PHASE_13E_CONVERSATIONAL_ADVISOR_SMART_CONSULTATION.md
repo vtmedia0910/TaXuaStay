@@ -50,6 +50,8 @@ The server deterministically extracts explicit dates, party/room counts, common 
 
 Next-best-question priority depends on intent. Recommendation starts with guests, then priority, budget, transport/road and dates. Availability starts with dates, then guests and target. Road advice starts with target and transport. At most one primary clarification is supplied to the model, and a field already asked or known is not asked again.
 
+When the provider returns a clarification turn, the customer-visible question is aligned to that code-selected Next Best Question before response and best-effort transcript capture. Provider wording therefore cannot make the visible question disagree with the stored `askedFields` state or the suggested-reply chips.
+
 Ordinal and contextual phrases such as `cái thứ 2`, `phòng đó` and `cái rẻ hơn` resolve only against the bounded recent public references. Missing, tied or out-of-range context stays ambiguous and produces one clarification rather than a guess.
 
 ## Advisor prompt and response
