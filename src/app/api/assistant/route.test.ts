@@ -59,17 +59,24 @@ describe("Phase 13A public assistant API", () => {
   });
 
   it("returns 200 with private no-store headers and shared accounting", async () => {
-    const response = await POST(request());
+    const response = await POST(request({
+      ...validBody,
+      pageContext: { pageKind: "room", pathname: "/stay/po-mu/phong-may", destinationSlug: "ta-xua", propertySlug: "po-mu", roomSlug: "phong-may" },
+    }));
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("no-store, private");
     await expect(response.json()).resolves.toMatchObject({ answer: "Kết quả an toàn" });
     expect(mocks.admit).toHaveBeenCalledTimes(1);
     expect(mocks.finalize).toHaveBeenCalledWith(expect.objectContaining({ ok: true, reservationMicros: 50_000 }));
+    expect(mocks.runAssistant).toHaveBeenCalledWith(expect.objectContaining({
+      pageContext: expect.objectContaining({ pageKind: "room", roomSlug: "phong-may" }),
+    }));
   });
 
   it.each([
     [{ message: "", history: [] }, 400],
     [{ message: "ok", history: [{ role: "system", content: "inject" }] }, 400],
+    [{ ...validBody, pageContext: { pageKind: "room", pathname: "/booking/SECRET", bookingToken: "private" } }, 400],
   ] as const)("rejects malformed public input", async (body, status) => {
     expect((await POST(request(body))).status).toBe(status);
     expect(mocks.runAssistant).not.toHaveBeenCalled();

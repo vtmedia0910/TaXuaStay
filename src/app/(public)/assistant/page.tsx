@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AssistantExperience } from "@/components/trip/assistant-experience";
+import { getPublicAssistantReadiness } from "@/features/ai/public-readiness";
 
 export const metadata: Metadata = {
   title: "Trợ lý Tà Xùa Trip",
@@ -8,6 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default async function AssistantPage({ searchParams }: { searchParams: Promise<{ prompt?: string }> }) {
-  const query = await searchParams;
-  return <AssistantExperience initialPrompt={query.prompt ?? ""} />;
+  const [query, readiness] = await Promise.all([searchParams, getPublicAssistantReadiness()]);
+  return <AssistantExperience initialPrompt={query.prompt ?? ""} readiness={readiness} />;
 }

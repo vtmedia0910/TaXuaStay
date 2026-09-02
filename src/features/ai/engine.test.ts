@@ -39,6 +39,21 @@ describe("Phase 13 bounded grounded tool loop", () => {
     expect(context).toContain("[email đã ẩn]");
   });
 
+  it("treats bounded public page context as a routing hint rather than business truth", async () => {
+    const adapter = new FakeAdapter([{ type: "final", kind: "clarification", text: "Bạn muốn kiểm tra giá hay tình trạng phòng?" }]);
+    await runAssistant({
+      message: "Phòng này thế nào?",
+      history: [],
+      adapter,
+      tools: new Map(),
+      pageContext: { pageKind: "room", pathname: "/stay/po-mu/phong-may", destinationSlug: "ta-xua", propertySlug: "po-mu", roomSlug: "phong-may" },
+    });
+    const request = adapter.generate.mock.calls[0]?.[0];
+    expect(request.systemPrompt).toContain("chỉ là gợi ý điều hướng");
+    expect(request.messages.at(-1)?.content).toContain('"roomSlug":"phong-may"');
+    expect(request.messages.at(-1)?.content).not.toMatch(/booking|token|supplier/i);
+  });
+
   it("executes an allow-listed tool then returns a grounded answer with public provenance", async () => {
     const adapter = new FakeAdapter([
       { type: "tool_calls", calls: [{ id: "call-1", name: "safe_tool", input: {} }], usage: { inputTokens: 10 } },

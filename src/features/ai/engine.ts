@@ -14,6 +14,7 @@ import type {
   AIPublicSource,
   AssistantAnswer,
 } from "@/features/ai/types";
+import type { AssistantPageContext } from "@/features/ai/discovery";
 
 export const MAX_AI_TOOL_ROUNDS = 4;
 export const MAX_AI_TOOL_CALLS = 8;
@@ -76,6 +77,7 @@ export async function runAssistant(input: {
   maxOutputTokens?: number;
   safetyIdentifier?: string;
   systemPrompt?: string;
+  pageContext?: AssistantPageContext;
 }): Promise<AssistantAnswer> {
   const safetyReply = getDeterministicSafetyReply(input.message);
   if (safetyReply) return { answer: safetyReply, sources: [], toolCalls: 0 };
@@ -83,9 +85,15 @@ export async function runAssistant(input: {
 
   const registry = input.tools ?? createAssistantToolRegistry();
   const toolDefinitions = [...registry.values()].map((tool) => tool.definition);
+  const pageContextHint = input.pageContext
+    ? `Bối cảnh trang công khai (chỉ là gợi ý điều hướng, không phải dữ kiện kinh doanh): ${JSON.stringify(input.pageContext)}`
+    : null;
   const messages = [
     ...input.history.slice(-6).map((message) => ({ ...message, content: redactUserPII(message.content) })),
-    { role: "user" as const, content: redactUserPII(input.message) },
+    {
+      role: "user" as const,
+      content: [pageContextHint, `Câu hỏi của khách: ${redactUserPII(input.message)}`].filter(Boolean).join("\n"),
+    },
   ];
   const toolResults: Parameters<AIProviderAdapter["generate"]>[0]["toolResults"] = [];
   const sources: AIPublicSource[] = [];

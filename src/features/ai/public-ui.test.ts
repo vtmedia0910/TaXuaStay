@@ -11,11 +11,12 @@ describe("Phase 13 public and Admin UI boundaries", () => {
     expect(page).toContain("index: false");
     expect(page).toContain("noarchive: true");
     expect(launcher).toContain("safe-area-inset-bottom");
-    expect(launcher).toContain('pathname.startsWith("/booking")');
+    expect(launcher).toContain("isAssistantDiscoveryRouteSuppressed");
+    expect(launcher).toContain("ASSISTANT_TEASER_DELAY_MS");
   });
 
   it("uses a server endpoint, bounded text history and no provider SDK in the browser", () => {
-    const ui = read("src/components/trip/assistant-experience.tsx");
+    const ui = read("src/components/trip/assistant-conversation.tsx");
     expect(ui).toContain('fetch("/api/assistant"');
     expect(ui).toContain("messages.slice(-6)");
     expect(ui).toContain("maxLength={1_200}");

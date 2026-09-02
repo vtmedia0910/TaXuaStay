@@ -4,6 +4,8 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AssistantExperience } from "@/components/trip/assistant-experience";
 
+vi.mock("next/navigation", () => ({ usePathname: () => "/assistant" }));
+
 describe("Phase 13A AssistantExperience states", () => {
   beforeEach(() => {
     Element.prototype.scrollIntoView = vi.fn();

@@ -91,6 +91,7 @@ export async function POST(request: Request) {
       safetyIdentifier: getAssistantSessionIdentity(parsed.data.sessionId, salt)
         ?? getAssistantClientIdentity(request.headers, salt),
       systemPrompt: resolvedRuntime.compiledPrompt,
+      pageContext: parsed.data.pageContext,
     });
     usage = answer.usage;
     toolCalls = answer.toolCalls;
