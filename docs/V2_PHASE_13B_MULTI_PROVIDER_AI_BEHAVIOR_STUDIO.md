@@ -30,6 +30,12 @@ The registry is code-owned. Admin may select only a provider/model pair present 
 
 Each adapter uses one fixed vendor endpoint, normalizes text/tool calls/usage, rejects malformed output and maps credentials, unsupported models, 429, timeout and 5xx failures to sanitized application errors. There is no arbitrary model ID, base URL, OpenAI-compatible gateway or automatic failover. A missing credential for the selected provider cannot fall back to another configured provider.
 
+### Gemini 2.5 Flash thinking policy
+
+`gemini-2.5-flash` uses dynamic thinking when `thinkingConfig` is omitted. The Tà Xùa Trip assistant is a grounded, read-only tool workflow rather than a general reasoning product, so its Gemini adapter always sends `generationConfig.thinkingConfig.thinkingBudget = 0` for both explicit Admin health checks and customer requests. This reserves the bounded `maxOutputTokens` budget for the visible answer or function call, minimizes latency/cost, and avoids introducing thought-signature state into the existing deterministic tool loop. A future model or use case must define and test a new explicit bounded policy before it can enter the allow-list; dynamic thinking is never accepted implicitly.
+
+Gemini usage normalization includes any provider-reported `thoughtsTokenCount` defensively, even though the current policy disables thinking. Health checks remain one minimal 32-token request with no tools or customer data. HTTP/provider payloads continue to be reduced to the existing sanitized health categories; keys and raw responses are never logged or stored.
+
 Provider usage is reconciled through the existing shared Upstash controls. When a provider has no reviewed exact price in the code registry, cost displays `unavailable` rather than a fabricated zero; conservative request reservation still limits spend.
 
 ## Environment contract

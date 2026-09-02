@@ -3,7 +3,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 import { getAIConfigurationError, getAIProviderConfig } from "@/features/ai/config";
-import { DeepSeekAdapter, GeminiAdapter, OpenAIResponsesAdapter, createAIProviderAdapter } from "@/features/ai/provider";
+import {
+  DeepSeekAdapter,
+  GeminiAdapter,
+  OpenAIResponsesAdapter,
+  checkAIProviderHealth,
+  createAIProviderAdapter,
+} from "@/features/ai/provider";
 import { AI_PROVIDER_REGISTRY, SAFE_AI_PROVIDER_REGISTRY } from "@/features/ai/providers/registry";
 import type { AIProviderRequest } from "@/features/ai/types";
 
@@ -88,21 +94,74 @@ describe("OpenAI Responses adapter", () => {
 });
 
 describe("Gemini adapter", () => {
-  it("uses the approved Google endpoint, function declarations and normalized usage", async () => {
+  it("uses the approved Google endpoint, bounded no-thinking policy, function declarations and normalized usage", async () => {
     const fetcher = vi.fn(async () => response({ candidates: [{ content: { parts: [{ functionCall: { name: "get_availability", args: { rooms: 1 } } }] } }], usageMetadata: { promptTokenCount: 20, candidatesTokenCount: 4 } }));
     const adapter = new GeminiAdapter("gemini-2.5-flash", "gemini-secret", fetcher as typeof fetch);
     await expect(adapter.generate(request({ tools: [{ name: "get_availability", description: "safe", inputSchema: { type: "object" } }] }))).resolves.toMatchObject({ type: "tool_calls", calls: [{ name: "get_availability", input: { rooms: 1 } }], usage: { inputTokens: 20, outputTokens: 4 } });
     expect(String((fetcher.mock.calls as unknown[][])[0]?.[0])).toBe("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent");
     const init = (fetcher.mock.calls as unknown[][])[0]?.[1] as RequestInit;
     expect((init.headers as Record<string, string>)["x-goog-api-key"]).toBe("gemini-secret");
-    expect(JSON.parse(String(init.body)).tools[0].functionDeclarations[0].name).toBe("get_availability");
+    const body = JSON.parse(String(init.body));
+    expect(body.tools[0].functionDeclarations[0].name).toBe("get_availability");
+    expect(body.generationConfig).toEqual({
+      maxOutputTokens: 800,
+      thinkingConfig: { thinkingBudget: 0 },
+    });
   });
 
-  it("normalizes final text and rejects malformed provider responses", async () => {
+  it("normalizes final text, accounts for any reported thinking usage and rejects empty or malformed responses", async () => {
     const adapter = new GeminiAdapter("gemini-2.5-flash", "key", vi.fn(async () => response({ candidates: [{ content: { parts: [{ text: "CLARIFY: Bạn đi ngày nào?" }] } }] })) as typeof fetch);
     await expect(adapter.generate(request())).resolves.toMatchObject({ type: "final", kind: "clarification", text: "Bạn đi ngày nào?" });
+    const withUsage = new GeminiAdapter("gemini-2.5-flash", "key", vi.fn(async () => response({
+      candidates: [{ content: { parts: [{ text: "CLARIFY: OK" }] } }],
+      usageMetadata: { promptTokenCount: 8, candidatesTokenCount: 2, thoughtsTokenCount: 3 },
+    })) as typeof fetch);
+    await expect(withUsage.generate(request())).resolves.toMatchObject({ usage: { inputTokens: 8, outputTokens: 5 } });
+    const empty = new GeminiAdapter("gemini-2.5-flash", "key", vi.fn(async () => response({ candidates: [{ content: { parts: [{ text: "" }] } }] })) as typeof fetch);
+    await expect(empty.generate(request())).rejects.toMatchObject({ code: "AI_RESPONSE_INVALID", healthStatus: "PROVIDER_ERROR" });
     const malformed = new GeminiAdapter("gemini-2.5-flash", "key", vi.fn(async () => response({ candidates: [] })) as typeof fetch);
     await expect(malformed.generate(request())).rejects.toMatchObject({ code: "AI_RESPONSE_INVALID" });
+  });
+
+  it("runs a deterministic minimal health check with thinking disabled", async () => {
+    const fetcher = vi.fn(async () => response({
+      candidates: [{ content: { parts: [{ text: "CLARIFY: OK" }] } }],
+      usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 3 },
+    }));
+    const result = await checkAIProviderHealth(
+      new GeminiAdapter("gemini-2.5-flash", "key", fetcher as typeof fetch),
+      1_000,
+    );
+    expect(result).toMatchObject({ status: "CONNECTED", usage: { inputTokens: 10, outputTokens: 3 } });
+    const body = JSON.parse(String(((fetcher.mock.calls as unknown[][])[0]?.[1] as RequestInit).body));
+    expect(body.generationConfig).toEqual({
+      maxOutputTokens: 32,
+      thinkingConfig: { thinkingBudget: 0 },
+    });
+  });
+
+  it("fails closed when a Gemini model has no reviewed thinking policy", async () => {
+    const fetcher = vi.fn();
+    const adapter = new GeminiAdapter("gemini-future-unreviewed", "key", fetcher as typeof fetch);
+    await expect(adapter.generate(request())).rejects.toMatchObject({ healthStatus: "UNSUPPORTED_MODEL" });
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [400, "PROVIDER_ERROR"],
+    [401, "INVALID_CREDENTIAL"],
+    [403, "INVALID_CREDENTIAL"],
+    [404, "UNSUPPORTED_MODEL"],
+    [429, "UNAVAILABLE"],
+    [500, "UNAVAILABLE"],
+    [503, "UNAVAILABLE"],
+  ] as const)("maps Gemini HTTP %s to sanitized %s", async (status, healthStatus) => {
+    const adapter = new GeminiAdapter(
+      "gemini-2.5-flash",
+      "key",
+      vi.fn(async () => response({ sensitive_provider_detail: "never expose" }, status)) as typeof fetch,
+    );
+    await expect(adapter.generate(request())).rejects.toMatchObject({ healthStatus });
   });
 });
 

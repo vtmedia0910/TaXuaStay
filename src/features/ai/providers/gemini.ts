@@ -10,6 +10,17 @@ import {
 } from "@/features/ai/providers/shared";
 
 const GEMINI_API_ORIGIN = "https://generativelanguage.googleapis.com";
+const GEMINI_THINKING_BUDGETS: Readonly<Record<string, number>> = {
+  "gemini-2.5-flash": 0,
+};
+
+function thinkingBudgetFor(model: string) {
+  const budget = GEMINI_THINKING_BUDGETS[model];
+  if (budget === undefined) {
+    throw new AIProviderAdapterError("AI_PROVIDER_ERROR", 503, "UNSUPPORTED_MODEL");
+  }
+  return budget;
+}
 
 interface GeminiPart {
   text?: string;
@@ -18,7 +29,21 @@ interface GeminiPart {
 
 interface GeminiBody {
   candidates?: Array<{ content?: { parts?: GeminiPart[] } }>;
-  usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number };
+  usageMetadata?: {
+    promptTokenCount?: number;
+    candidatesTokenCount?: number;
+    thoughtsTokenCount?: number;
+  };
+}
+
+function outputTokenUsage(body: GeminiBody) {
+  const candidates = body.usageMetadata?.candidatesTokenCount;
+  const thoughts = body.usageMetadata?.thoughtsTokenCount;
+  if (!Number.isSafeInteger(candidates) || Number(candidates) < 0) return candidates;
+  if (thoughts === undefined) return candidates;
+  if (!Number.isSafeInteger(thoughts) || Number(thoughts) < 0) return undefined;
+  const total = Number(candidates) + Number(thoughts);
+  return Number.isSafeInteger(total) ? total : undefined;
 }
 
 function contents(request: AIProviderRequest) {
@@ -51,6 +76,7 @@ export class GeminiAdapter implements AIProviderAdapter {
   ) {}
 
   async generate(request: AIProviderRequest): Promise<AIProviderResponse> {
+    const thinkingBudget = thinkingBudgetFor(this.model);
     let response: Response;
     try {
       response = await this.fetcher(
@@ -71,7 +97,15 @@ export class GeminiAdapter implements AIProviderAdapter {
             toolConfig: request.tools.length
               ? { functionCallingConfig: { mode: "AUTO" } }
               : undefined,
-            generationConfig: { maxOutputTokens: request.maxOutputTokens },
+            generationConfig: {
+              maxOutputTokens: request.maxOutputTokens,
+              // The current grounded assistant does not need hidden reasoning. Keeping this
+              // explicit prevents Gemini 2.5 Flash's dynamic thinking from consuming the
+              // bounded response budget and avoids thought-signature state in the tool loop.
+              thinkingConfig: {
+                thinkingBudget,
+              },
+            },
           }),
           cache: "no-store",
           signal: request.signal,
@@ -91,7 +125,7 @@ export class GeminiAdapter implements AIProviderAdapter {
     }
     const usage = safeIntegerUsage(
       body.usageMetadata?.promptTokenCount,
-      body.usageMetadata?.candidatesTokenCount,
+      outputTokenUsage(body),
     );
     const calls = parts.filter((part) => part.functionCall);
     if (calls.length) {
