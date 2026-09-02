@@ -3,11 +3,29 @@ import "server-only";
 import { AssistantError } from "@/features/ai/errors";
 import type { AIProviderHealthStatus, AIProviderResponse, AIProviderUsage } from "@/features/ai/types";
 
+export type AIProviderDiagnosticStatus =
+  | "INVALID_REQUEST"
+  | "INVALID_CREDENTIAL"
+  | "UNSUPPORTED_MODEL"
+  | "RATE_LIMITED"
+  | "PROVIDER_UNAVAILABLE"
+  | "TIMEOUT"
+  | "MALFORMED_RESPONSE";
+
+function defaultDiagnosticStatus(healthStatus: AIProviderHealthStatus): AIProviderDiagnosticStatus {
+  if (healthStatus === "INVALID_CREDENTIAL") return "INVALID_CREDENTIAL";
+  if (healthStatus === "UNSUPPORTED_MODEL") return "UNSUPPORTED_MODEL";
+  if (healthStatus === "TIMEOUT") return "TIMEOUT";
+  if (healthStatus === "UNAVAILABLE") return "PROVIDER_UNAVAILABLE";
+  return "MALFORMED_RESPONSE";
+}
+
 export class AIProviderAdapterError extends AssistantError {
   constructor(
     code: "AI_TIMEOUT" | "AI_PROVIDER_UNAVAILABLE" | "AI_PROVIDER_ERROR" | "AI_RESPONSE_INVALID",
     status: number,
     readonly healthStatus: AIProviderHealthStatus,
+    readonly diagnosticStatus: AIProviderDiagnosticStatus = defaultDiagnosticStatus(healthStatus),
   ) {
     super(code, status);
     this.name = "AIProviderAdapterError";
@@ -16,15 +34,18 @@ export class AIProviderAdapterError extends AssistantError {
 
 export function mapProviderFailure(status: number) {
   if (status === 401 || status === 403) {
-    return new AIProviderAdapterError("AI_PROVIDER_ERROR", 503, "INVALID_CREDENTIAL");
+    return new AIProviderAdapterError("AI_PROVIDER_ERROR", 503, "INVALID_CREDENTIAL", "INVALID_CREDENTIAL");
   }
   if (status === 404) {
-    return new AIProviderAdapterError("AI_PROVIDER_ERROR", 503, "UNSUPPORTED_MODEL");
+    return new AIProviderAdapterError("AI_PROVIDER_ERROR", 503, "UNSUPPORTED_MODEL", "UNSUPPORTED_MODEL");
   }
-  if (status === 408 || status === 429 || status >= 500) {
-    return new AIProviderAdapterError("AI_PROVIDER_UNAVAILABLE", 503, "UNAVAILABLE");
+  if (status === 429) {
+    return new AIProviderAdapterError("AI_PROVIDER_UNAVAILABLE", 503, "UNAVAILABLE", "RATE_LIMITED");
   }
-  return new AIProviderAdapterError("AI_PROVIDER_ERROR", 503, "PROVIDER_ERROR");
+  if (status === 408 || status >= 500) {
+    return new AIProviderAdapterError("AI_PROVIDER_UNAVAILABLE", 503, "UNAVAILABLE", "PROVIDER_UNAVAILABLE");
+  }
+  return new AIProviderAdapterError("AI_PROVIDER_ERROR", 503, "PROVIDER_ERROR", "INVALID_REQUEST");
 }
 
 export function providerFetchFailure(error: unknown) {

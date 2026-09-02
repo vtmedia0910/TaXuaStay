@@ -36,6 +36,7 @@ export function AIPromptLab({ draft }: { draft: { revision: number; provider: st
           {state.answer ? <div className="mt-4 rounded-xl bg-white p-4"><p className="text-xs font-bold uppercase tracking-wide text-muted">Câu trả lời</p><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-ink">{state.answer}</p></div> : null}
           {state.sources?.length ? <ul className="mt-3 space-y-1 text-xs text-muted">{state.sources.map((source, index) => <li key={`${source.label}-${index}`}>{source.label}{source.asOf ? ` · ${source.asOf}` : ""}</li>)}</ul> : null}
           {state.code ? <p className="mt-3 text-xs font-semibold text-muted">Safe code: {state.code}</p> : null}
+          {state.providerStatus ? <p className="mt-1 text-xs font-semibold text-muted">Provider status: {state.providerStatus}</p> : null}
         </section>
       ) : null}
     </div>

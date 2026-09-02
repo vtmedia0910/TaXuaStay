@@ -11,6 +11,7 @@ import {
   createAIProviderAdapter,
 } from "@/features/ai/provider";
 import { AI_PROVIDER_REGISTRY, SAFE_AI_PROVIDER_REGISTRY } from "@/features/ai/providers/registry";
+import { ASSISTANT_TOOL_NAMES, createAssistantToolRegistry } from "@/features/ai/tools";
 import type { AIProviderRequest } from "@/features/ai/types";
 
 const selection = { provider: "openai", model: "gpt-5-mini-2025-08-07", enabled: true };
@@ -103,9 +104,62 @@ describe("Gemini adapter", () => {
     expect((init.headers as Record<string, string>)["x-goog-api-key"]).toBe("gemini-secret");
     const body = JSON.parse(String(init.body));
     expect(body.tools[0].functionDeclarations[0].name).toBe("get_availability");
+    expect(body.tools[0].functionDeclarations[0].parametersJsonSchema).toEqual({ type: "object" });
+    expect(body.tools[0].functionDeclarations[0]).not.toHaveProperty("parameters");
     expect(body.generationConfig).toEqual({
       maxOutputTokens: 800,
       thinkingConfig: { thinkingBudget: 0 },
+    });
+  });
+
+  it("serializes all nine application tool schemas through parametersJsonSchema", async () => {
+    const fetcher = vi.fn(async () => response({
+      candidates: [{ content: { parts: [{ text: "CLARIFY: OK" }] } }],
+    }));
+    const definitions = [...createAssistantToolRegistry().values()].map((tool) => tool.definition);
+    const adapter = new GeminiAdapter("gemini-2.5-flash", "key", fetcher as typeof fetch);
+    await expect(adapter.generate(request({ tools: definitions }))).resolves.toMatchObject({
+      type: "final",
+      kind: "clarification",
+    });
+    const body = JSON.parse(String(((fetcher.mock.calls as unknown[][])[0]?.[1] as RequestInit).body));
+    const declarations = body.tools[0].functionDeclarations as Array<Record<string, unknown>>;
+    expect(definitions.map((tool) => tool.name)).toEqual(ASSISTANT_TOOL_NAMES);
+    expect(declarations).toHaveLength(9);
+    expect(declarations.map((tool) => tool.name)).toEqual(ASSISTANT_TOOL_NAMES);
+    for (const declaration of declarations) {
+      expect(declaration).toHaveProperty("parametersJsonSchema");
+      expect(declaration).not.toHaveProperty("parameters");
+      expect(() => JSON.stringify(declaration.parametersJsonSchema)).not.toThrow();
+    }
+  });
+
+  it("continues a Gemini tool result with the matching function call context", async () => {
+    const fetcher = vi.fn(async () => response({
+      candidates: [{ content: { parts: [{ text: "Dữ liệu công khai đã được kiểm tra." }] } }],
+      usageMetadata: { promptTokenCount: 14, candidatesTokenCount: 5 },
+    }));
+    const adapter = new GeminiAdapter("gemini-2.5-flash", "key", fetcher as typeof fetch);
+    await expect(adapter.generate(request({
+      toolResults: [{
+        callId: "gemini-call-1",
+        toolName: "get_availability",
+        input: { rooms: 1 },
+        result: { status: "known", data: { available: true }, source: { label: "Tình trạng phòng" } },
+      }],
+    }))).resolves.toMatchObject({ type: "final", kind: "tool_based" });
+    const body = JSON.parse(String(((fetcher.mock.calls as unknown[][])[0]?.[1] as RequestInit).body));
+    expect(body.contents.at(-2)).toEqual({
+      role: "model",
+      parts: [{ functionCall: { id: "gemini-call-1", name: "get_availability", args: { rooms: 1 } } }],
+    });
+    expect(body.contents.at(-1)).toEqual({
+      role: "user",
+      parts: [{ functionResponse: {
+        id: "gemini-call-1",
+        name: "get_availability",
+        response: { result: { status: "known", data: { available: true }, source: { label: "Tình trạng phòng" } } },
+      } }],
     });
   });
 
@@ -118,7 +172,11 @@ describe("Gemini adapter", () => {
     })) as typeof fetch);
     await expect(withUsage.generate(request())).resolves.toMatchObject({ usage: { inputTokens: 8, outputTokens: 5 } });
     const empty = new GeminiAdapter("gemini-2.5-flash", "key", vi.fn(async () => response({ candidates: [{ content: { parts: [{ text: "" }] } }] })) as typeof fetch);
-    await expect(empty.generate(request())).rejects.toMatchObject({ code: "AI_RESPONSE_INVALID", healthStatus: "PROVIDER_ERROR" });
+    await expect(empty.generate(request())).rejects.toMatchObject({
+      code: "AI_RESPONSE_INVALID",
+      healthStatus: "PROVIDER_ERROR",
+      diagnosticStatus: "MALFORMED_RESPONSE",
+    });
     const malformed = new GeminiAdapter("gemini-2.5-flash", "key", vi.fn(async () => response({ candidates: [] })) as typeof fetch);
     await expect(malformed.generate(request())).rejects.toMatchObject({ code: "AI_RESPONSE_INVALID" });
   });
@@ -138,6 +196,7 @@ describe("Gemini adapter", () => {
       maxOutputTokens: 32,
       thinkingConfig: { thinkingBudget: 0 },
     });
+    expect(body.tools).toBeUndefined();
   });
 
   it("fails closed when a Gemini model has no reviewed thinking policy", async () => {
@@ -148,20 +207,20 @@ describe("Gemini adapter", () => {
   });
 
   it.each([
-    [400, "PROVIDER_ERROR"],
-    [401, "INVALID_CREDENTIAL"],
-    [403, "INVALID_CREDENTIAL"],
-    [404, "UNSUPPORTED_MODEL"],
-    [429, "UNAVAILABLE"],
-    [500, "UNAVAILABLE"],
-    [503, "UNAVAILABLE"],
-  ] as const)("maps Gemini HTTP %s to sanitized %s", async (status, healthStatus) => {
+    [400, "AI_PROVIDER_ERROR", "PROVIDER_ERROR", "INVALID_REQUEST"],
+    [401, "AI_PROVIDER_ERROR", "INVALID_CREDENTIAL", "INVALID_CREDENTIAL"],
+    [403, "AI_PROVIDER_ERROR", "INVALID_CREDENTIAL", "INVALID_CREDENTIAL"],
+    [404, "AI_PROVIDER_ERROR", "UNSUPPORTED_MODEL", "UNSUPPORTED_MODEL"],
+    [429, "AI_PROVIDER_UNAVAILABLE", "UNAVAILABLE", "RATE_LIMITED"],
+    [500, "AI_PROVIDER_UNAVAILABLE", "UNAVAILABLE", "PROVIDER_UNAVAILABLE"],
+    [503, "AI_PROVIDER_UNAVAILABLE", "UNAVAILABLE", "PROVIDER_UNAVAILABLE"],
+  ] as const)("maps Gemini HTTP %s to sanitized %s / %s / %s", async (status, code, healthStatus, diagnosticStatus) => {
     const adapter = new GeminiAdapter(
       "gemini-2.5-flash",
       "key",
       vi.fn(async () => response({ sensitive_provider_detail: "never expose" }, status)) as typeof fetch,
     );
-    await expect(adapter.generate(request())).rejects.toMatchObject({ healthStatus });
+    await expect(adapter.generate(request())).rejects.toMatchObject({ code, healthStatus, diagnosticStatus });
   });
 });
 

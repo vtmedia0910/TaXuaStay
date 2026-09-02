@@ -36,6 +36,8 @@ Each adapter uses one fixed vendor endpoint, normalizes text/tool calls/usage, r
 
 Gemini usage normalization includes any provider-reported `thoughtsTokenCount` defensively, even though the current policy disables thinking. Health checks remain one minimal 32-token request with no tools or customer data. HTTP/provider payloads continue to be reduced to the existing sanitized health categories; keys and raw responses are never logged or stored.
 
+Gemini function declarations use `parametersJsonSchema`, because the nine code-owned tool definitions are JSON Schema and include constraints such as `additionalProperties`, `format`, numeric bounds and enums. The narrower Gemini/OpenAPI `parameters` field is not used for these definitions. Prompt Lab failures retain only a safe diagnostic category (`INVALID_REQUEST`, `INVALID_CREDENTIAL`, `UNSUPPORTED_MODEL`, `RATE_LIMITED`, `PROVIDER_UNAVAILABLE`, `TIMEOUT` or `MALFORMED_RESPONSE`) alongside the existing safe application code; no raw provider body, request payload or credential reaches Supabase or the browser.
+
 Provider usage is reconciled through the existing shared Upstash controls. When a provider has no reviewed exact price in the code registry, cost displays `unavailable` rather than a fabricated zero; conservative request reservation still limits spend.
 
 ## Environment contract

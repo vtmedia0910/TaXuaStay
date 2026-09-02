@@ -91,7 +91,10 @@ export class GeminiAdapter implements AIProviderAdapter {
               ? [{ functionDeclarations: request.tools.map((tool) => ({
                   name: tool.name,
                   description: tool.description,
-                  parameters: tool.inputSchema,
+                  // Application tools intentionally use JSON Schema. Gemini's `parameters`
+                  // field accepts its narrower OpenAPI Schema dialect; passing JSON Schema
+                  // keywords there causes the provider to reject the whole request.
+                  parametersJsonSchema: tool.inputSchema,
                 })) }]
               : undefined,
             toolConfig: request.tools.length

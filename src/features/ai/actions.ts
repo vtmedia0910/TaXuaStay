@@ -12,6 +12,7 @@ import { runAssistant } from "@/features/ai/engine";
 import { normalizeAssistantError } from "@/features/ai/errors";
 import { checkAIProviderHealth, createAIProviderAdapter } from "@/features/ai/provider";
 import { isAISelectionActivatable } from "@/features/ai/providers/registry";
+import { AIProviderAdapterError, type AIProviderDiagnosticStatus } from "@/features/ai/providers/shared";
 import { hashAssistantIdentity } from "@/features/ai/rate-limit";
 import {
   aiHealthSchema,
@@ -190,6 +191,7 @@ export interface PromptLabState {
   inputTokens?: number;
   outputTokens?: number;
   estimatedCostUsd?: number | null;
+  providerStatus?: AIProviderDiagnosticStatus;
 }
 
 export async function testAIRuntimeDraftAction(
@@ -292,6 +294,9 @@ export async function testAIRuntimeDraftAction(
     };
   } catch (rawError) {
     const error = normalizeAssistantError(rawError);
+    const providerStatus = rawError instanceof AIProviderAdapterError
+      ? rawError.diagnosticStatus
+      : undefined;
     if (reservationMicros) {
       try {
         await guard.controls.finalize({
@@ -307,10 +312,18 @@ export async function testAIRuntimeDraftAction(
     await client.rpc("record_ai_runtime_test", {
       target_revision: revision.data,
       target_status: "FAILED",
-      target_summary_code: error.code,
+      target_summary_code: providerStatus ? `${error.code}:${providerStatus}` : error.code,
     });
     revalidatePath(integrationPath);
-    return { status: "failed", code: error.code, provider, model, runtimeRevision: revision.data };
+    return {
+      status: "failed",
+      code: error.code,
+      providerStatus,
+      provider,
+      model,
+      runtimeRevision: revision.data,
+      latencyMs: Date.now() - startedAt,
+    };
   }
 }
 
