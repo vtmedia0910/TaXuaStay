@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { advisorStateSchema } from "@/features/ai/advisor/types";
 
 const messageSchema = z.object({
   role: z.enum(["user", "assistant"]),
@@ -55,6 +56,7 @@ export const assistantRequestSchema = z.object({
   sessionId: z.string().regex(/^[A-Za-z0-9_-]{16,80}$/).optional(),
   entryPoint: z.enum(["assistant_page", "floating_assistant", "homepage_launcher", "booking_page", "unknown"]).default("unknown"),
   pageContext: assistantPageContextSchema.optional(),
+  advisorState: advisorStateSchema.optional(),
 }).strict();
 
 export type AssistantRequest = z.infer<typeof assistantRequestSchema>;

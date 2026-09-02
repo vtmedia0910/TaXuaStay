@@ -132,6 +132,8 @@ export interface AssistantAnswer {
   usage?: AIProviderUsage;
   toolCalls: number;
   toolNames: string[];
+  responseKind: "clarification" | "refusal" | "tool_based";
+  advisorOptions: import("@/features/ai/advisor/types").AdvisorOptionReference[];
 }
 
 export interface AIProviderConfig {

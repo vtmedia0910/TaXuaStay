@@ -21,9 +21,9 @@ export function AssistantExperience({
           <div className="flex items-start gap-3">
             <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white/12"><Bot size={25} aria-hidden="true" /></span>
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-white/70">TRỢ LÝ TÀ XÙA TRIP</p>
-              <h1 className="mt-1 text-2xl font-extrabold tracking-[-0.025em] sm:text-3xl">Hỏi rõ trước khi lên đường</h1>
-              <p className="mt-2 max-w-xl text-sm leading-6 text-white/82">Trợ lý AI trả lời từ dữ liệu hiện có của Tà Xùa Trip. Thông tin chưa được xác minh sẽ được nói rõ là chưa xác minh.</p>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-white/70">CỐ VẤN TÀ XÙA TRIP</p>
+              <h1 className="mt-1 text-2xl font-extrabold tracking-[-0.025em] sm:text-3xl">Cùng bạn chọn chuyến đi phù hợp</h1>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-white/82">Mình ghi nhớ tạm thời các ưu tiên trong phiên này, so sánh bằng dữ liệu hiện có và nói rõ điều chưa được xác minh.</p>
             </div>
           </div>
         </header>

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { ZodError } from "zod";
+import { extractAdvisorOptionReferences } from "@/features/ai/advisor/policy";
 import { AssistantError } from "@/features/ai/errors";
 import { recordAIToolError, recordAIToolUsage } from "@/features/ai/metrics";
 import { AI_SYSTEM_PROMPT } from "@/features/ai/prompt";
@@ -80,7 +81,7 @@ export async function runAssistant(input: {
   pageContext?: AssistantPageContext;
 }): Promise<AssistantAnswer> {
   const safetyReply = getDeterministicSafetyReply(input.message);
-  if (safetyReply) return { answer: safetyReply, sources: [], toolCalls: 0, toolNames: [] };
+  if (safetyReply) return { answer: safetyReply, sources: [], toolCalls: 0, toolNames: [], responseKind: "refusal", advisorOptions: [] };
   if (!input.adapter.configured) throw new AssistantError("AI_NOT_CONFIGURED", 503);
 
   const registry = input.tools ?? createAssistantToolRegistry();
@@ -103,6 +104,7 @@ export async function runAssistant(input: {
   let toolRoundCount = 0;
   const repeatedToolCalls = new Map<string, number>();
   const toolNames = new Set<string>();
+  const advisorOptions = new Map<string, ReturnType<typeof extractAdvisorOptionReferences>[number]>();
 
   for (let round = 0; round <= MAX_AI_TOOL_ROUNDS; round += 1) {
     const elapsed = Date.now() - startedAt;
@@ -125,7 +127,15 @@ export async function runAssistant(input: {
       }
       const answer = sanitizeAssistantText(response.text, MAX_AI_OUTPUT_CHARACTERS);
       if (!answer) throw new AssistantError("AI_RESPONSE_INVALID", 502);
-      return { answer, sources: publicSources(sources), usage, toolCalls: toolCallCount, toolNames: [...toolNames] };
+      return {
+        answer,
+        sources: publicSources(sources),
+        usage,
+        toolCalls: toolCallCount,
+        toolNames: [...toolNames],
+        responseKind: response.kind,
+        advisorOptions: [...advisorOptions.values()].slice(0, 3),
+      };
     }
 
     toolRoundCount += 1;
@@ -145,6 +155,9 @@ export async function runAssistant(input: {
       try {
         const result = await tool.execute(call.input);
         const safeResult = { ...result, data: sanitizeProviderContext(result.data) };
+        for (const option of extractAdvisorOptionReferences(call.name, safeResult.data)) {
+          advisorOptions.set(`${option.kind}:${option.publicSlug}`, option);
+        }
         toolResults.push({ callId: call.id, toolName: call.name, input: call.input, result: safeResult });
         sources.push({ label: result.source.label, href: result.source.href, asOf: result.source.asOf });
         recordAIToolUsage(call.name);

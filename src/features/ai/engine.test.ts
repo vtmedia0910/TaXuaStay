@@ -27,7 +27,7 @@ function tool(name = "safe_tool"): AssistantTool {
 describe("Phase 13 bounded grounded tool loop", () => {
   it("allows a concise clarification without a tool", async () => {
     const adapter = new FakeAdapter([{ type: "final", kind: "clarification", text: "Bạn muốn đi ngày nào?" }]);
-    await expect(runAssistant({ message: "Tìm phòng", history: [], adapter, tools: new Map() })).resolves.toEqual({ answer: "Bạn muốn đi ngày nào?", sources: [], usage: {}, toolCalls: 0, toolNames: [] });
+    await expect(runAssistant({ message: "Tìm phòng", history: [], adapter, tools: new Map() })).resolves.toEqual({ answer: "Bạn muốn đi ngày nào?", sources: [], usage: {}, toolCalls: 0, toolNames: [], responseKind: "clarification", advisorOptions: [] });
   });
 
   it("does not send unnecessary phone or email PII to the provider", async () => {
@@ -63,6 +63,7 @@ describe("Phase 13 bounded grounded tool loop", () => {
     const result = await runAssistant({ message: "Có view mây không?", history: [], adapter, tools: new Map([["safe_tool", safeTool]]) });
     expect(result).toMatchObject({ answer: "Dữ liệu hiện tại chưa xác nhận điều này.", sources: [{ label: "Dữ kiện đã xác minh", href: "/stay/a/b" }], usage: { inputTokens: 10, outputTokens: 8 } });
     expect(result.toolNames).toEqual(["safe_tool"]);
+    expect(result.responseKind).toBe("tool_based");
     const secondRequest = adapter.generate.mock.calls[1]?.[0];
     expect(JSON.stringify(secondRequest?.toolResults)).not.toContain("must-strip");
     expect(secondRequest?.toolResults[0]?.result.data).toEqual({ state: "unknown" });

@@ -1,4 +1,6 @@
 import { after, NextResponse } from "next/server";
+import { actionGuidanceResponse, classifySocialIntent, finalizeAdvisorTurn, planAdvisorTurn, socialResponse } from "@/features/ai/advisor/policy";
+import { compileAdvisorRequestPrompt } from "@/features/ai/advisor/prompt";
 import { recordAIConversationLogWriteError } from "@/features/ai-conversations/metrics";
 import { captureAIConversationTurn } from "@/features/ai-conversations/service";
 import type { AIConversationEntryPoint } from "@/features/ai-conversations/types";
@@ -78,6 +80,21 @@ export async function POST(request: Request) {
     const parsed = assistantRequestSchema.safeParse(parsedJson);
     if (!parsed.success) throw new AssistantError("AI_BAD_REQUEST", 400);
 
+    const advisorPlan = planAdvisorTurn(parsed.data.advisorState, parsed.data.message, {
+      hasPageTarget: Boolean(parsed.data.pageContext && ["property", "room", "package", "motorbike_detail"].includes(parsed.data.pageContext.pageKind)),
+    });
+    const socialIntent = classifySocialIntent(parsed.data.message);
+    if (socialIntent) {
+      const deterministic = socialResponse(socialIntent, advisorPlan.state);
+      recordAICompletion({ ok: true, latencyMs: Date.now() - startedAt });
+      return json({ answer: deterministic.answer, sources: [], advisor: deterministic.advisor });
+    }
+    if (advisorPlan.intent === "action") {
+      const deterministic = actionGuidanceResponse(advisorPlan);
+      recordAICompletion({ ok: true, latencyMs: Date.now() - startedAt });
+      return json({ answer: deterministic.answer, sources: [deterministic.source], advisor: deterministic.advisor });
+    }
+
     const resolvedRuntime = await getActiveAIRuntime();
     const config = resolvedRuntime.config;
     const configurationError = getAIConfigurationError(config);
@@ -134,8 +151,7 @@ export async function POST(request: Request) {
       maxOutputTokens: config.limits.maxOutputTokens,
       safetyIdentifier: getAssistantSessionIdentity(parsed.data.sessionId, salt)
         ?? getAssistantClientIdentity(request.headers, salt),
-      systemPrompt: resolvedRuntime.compiledPrompt,
-      pageContext: parsed.data.pageContext,
+      systemPrompt: compileAdvisorRequestPrompt(resolvedRuntime.compiledPrompt, advisorPlan, parsed.data.pageContext),
     });
     usage = answer.usage;
     toolCalls = answer.toolCalls;
@@ -156,7 +172,11 @@ export async function POST(request: Request) {
     }
     recordAICompletion({ ok: true, latencyMs: Date.now() - startedAt, usage });
     scheduleTranscript({ answer: answer.answer, result: "success", errorCode: null, estimatedCostUsd: microsToUsd(actualCostMicros) });
-    return json({ answer: answer.answer, sources: answer.sources });
+    return json({
+      answer: answer.answer,
+      sources: answer.sources,
+      advisor: finalizeAdvisorTurn(advisorPlan, answer.advisorOptions, answer.responseKind, answer.answer),
+    });
   } catch (rawError) {
     const error = normalizeAssistantError(rawError);
     if (controls && reservationMicros) {

@@ -37,6 +37,8 @@ describe("Phase 13B Behavior Profile policy", () => {
     expect(compiled.startsWith(CORE_SAFETY_PROMPT)).toBe(true);
     expect(compiled).toContain("Unknown phải giữ là unknown");
     expect(compiled).toContain("Chỉ dùng đúng 9 tool read-only");
+    expect(compiled).toContain("QUY TẮC CỐ VẤN HÀNH TRÌNH");
+    expect(compiled).toContain("chỉ hỏi một câu làm rõ");
     expect(compiled).toContain("Ưu tiên câu ngắn trên điện thoại.");
   });
 

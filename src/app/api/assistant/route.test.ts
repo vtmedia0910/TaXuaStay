@@ -50,7 +50,7 @@ describe("Phase 13A public assistant API", () => {
     mocks.admit.mockResolvedValue({ allowed: true, retryAfterSeconds: 0, reservationMicros: 50_000 });
     mocks.finalize.mockResolvedValue(undefined);
     mocks.recordBlocked.mockResolvedValue(undefined);
-    mocks.runAssistant.mockResolvedValue({ answer: "Kết quả an toàn", sources: [], usage: { inputTokens: 10, outputTokens: 5 }, toolCalls: 0, toolNames: [] });
+    mocks.runAssistant.mockResolvedValue({ answer: "Kết quả an toàn", sources: [], usage: { inputTokens: 10, outputTokens: 5 }, toolCalls: 0, toolNames: [], responseKind: "clarification", advisorOptions: [] });
     mocks.getActiveAIRuntime.mockResolvedValue({
       runtime: { provider: "openai", model: "gpt-5-mini-2025-08-07", enabled: true, runtimeRevision: 1, profileRevision: 1 },
       config: getAIProviderConfig({ provider: "openai", model: "gpt-5-mini-2025-08-07", enabled: true }),
@@ -69,14 +69,50 @@ describe("Phase 13A public assistant API", () => {
     expect(mocks.admit).toHaveBeenCalledTimes(1);
     expect(mocks.finalize).toHaveBeenCalledWith(expect.objectContaining({ ok: true, reservationMicros: 50_000 }));
     expect(mocks.runAssistant).toHaveBeenCalledWith(expect.objectContaining({
-      pageContext: expect.objectContaining({ pageKind: "room", roomSlug: "phong-may" }),
+      systemPrompt: expect.stringMatching(/ADVISOR SESSION CONTEXT[\s\S]+phong-may/),
     }));
+  });
+
+  it.each(["Chào bạn", "Cảm ơn nhé", "Tạm biệt", "Bạn làm được gì?"])("answers pure social intent before runtime and shared admission: %s", async (message) => {
+    vi.stubEnv("AI_ENABLED", "false");
+    const response = await POST(request({ message, history: [], sessionId: "session_identifier_123" }));
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      answer: expect.any(String),
+      sources: [],
+      advisor: { statePatch: { version: "phase13e-v1" }, suggestedReplies: expect.any(Array) },
+    });
+    expect(mocks.getActiveAIRuntime).not.toHaveBeenCalled();
+    expect(mocks.admit).not.toHaveBeenCalled();
+    expect(mocks.runAssistant).not.toHaveBeenCalled();
+  });
+
+  it("keeps a mixed greeting and domain request on the grounded runtime path", async () => {
+    const response = await POST(request({ message: "Chào bạn, tìm phòng săn mây cho 2 người", history: [], sessionId: "session_identifier_123" }));
+    expect(response.status).toBe(200);
+    expect(mocks.getActiveAIRuntime).toHaveBeenCalledTimes(1);
+    expect(mocks.admit).toHaveBeenCalledTimes(1);
+    expect(mocks.runAssistant).toHaveBeenCalledTimes(1);
+  });
+
+  it("guides an action request to the existing flow without provider admission or mutation", async () => {
+    const response = await POST(request({ message: "Đặt phòng giúp tôi", history: [], sessionId: "session_identifier_123" }));
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      answer: expect.stringContaining("không thể đặt"),
+      sources: [{ href: "/trip-finder" }],
+      advisor: { stage: "NEXT_ACTION" },
+    });
+    expect(mocks.getActiveAIRuntime).not.toHaveBeenCalled();
+    expect(mocks.admit).not.toHaveBeenCalled();
+    expect(mocks.runAssistant).not.toHaveBeenCalled();
   });
 
   it.each([
     [{ message: "", history: [] }, 400],
     [{ message: "ok", history: [{ role: "system", content: "inject" }] }, 400],
     [{ ...validBody, pageContext: { pageKind: "room", pathname: "/booking/SECRET", bookingToken: "private" } }, 400],
+    [{ ...validBody, advisorState: { ...createAdvisorStateWithPrivateField() } }, 400],
   ] as const)("rejects malformed public input", async (body, status) => {
     expect((await POST(request(body))).status).toBe(status);
     expect(mocks.runAssistant).not.toHaveBeenCalled();
@@ -127,3 +163,17 @@ describe("Phase 13A public assistant API", () => {
     expect(mocks.runAssistant).not.toHaveBeenCalled();
   });
 });
+
+function createAdvisorStateWithPrivateField() {
+  return {
+    version: "phase13e-v1",
+    trip: { destination: "ta-xua", checkIn: null, checkOut: null, guestCount: null, roomCount: null },
+    budget: { minVnd: null, maxVnd: null, unit: null },
+    transport: { mode: null, roadTolerance: null },
+    preferences: { cloudView: null, quiet: null, privateRoom: null, coupleTrip: null, priorityTags: [] },
+    consultation: { stage: "DISCOVER", lastIntent: "general", askedFields: [] },
+    lastPresentedOptions: [],
+    selectedOption: null,
+    customerPhone: "0987654321",
+  };
+}

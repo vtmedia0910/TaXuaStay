@@ -100,7 +100,7 @@ export default function AssistantEmbeddedPanel({
             <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-white/12"><Bot size={21} aria-hidden="true" /></span>
             <div className="min-w-0">
               <p className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/65">ĐI THẬT. BIẾT TRƯỚC.</p>
-              <h2 id={titleId} className="truncate text-base font-bold">Trợ lý AI<span className="sr-only"> Tà Xùa Trip</span></h2>
+              <h2 id={titleId} className="truncate text-base font-bold">Cố vấn chuyến đi<span className="sr-only"> Tà Xùa Trip</span></h2>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
