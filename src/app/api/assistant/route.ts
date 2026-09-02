@@ -1,7 +1,10 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { recordAIConversationLogWriteError } from "@/features/ai-conversations/metrics";
+import { captureAIConversationTurn } from "@/features/ai-conversations/service";
+import type { AIConversationEntryPoint } from "@/features/ai-conversations/types";
 import { getAIConfigurationError } from "@/features/ai/config";
 import { createAIControlStore, type AIControlStore } from "@/features/ai/control-store";
-import { estimateAIUsageCostMicros } from "@/features/ai/cost";
+import { estimateAIUsageCostMicros, microsToUsd } from "@/features/ai/cost";
 import { createAIProviderAdapter } from "@/features/ai/provider";
 import { runAssistant } from "@/features/ai/engine";
 import { AssistantError, normalizeAssistantError } from "@/features/ai/errors";
@@ -35,6 +38,36 @@ export async function POST(request: Request) {
   let reservationMicros = 0;
   let usage: AIProviderUsage | undefined;
   let toolCalls = 0;
+  let toolNames: string[] = [];
+  let transcriptContext: {
+    sessionHash: string;
+    entryPoint: AIConversationEntryPoint;
+    customerMessage: string;
+    provider: string;
+    model: string;
+    runtimeRevision: number;
+    profileRevision: number;
+  } | null = null;
+  const scheduleTranscript = (input: { answer: string; result: "success" | "error"; errorCode: AIErrorCode | null; estimatedCostUsd?: number | null }) => {
+    if (!transcriptContext) return;
+    const safeContext = transcriptContext;
+    const latencyMs = Date.now() - startedAt;
+    try {
+      after(() => captureAIConversationTurn({
+        ...safeContext,
+        assistantAnswer: input.answer,
+        toolNames,
+        inputTokens: usage?.inputTokens ?? null,
+        outputTokens: usage?.outputTokens ?? null,
+        estimatedCostUsd: input.estimatedCostUsd ?? null,
+        latencyMs,
+        result: input.result,
+        errorCode: input.errorCode,
+      }));
+    } catch {
+      recordAIConversationLogWriteError();
+    }
+  };
   try {
     const declaredLength = Number(request.headers.get("content-length") ?? "0");
     if (declaredLength > MAX_REQUEST_BYTES) throw new AssistantError("AI_BAD_REQUEST", 413);
@@ -54,6 +87,16 @@ export async function POST(request: Request) {
     }
     const salt = process.env.AI_IDENTITY_HASH_SALT?.trim();
     if (!salt) throw new AssistantError("AI_NOT_CONFIGURED", 503);
+    transcriptContext = {
+      sessionHash: getAssistantSessionIdentity(parsed.data.sessionId, salt)
+        ?? getAssistantClientIdentity(request.headers, salt),
+      entryPoint: parsed.data.entryPoint,
+      customerMessage: parsed.data.message,
+      provider: resolvedRuntime.runtime.provider,
+      model: resolvedRuntime.runtime.model,
+      runtimeRevision: resolvedRuntime.runtime.runtimeRevision,
+      profileRevision: resolvedRuntime.runtime.profileRevision,
+    };
     controls = createAIControlStore(config);
     if (!controls) throw new AssistantError("AI_NOT_CONFIGURED", 503);
 
@@ -74,6 +117,7 @@ export async function POST(request: Request) {
       const response = json({ error: { code: error.code, message: error.message }, fallbacks: FALLBACKS }, { status: error.status });
       if (admission.retryAfterSeconds) response.headers.set("retry-after", String(admission.retryAfterSeconds));
       recordAICompletion({ ok: false, latencyMs: Date.now() - startedAt });
+      scheduleTranscript({ answer: error.message, result: "error", errorCode: error.code });
       return response;
     }
     reservationMicros = admission.reservationMicros;
@@ -95,6 +139,7 @@ export async function POST(request: Request) {
     });
     usage = answer.usage;
     toolCalls = answer.toolCalls;
+    toolNames = answer.toolNames;
     const actualCostMicros = estimateAIUsageCostMicros(config.provider ?? "", config.model ?? "", usage);
     try {
       await controls.finalize({
@@ -110,6 +155,7 @@ export async function POST(request: Request) {
       // Admission already reserved a conservative maximum, so returning the safe answer cannot overspend.
     }
     recordAICompletion({ ok: true, latencyMs: Date.now() - startedAt, usage });
+    scheduleTranscript({ answer: answer.answer, result: "success", errorCode: null, estimatedCostUsd: microsToUsd(actualCostMicros) });
     return json({ answer: answer.answer, sources: answer.sources });
   } catch (rawError) {
     const error = normalizeAssistantError(rawError);
@@ -129,6 +175,7 @@ export async function POST(request: Request) {
       }
     }
     recordAICompletion({ ok: false, latencyMs: Date.now() - startedAt });
+    scheduleTranscript({ answer: error.message, result: "error", errorCode: error.code });
     return json({ error: { code: error.code, message: error.message }, fallbacks: FALLBACKS }, { status: error.status });
   }
 }

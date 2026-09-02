@@ -3,6 +3,7 @@ import { AIBehaviorProfileForm } from "@/components/admin/ai-behavior-profile-fo
 import { AIPromptLab } from "@/components/admin/ai-prompt-lab";
 import { AIRuntimeDraftForm } from "@/components/admin/ai-runtime-draft-form";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { AIAdminNav } from "@/components/admin/ai-admin-nav";
 import { SubmitButton } from "@/components/admin/submit-button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -102,6 +103,7 @@ export default async function AIIntegrationPage({ searchParams }: { searchParams
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
       <AdminPageHeader title="AI Control Center" description="Multi-provider runtime, Behavior Studio và Prompt Lab. Secrets chỉ ở Vercel; trang không tự gọi provider khi tải." />
+      <AIAdminNav />
       {resultMessage ? <p className="mb-4 rounded-2xl border border-line bg-surface p-4 text-sm font-semibold text-ink" role="status">{resultMessage}</p> : null}
       {system.dataError ? <p className="mb-4 rounded-2xl border border-warning/30 bg-[#fff8e8] p-4 text-sm font-semibold text-ink" role="alert">Chưa đọc được metadata Phase 13B. Kiểm tra migration 034 và phiên Admin.</p> : null}
 

@@ -59,6 +59,7 @@ export function AssistantConversation({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const inputId = useId();
   const embedded = variant === "embedded";
+  const entryPoint = embedded ? (pageContext?.pageKind === "home" ? "homepage_launcher" : "floating_assistant") : "assistant_page";
   const effectiveReadiness = runtimeFailure ?? readiness;
   const suggestions = getAssistantSuggestions(pageContext);
   const hardUnavailable = effectiveReadiness === "disabled" || effectiveReadiness === "not_configured";
@@ -96,7 +97,7 @@ export function AssistantConversation({
       const response = await fetch("/api/assistant", {
         method: "POST",
         headers: { "content-type": "application/json", "x-assistant-session": sessionId },
-        body: JSON.stringify({ message: content, history, sessionId, ...(pageContext ? { pageContext } : {}) }),
+        body: JSON.stringify({ message: content, history, sessionId, entryPoint, ...(pageContext ? { pageContext } : {}) }),
         signal: controller.signal,
       });
       const payload = await response.json() as AssistantApiResponse;
@@ -201,6 +202,7 @@ export function AssistantConversation({
           <textarea ref={inputRef} id={inputId} value={input} onChange={(event) => setInput(event.target.value.slice(0, 1_200))} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} rows={1} maxLength={1_200} placeholder={hardUnavailable ? "Trợ lý đang tạm dừng" : "Hỏi về phòng, giá, đường đi, My Trip…"} className="min-h-12 max-h-32 flex-1 resize-y rounded-2xl border border-line bg-white px-4 py-3 text-base text-ink shadow-sm disabled:cursor-not-allowed disabled:bg-slate-50" disabled={loading || hardUnavailable} />
           <button type="submit" disabled={loading || hardUnavailable || !input.trim()} className="grid size-12 shrink-0 place-items-center rounded-2xl bg-pine text-white disabled:cursor-not-allowed disabled:opacity-45" aria-label="Gửi câu hỏi"><Send size={20} aria-hidden="true" /></button>
         </form>
+        <p className="mx-auto mt-2 max-w-3xl text-center text-[0.68rem] leading-5 text-muted">Cuộc trò chuyện có thể được lưu trong thời gian giới hạn để cải thiện chất lượng hỗ trợ. Không gửi mật khẩu hoặc thông tin thanh toán.</p>
         <p id={embedded ? undefined : "my-trip-help"} className="mx-auto mt-2 max-w-3xl text-center text-[0.68rem] leading-5 text-muted">My Trip chỉ hiển thị khi bạn mở đúng liên kết Booking có mã và quyền truy cập đã nhận.</p>
       </div>
     </div>

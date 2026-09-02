@@ -53,6 +53,7 @@ export const assistantRequestSchema = z.object({
   message: z.string().trim().min(1).max(1_200),
   history: z.array(messageSchema).max(6).default([]),
   sessionId: z.string().regex(/^[A-Za-z0-9_-]{16,80}$/).optional(),
+  entryPoint: z.enum(["assistant_page", "floating_assistant", "homepage_launcher", "booking_page", "unknown"]).default("unknown"),
   pageContext: assistantPageContextSchema.optional(),
 }).strict();
 

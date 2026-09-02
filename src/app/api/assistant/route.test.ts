@@ -50,7 +50,7 @@ describe("Phase 13A public assistant API", () => {
     mocks.admit.mockResolvedValue({ allowed: true, retryAfterSeconds: 0, reservationMicros: 50_000 });
     mocks.finalize.mockResolvedValue(undefined);
     mocks.recordBlocked.mockResolvedValue(undefined);
-    mocks.runAssistant.mockResolvedValue({ answer: "Kết quả an toàn", sources: [], usage: { inputTokens: 10, outputTokens: 5 }, toolCalls: 0 });
+    mocks.runAssistant.mockResolvedValue({ answer: "Kết quả an toàn", sources: [], usage: { inputTokens: 10, outputTokens: 5 }, toolCalls: 0, toolNames: [] });
     mocks.getActiveAIRuntime.mockResolvedValue({
       runtime: { provider: "openai", model: "gpt-5-mini-2025-08-07", enabled: true, runtimeRevision: 1, profileRevision: 1 },
       config: getAIProviderConfig({ provider: "openai", model: "gpt-5-mini-2025-08-07", enabled: true }),

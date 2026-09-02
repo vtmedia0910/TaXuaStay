@@ -131,6 +131,7 @@ export interface AssistantAnswer {
   sources: AIPublicSource[];
   usage?: AIProviderUsage;
   toolCalls: number;
+  toolNames: string[];
 }
 
 export interface AIProviderConfig {
