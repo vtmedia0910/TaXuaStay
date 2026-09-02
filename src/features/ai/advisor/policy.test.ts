@@ -77,6 +77,16 @@ describe("Phase 13E Advisor Session State", () => {
     expect(plan.state.selectedOption).toBeNull();
   });
 
+  it("treats a flexible-budget correction as removing the previous price ceiling", () => {
+    const previous = createDefaultAdvisorState();
+    previous.budget = { minVnd: null, maxVnd: 1_500_000, unit: "per_night" };
+    previous.lastPresentedOptions = [{ kind: "room", publicSlug: "po-mu/phong-may", label: "Phòng Mây", priceVnd: 1_200_000 }];
+    const plan = planAdvisorTurn(previous, "Ngân sách linh hoạt");
+    expect(plan.state.budget).toEqual({ minVnd: null, maxVnd: null, unit: null });
+    expect(plan.constraintsChanged).toBe(true);
+    expect(plan.state.lastPresentedOptions).toEqual([]);
+  });
+
   it("selects the next best missing question and never repeats an already asked field", () => {
     const state = createDefaultAdvisorState();
     const first = getNextBestQuestion(state, "recommendation");

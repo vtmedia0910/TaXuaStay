@@ -48,6 +48,8 @@ DISCOVER → UNDERSTAND → NARROW → COMPARE → RECOMMEND → DECIDE → NEXT
 
 The server deterministically extracts explicit dates, party/room counts, common budget expressions, transport, road tolerance and a small preference allow-list. A newer explicit customer correction wins. Stage and the next question are derived in code; the provider cannot replace the state machine.
 
+An explicit flexible-budget correction clears the earlier min/max/unit rather than silently retaining an obsolete ceiling. Like other constraint changes, it invalidates recent candidate pointers so the next grounded turn re-evaluates them.
+
 Next-best-question priority depends on intent. Recommendation starts with guests, then priority, budget, transport/road and dates. Availability starts with dates, then guests and target. Road advice starts with target and transport. At most one primary clarification is supplied to the model, and a field already asked or known is not asked again.
 
 When the provider returns a clarification turn, the customer-visible question is aligned to that code-selected Next Best Question before response and best-effort transcript capture. Provider wording therefore cannot make the visible question disagree with the stored `askedFields` state or the suggested-reply chips.

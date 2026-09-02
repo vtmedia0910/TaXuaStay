@@ -139,6 +139,10 @@ function extractState(previous: AdvisorSessionState, message: string, now: Date)
     state.budget.unit = "trip";
   }
   if (/\b(ngan sach linh hoat|khong chot ngan sach|chua chot ngan sach)\b/.test(value)) {
+    if (state.budget.minVnd !== null || state.budget.maxVnd !== null || state.budget.unit !== null) changedKeys.add("budget");
+    state.budget.minVnd = null;
+    state.budget.maxVnd = null;
+    state.budget.unit = null;
     state.consultation.askedFields = [...new Set([...state.consultation.askedFields, "budget" as const])].slice(0, 7);
   }
 
